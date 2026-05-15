@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/calculations/attendance_engine.dart';
+import '../core/calculations/attendance_rules.dart';
+import '../models/api/subject_wise_attendance_model.dart';
 import '../providers/attendance_analysis_provider.dart';
 import '../providers/attendance_provider.dart';
 import '../providers/auth_provider.dart';
@@ -24,13 +27,13 @@ class DashboardScreen extends ConsumerWidget {
     // Build lookup map from official data
     final officialMap = officialAsync.whenOrNull(
       data: (list) {
-        final map = <String, double>{};
+        final map = <String, SubjectWiseAttendanceModel>{};
         for (final s in list) {
-          map[s.subjectName] = s.finalPercentage;
+          map[s.subjectName] = s;
         }
         return map;
       },
-    ) ?? <String, double>{};
+    ) ?? <String, SubjectWiseAttendanceModel>{};
 
     return Scaffold(
       appBar: AppBar(
@@ -81,18 +84,18 @@ class DashboardScreen extends ConsumerWidget {
                 }
                 final item = items[index - 1];
                 final normCard = _normalize(item.subjectName);
-                double? officialPct;
+                SubjectWiseAttendanceModel? officialModel;
                 if (officialMap.containsKey(item.subjectName)) {
-                  officialPct = officialMap[item.subjectName];
+                  officialModel = officialMap[item.subjectName];
                 } else {
                   for (final entry in officialMap.entries) {
                     if (_normalize(entry.key) == normCard) {
-                      officialPct = entry.value;
+                      officialModel = entry.value;
                       break;
                     }
                   }
                 }
-                return _SubjectCard(item: item, officialPercentage: officialPct);
+                return _SubjectCard(item: item, officialModel: officialModel);
               },
             ),
           );
@@ -115,21 +118,27 @@ String _normalize(String s) {
 
 class _SubjectCard extends StatelessWidget {
   final AttendanceAnalysisItem item;
-  final double? officialPercentage;
+  final SubjectWiseAttendanceModel? officialModel;
 
-  const _SubjectCard({required this.item, this.officialPercentage});
+  const _SubjectCard({required this.item, this.officialModel});
 
   @override
   Widget build(BuildContext context) {
     final a = item.analysis;
+    final pct = officialModel?.finalPercentage ?? a.percentage;
+    final p = officialModel?.effectivePresent ?? a.presentHours;
+    final t = officialModel?.totalHours ?? a.totalHours;
+    final safeBunks = AttendanceEngine.calculateSafeBunks(p, t);
+    final requiredClasses = AttendanceEngine.calculateRequiredClasses(p, t);
+
     final String label;
     final Color bg;
     final Color fg;
-    if (a.isDanger) {
+    if (pct < AttendanceRules.dangerAttendance) {
       label = 'Critical';
       bg = Colors.red.shade50;
       fg = Colors.red.shade800;
-    } else if (a.isWarning) {
+    } else if (pct < AttendanceRules.warningAttendance) {
       label = 'Warning';
       bg = Colors.orange.shade50;
       fg = Colors.orange.shade800;
@@ -167,35 +176,17 @@ class _SubjectCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                _col('Attendance', '${a.percentage.toStringAsFixed(1)}%'),
+                _col('Attendance', '${pct.toStringAsFixed(1)}%'),
                 const SizedBox(width: 24),
-                _col('Safe Bunks', a.safeBunks.toString()),
+                _col('Safe Bunks', safeBunks.toString()),
                 const SizedBox(width: 24),
-                _col('Needed', a.requiredClasses.toString()),
+                _col('Needed', requiredClasses.toString()),
               ],
             ),
-            if (officialPercentage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  children: [
-                    Text('Official: ', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                    Text('${officialPercentage!.toStringAsFixed(1)}%',
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold,
-                        color: Colors.green[700])),
-                  ],
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Text('Official: --',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[400])),
-              ),
-            if (a.totalHours > 0)
+            if (t > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
-                child: Text('${a.presentHours}/${a.totalHours} classes',
+                child: Text('$p/$t classes',
                   style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ),
           ],
