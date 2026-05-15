@@ -25,6 +25,8 @@ final dailyAttendanceProvider = FutureProvider<List<DailyAttendanceModel>>((ref)
   return repo.fetchDailyAttendance(studentId: studentId);
 });
 
+final lastUpdatedProvider = StateProvider<DateTime?>((ref) => null);
+
 final subjectAttendanceProvider = FutureProvider<List<CourseAttendanceModel>>((ref) async {
   final repo = ref.watch(_repositoryProvider);
   final studentId = await ref.watch(_studentIdProvider.future);

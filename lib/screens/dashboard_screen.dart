@@ -13,6 +13,13 @@ class DashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final analysisAsync = ref.watch(attendanceAnalysisProvider);
     final officialAsync = ref.watch(subjectWiseAttendanceProvider);
+    final lastUpdated = ref.watch(lastUpdatedProvider);
+
+    ref.listen(attendanceAnalysisProvider, (_, next) {
+      next.whenOrNull(data: (_) {
+        ref.read(lastUpdatedProvider.notifier).state = DateTime.now();
+      });
+    });
 
     // Build lookup map from official data
     final officialMap = officialAsync.whenOrNull(
@@ -66,10 +73,13 @@ class DashboardScreen extends ConsumerWidget {
               ref.invalidate(subjectWiseAttendanceProvider);
             },
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: items.length,
+              padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
+              itemCount: items.length + 1,
               itemBuilder: (context, index) {
-                final item = items[index];
+                if (index == 0) {
+                  return _LastUpdatedRow(lastUpdated: lastUpdated);
+                }
+                final item = items[index - 1];
                 final normCard = _normalize(item.subjectName);
                 double? officialPct;
                 if (officialMap.containsKey(item.subjectName)) {
@@ -112,8 +122,22 @@ class _SubjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final a = item.analysis;
-    final label = a.isSafe ? 'SAFE' : (a.isWarning ? 'WARNING' : 'DANGER');
-    final color = a.isSafe ? Colors.green : (a.isWarning ? Colors.orange : Colors.red);
+    final String label;
+    final Color bg;
+    final Color fg;
+    if (a.isDanger) {
+      label = 'Critical';
+      bg = Colors.red.shade50;
+      fg = Colors.red.shade800;
+    } else if (a.isWarning) {
+      label = 'Warning';
+      bg = Colors.orange.shade50;
+      fg = Colors.orange.shade800;
+    } else {
+      label = 'Safe';
+      bg = Colors.green.shade50;
+      fg = Colors.green.shade800;
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -132,11 +156,11 @@ class _SubjectCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
+                    color: bg,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(label,
-                    style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
+                    style: TextStyle(color: fg, fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
               ],
             ),
@@ -216,6 +240,33 @@ class _ErrorView extends StatelessWidget {
       ),
     ),
   );
+}
+
+String _formatLastUpdated(DateTime? dt) {
+  if (dt == null) return '';
+  final diff = DateTime.now().difference(dt);
+  if (diff.inSeconds < 60) return 'Updated just now';
+  if (diff.inMinutes < 60) return 'Updated ${diff.inMinutes} min ago';
+  if (diff.inHours < 24) return 'Updated ${diff.inHours} hr ago';
+  return 'Updated ${dt.day}/${dt.month}/${dt.year}';
+}
+
+class _LastUpdatedRow extends StatelessWidget {
+  final DateTime? lastUpdated;
+  const _LastUpdatedRow({this.lastUpdated});
+
+  @override
+  Widget build(BuildContext context) {
+    final text = _formatLastUpdated(lastUpdated);
+    if (text.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+      ),
+    );
+  }
 }
 
 class _EmptyView extends StatelessWidget {
