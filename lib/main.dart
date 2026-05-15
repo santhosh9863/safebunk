@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/login_screen.dart';
+import 'services/api/subject_wise_attendance_service.dart';
 import 'storage/session_storage.dart';
 
 void main() async {
@@ -13,6 +14,9 @@ void main() async {
 
   final sessionStorage = SessionStorage();
   DioClient.init(sessionStorage: sessionStorage);
+
+  // TEMP: Isolated subject-wise API test
+  _testSubjectWiseApi();
 
   runApp(
     ProviderScope(
@@ -41,5 +45,17 @@ class SafeBunkApp extends ConsumerWidget {
         AuthStatus.unauthenticated => const LoginScreen(),
       },
     );
+  }
+}
+
+// TEMP: Isolated subject-wise API test. Remove after verification.
+void _testSubjectWiseApi() async {
+  try {
+    final sessionStorage = SessionStorage();
+    final studentId = (await sessionStorage.getStudentId()) ?? '4286';
+    final service = SubjectWiseAttendanceService();
+    await service.fetchSubjectWiseAttendance(studentId: studentId);
+  } catch (e) {
+    print('[SUBJECT_API] Test error: $e');
   }
 }

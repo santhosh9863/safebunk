@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-
 import '../providers/attendance_analysis_provider.dart';
 import '../providers/attendance_provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/subject_wise_attendance_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -12,6 +12,20 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final analysisAsync = ref.watch(attendanceAnalysisProvider);
+    final officialAsync = ref.watch(subjectWiseAttendanceProvider);
+
+    // Build lookup map from official data
+    final officialMap = officialAsync.whenOrNull(
+      data: (list) {
+        final map = <String, double>{};
+        for (final s in list) {
+          final norm = _normalize(s.subjectName);
+          print('[MATCH_DEBUG] API name="${s.subjectName}" norm="$norm"');
+          map[s.subjectName] = s.finalPercentage;
+        }
+        return map;
+      },
+    ) ?? <String, double>{};
 
     return Scaffold(
       appBar: AppBar(
@@ -19,7 +33,10 @@ class DashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () => ref.invalidate(subjectAttendanceProvider),
+            onPressed: () {
+              ref.invalidate(subjectAttendanceProvider);
+              ref.invalidate(subjectWiseAttendanceProvider);
+            },
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -31,24 +48,45 @@ class DashboardScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _ErrorView(
           message: e.toString().replaceFirst('Exception: ', ''),
-          onRetry: () => ref.invalidate(subjectAttendanceProvider),
+          onRetry: () {
+            ref.invalidate(subjectAttendanceProvider);
+            ref.invalidate(subjectWiseAttendanceProvider);
+          },
         ),
         data: (items) {
           if (items.isEmpty) {
             return _EmptyView(
-              onRetry: () => ref.invalidate(subjectAttendanceProvider),
+              onRetry: () {
+                ref.invalidate(subjectAttendanceProvider);
+                ref.invalidate(subjectWiseAttendanceProvider);
+              },
             );
           }
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(subjectAttendanceProvider);
+              ref.invalidate(subjectWiseAttendanceProvider);
             },
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final item = items[index];
-                return _SubjectCard(item: item);
+                final normCard = _normalize(item.subjectName);
+                double? officialPct;
+                if (officialMap.containsKey(item.subjectName)) {
+                  officialPct = officialMap[item.subjectName];
+                } else {
+                  for (final entry in officialMap.entries) {
+                    if (_normalize(entry.key) == normCard) {
+                      officialPct = entry.value;
+                      break;
+                    }
+                  }
+                }
+                final pctStr = officialPct?.toStringAsFixed(1) ?? '--';
+                print('[MATCH_DEBUG] Card="${item.subjectName}" norm="$normCard" Official=$pctStr');
+                return _SubjectCard(item: item, officialPercentage: officialPct);
               },
             ),
           );
@@ -58,10 +96,22 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
+/// Normalize subject name for lookup comparison only.
+String _normalize(String s) {
+  return s
+      .toLowerCase()
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .replaceAll('( ', '(')
+      .replaceAll(' )', ')')
+      .replaceAll(' - ', '-')
+      .trim();
+}
+
 class _SubjectCard extends StatelessWidget {
   final AttendanceAnalysisItem item;
+  final double? officialPercentage;
 
-  const _SubjectCard({required this.item});
+  const _SubjectCard({required this.item, this.officialPercentage});
 
   @override
   Widget build(BuildContext context) {
@@ -80,12 +130,17 @@ class _SubjectCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(item.subjectName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  child: Text(item.subjectName,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-                  child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(label,
+                    style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
               ],
             ),
@@ -99,10 +154,29 @@ class _SubjectCard extends StatelessWidget {
                 _col('Needed', a.requiredClasses.toString()),
               ],
             ),
-            if (a.totalHours > 0)
+            if (officialPercentage != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: Text('${a.presentHours}/${a.totalHours} classes', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                child: Row(
+                  children: [
+                    Text('Official: ', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    Text('${officialPercentage!.toStringAsFixed(1)}%',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold,
+                        color: Colors.green[700])),
+                  ],
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text('Official: --',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[400])),
+              ),
+            if (a.totalHours > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text('${a.presentHours}/${a.totalHours} classes',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ),
           ],
         ),
@@ -134,11 +208,14 @@ class _ErrorView extends StatelessWidget {
         children: [
           const Icon(Icons.error_outline, size: 64, color: Colors.red),
           const SizedBox(height: 16),
-          Text('Failed to load attendance', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          Text('Failed to load attendance',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          Text(message, textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+          Text(message, textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: Colors.grey)),
           const SizedBox(height: 24),
-          FilledButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('Retry')),
+          FilledButton.icon(onPressed: onRetry,
+            icon: const Icon(Icons.refresh), label: const Text('Retry')),
         ],
       ),
     ),
@@ -158,11 +235,14 @@ class _EmptyView extends StatelessWidget {
         children: [
           const Icon(Icons.event_note_outlined, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          const Text('No attendance data available', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+          const Text('No attendance data available',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          const Text('Pull down to refresh or tap retry.', style: TextStyle(fontSize: 14, color: Colors.grey)),
+          const Text('Pull down to refresh or tap retry.',
+            style: TextStyle(fontSize: 14, color: Colors.grey)),
           const SizedBox(height: 24),
-          OutlinedButton.icon(onPressed: onRetry, icon: const Icon(Icons.refresh), label: const Text('Retry')),
+          OutlinedButton.icon(onPressed: onRetry,
+            icon: const Icon(Icons.refresh), label: const Text('Retry')),
         ],
       ),
     ),

@@ -41,6 +41,7 @@ class AttendanceApiService {
 
     final reportList = innerData['report'] as List;
     final models = <DailyAttendanceModel>[];
+    final statusCounts = <String, int>{};
 
     for (final reportEntry in reportList) {
       if (reportEntry is! Map) continue;
@@ -55,16 +56,20 @@ class AttendanceApiService {
 
         for (final subjectEntry in subjectDetailsList) {
           if (subjectEntry is! Map) continue;
+          final status = _s(subjectEntry['attendanceStatus'], '');
+          final subject = _s(subjectEntry['subjectName'], 'Unknown');
+          statusCounts[status] = (statusCounts[status] ?? 0) + 1;
           models.add(DailyAttendanceModel(
             attendanceDate: date,
-            subjectName: _s(subjectEntry['subjectName'], 'Unknown'),
-            attendanceStatus: _s(subjectEntry['attendanceStatus'], '0'),
+            subjectName: subject,
+            attendanceStatus: status.isNotEmpty ? status : '0',
             staffName: _s(subjectEntry['staffName']),
           ));
         }
       }
     }
 
+    print('[RAW] Status distribution: ${statusCounts.entries.map((e) => "${e.key}=${e.value}").join(', ')}');
     return models;
   }
 
