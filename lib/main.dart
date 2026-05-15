@@ -56,6 +56,6 @@ void _testSubjectWiseApi() async {
     final service = SubjectWiseAttendanceService();
     await service.fetchSubjectWiseAttendance(studentId: studentId);
   } catch (e) {
-    print('[SUBJECT_API] Test error: $e');
+    // print('[SUBJECT_API] Test error: $e');
   }
 }

@@ -19,8 +19,6 @@ class DashboardScreen extends ConsumerWidget {
       data: (list) {
         final map = <String, double>{};
         for (final s in list) {
-          final norm = _normalize(s.subjectName);
-          print('[MATCH_DEBUG] API name="${s.subjectName}" norm="$norm"');
           map[s.subjectName] = s.finalPercentage;
         }
         return map;
@@ -84,8 +82,6 @@ class DashboardScreen extends ConsumerWidget {
                     }
                   }
                 }
-                final pctStr = officialPct?.toStringAsFixed(1) ?? '--';
-                print('[MATCH_DEBUG] Card="${item.subjectName}" norm="$normCard" Official=$pctStr');
                 return _SubjectCard(item: item, officialPercentage: officialPct);
               },
             ),
