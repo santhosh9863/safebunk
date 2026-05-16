@@ -1,18 +1,21 @@
+import '../../core/auth/token_parser.dart';
+import '../../core/session/session_manager.dart';
+import '../../models/auth/session_data.dart';
 import '../../models/api/login_request.dart';
-import '../../storage/session_storage.dart';
+import '../../models/api/login_response.dart';
 import '../api/auth_api_service.dart';
 
 class AuthRepository {
   final AuthApiService _authApiService;
-  final SessionStorage _sessionStorage;
+  final SessionManager _sessionManager;
 
   AuthRepository({
     required AuthApiService authApiService,
-    required SessionStorage sessionStorage,
+    required SessionManager sessionManager,
   })  : _authApiService = authApiService,
-        _sessionStorage = sessionStorage;
+        _sessionManager = sessionManager;
 
-  Future<void> login(String username, String password) async {
+  Future<LoginResponse> login(String username, String password) async {
     final request = LoginRequest(username: username, password: password);
     final response = await _authApiService.login(request);
 
@@ -20,18 +23,27 @@ class AuthRepository {
       throw Exception(response.message ?? 'Login failed.');
     }
 
-    if (response.cookies != null && response.cookies!.isNotEmpty) {
-      await _sessionStorage.saveCookies(response.cookies!);
-    }
+    final studentData = response.data;
+    final studentDataJson = studentData?.toJson();
+    final studentId = TokenParser.extractStudentId(
+      explicitId: studentData?.id,
+      rawToken: studentData?.token,
+      cookies: response.cookies,
+    );
 
-    await _sessionStorage.saveUsername(username);
-  }
+    final session = SessionData(
+      studentId: studentId,
+      username: username,
+      cookies: response.cookies,
+      studentData: studentDataJson,
+    );
 
-  Future<bool> hasSession() async {
-    return _sessionStorage.hasSession();
+    await _sessionManager.saveSession(session);
+
+    return response;
   }
 
   Future<void> logout() async {
-    await _sessionStorage.clearSession();
+    await _sessionManager.clearSession();
   }
 }

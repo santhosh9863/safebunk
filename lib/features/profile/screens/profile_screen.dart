@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/profile_controller.dart';
+import '../models/student_profile.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -46,7 +47,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
 class _ProfileView extends StatelessWidget {
-  final dynamic profile;
+  final StudentProfile profile;
 
   const _ProfileView({required this.profile});
 

@@ -1,9 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/cache/cache_manager.dart';
+import '../core/cache/persistent_cache.dart';
 import '../core/network/dio_client.dart';
+import '../core/session/session_manager.dart';
+import '../core/storage/secure_storage_service.dart';
 import '../services/api/auth_api_service.dart';
 import '../services/repositories/auth_repository.dart';
-import '../storage/session_storage.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
 
@@ -11,28 +14,41 @@ class AuthState {
   final AuthStatus status;
   final String? error;
   final bool isLoading;
+  final String? username;
 
   const AuthState({
     required this.status,
     this.error,
     this.isLoading = false,
+    this.username,
   });
 
   static const unknown = AuthState(status: AuthStatus.unknown);
   static const authenticated = AuthState(status: AuthStatus.authenticated);
   static const unauthenticated = AuthState(status: AuthStatus.unauthenticated);
 
-  AuthState copyWith({AuthStatus? status, String? error, bool? isLoading}) {
+  AuthState copyWith({
+    AuthStatus? status,
+    String? error,
+    bool? isLoading,
+    String? username,
+  }) {
     return AuthState(
       status: status ?? this.status,
-      error: error ?? this.error,
+      error: error,
       isLoading: isLoading ?? this.isLoading,
+      username: username ?? this.username,
     );
   }
 }
 
-final sessionStorageProvider = Provider<SessionStorage>((ref) {
-  return SessionStorage();
+final secureStorageProvider = Provider<SecureStorageService>((ref) {
+  return SecureStorageService();
+});
+
+final sessionManagerProvider = Provider<SessionManager>((ref) {
+  final secureStorage = ref.watch(secureStorageProvider);
+  return SessionManager(secureStorage);
 });
 
 final authApiServiceProvider = Provider<AuthApiService>((ref) {
@@ -41,33 +57,47 @@ final authApiServiceProvider = Provider<AuthApiService>((ref) {
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final authApiService = ref.watch(authApiServiceProvider);
-  final sessionStorage = ref.watch(sessionStorageProvider);
+  final sessionManager = ref.watch(sessionManagerProvider);
   return AuthRepository(
     authApiService: authApiService,
-    sessionStorage: sessionStorage,
+    sessionManager: sessionManager,
   );
+});
+
+final cacheManagerProvider = Provider<CacheManager>((ref) {
+  final manager = CacheManager();
+  manager.registerAsync(PersistentCache.clearAll);
+  return manager;
 });
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
-  final sessionStorage = ref.watch(sessionStorageProvider);
-  return AuthNotifier(authRepository, sessionStorage);
+  final sessionManager = ref.watch(sessionManagerProvider);
+  final cacheManager = ref.watch(cacheManagerProvider);
+  final notifier = AuthNotifier(authRepository, sessionManager, cacheManager);
+  DioClient.sessionExpiredHandler = () => notifier.handleSessionExpired();
+  return notifier;
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
-  final SessionStorage _sessionStorage;
+  final SessionManager _sessionManager;
+  final CacheManager _cacheManager;
 
-  AuthNotifier(this._authRepository, this._sessionStorage)
+  AuthNotifier(this._authRepository, this._sessionManager, this._cacheManager)
       : super(const AuthState(status: AuthStatus.unknown)) {
     _checkSession();
   }
 
   Future<void> _checkSession() async {
     try {
-      final hasSession = await _sessionStorage.hasSession();
+      final session = await _sessionManager.restoreSession();
+      final hasSession = session != null;
+      final username = session?.username;
+
       state = AuthState(
         status: hasSession ? AuthStatus.authenticated : AuthStatus.unauthenticated,
+        username: username,
       );
     } catch (_) {
       state = const AuthState(status: AuthStatus.unauthenticated);
@@ -78,17 +108,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, error: null);
     try {
       await _authRepository.login(username, password);
-      state = const AuthState(status: AuthStatus.authenticated);
+      state = AuthState(
+        status: AuthStatus.authenticated,
+        username: username,
+      );
     } catch (e) {
       state = AuthState(
         status: AuthStatus.unauthenticated,
-        error: e.toString().replaceFirst('Exception: ', ''),
+        error: e.toString().replaceFirst('Exception: ', '').replaceFirst('ApiException: ', ''),
       );
     }
   }
 
   Future<void> logout() async {
     await _authRepository.logout();
+    await _cacheManager.clearAll();
+    state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  Future<void> handleSessionExpired() async {
+    await _authRepository.logout();
+    await _cacheManager.clearAll();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 }

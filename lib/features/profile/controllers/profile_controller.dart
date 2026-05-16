@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/cache/memory_cache.dart';
+import '../../../providers/auth_provider.dart';
 import '../models/student_profile.dart';
 import '../services/profile_service.dart';
 import '../../../core/network/dio_client.dart';
@@ -22,6 +24,19 @@ class ProfileState {
   }
 }
 
+final _profileCacheProvider = Provider<MemoryCache<StudentProfile>>((ref) {
+  final cache = MemoryCache<StudentProfile>(ttl: const Duration(minutes: 30));
+  ref.watch(cacheManagerProvider).register(cache.clear);
+  return cache;
+});
+
+final _profileServiceProvider = Provider<ProfileService>((ref) {
+  return ProfileService(
+    dio: DioClient.instance.dio,
+    cache: ref.watch(_profileCacheProvider),
+  );
+});
+
 class ProfileNotifier extends StateNotifier<ProfileState> {
   final ProfileService _service;
 
@@ -42,6 +57,5 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
 }
 
 final profileControllerProvider = StateNotifierProvider.autoDispose<ProfileNotifier, ProfileState>((ref) {
-  final service = ProfileService(dio: DioClient.instance.dio);
-  return ProfileNotifier(service);
+  return ProfileNotifier(ref.watch(_profileServiceProvider));
 });

@@ -37,6 +37,13 @@ class DailyAttendanceModel {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'attendanceDate': attendanceDate,
+    'subjectName': subjectName,
+    'attendanceStatus': attendanceStatus,
+    'staffName': staffName,
+  };
+
   static String _pick(Map<String, dynamic> json, List<String> keys) {
     for (final key in keys) {
       final v = json[key];

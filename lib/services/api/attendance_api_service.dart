@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 
-import '../../core/errors/api_exception.dart';
+import '../../core/errors/app_exceptions.dart';
+import '../../core/network/api_constants.dart';
+import '../../core/network/api_response_validator.dart';
 import '../../models/api/daily_attendance_model.dart';
 
 class AttendanceApiService {
@@ -15,7 +18,7 @@ class AttendanceApiService {
   }) async {
     try {
       final response = await _dio.get(
-        '/attendance/daily-attendance',
+        ApiConstants.dailyAttendance,
         queryParameters: {
           'toDate': toDate,
           'fromDate': fromDate,
@@ -23,9 +26,12 @@ class AttendanceApiService {
           'studentId': studentId,
         },
       );
+
+      ApiResponseValidator.validateContentType(response);
       return _parseDailyResponse(response.data);
     } on DioException catch (e) {
-      throw _mapError(e);
+      debugPrint('[API] daily attendance failed: ${e.response?.statusCode}');
+      throw mapDioException(e);
     }
   }
 
@@ -41,7 +47,6 @@ class AttendanceApiService {
 
     final reportList = innerData['report'] as List;
     final models = <DailyAttendanceModel>[];
-    final statusCounts = <String, int>{};
 
     for (final reportEntry in reportList) {
       if (reportEntry is! Map) continue;
@@ -58,7 +63,6 @@ class AttendanceApiService {
           if (subjectEntry is! Map) continue;
           final status = _s(subjectEntry['attendanceStatus'], '');
           final subject = _s(subjectEntry['subjectName'], 'Unknown');
-          statusCounts[status] = (statusCounts[status] ?? 0) + 1;
           models.add(DailyAttendanceModel(
             attendanceDate: date,
             subjectName: subject,
@@ -69,32 +73,9 @@ class AttendanceApiService {
       }
     }
 
-    print('[RAW] Status distribution: ${statusCounts.entries.map((e) => "${e.key}=${e.value}").join(', ')}');
     return models;
   }
 
   static String _s(dynamic v, [String fallback = '']) =>
       v is String ? v : (v?.toString() ?? fallback);
-
-  ApiException _mapError(DioException e) {
-    switch (e.type) {
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
-      case DioExceptionType.receiveTimeout:
-        return const TimeoutException('Connection timed out');
-      case DioExceptionType.connectionError:
-        return const NetworkException('No internet connection');
-      case DioExceptionType.badResponse:
-        final code = e.response?.statusCode;
-        final msg = e.response?.data is Map
-            ? (e.response?.data as Map)['message']?.toString()
-            : null;
-        return switch (code) {
-          401 => UnauthorizedException(msg ?? 'Session expired'),
-          _ => ServerException(msg ?? 'Request failed', statusCode: code),
-        };
-      default:
-        return const UnknownException('An unexpected error occurred');
-    }
-  }
 }

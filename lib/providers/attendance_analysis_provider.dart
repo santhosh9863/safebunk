@@ -19,7 +19,9 @@ final attendanceAnalysisProvider = Provider<AsyncValue<List<AttendanceAnalysisIt
 
   return asyncSubjects.when(
     data: (models) {
-      if (models.isEmpty) return const AsyncValue.data([]);
+      if (models.isEmpty) {
+        return const AsyncValue.data([]);
+      }
       try {
         final items = models.map((m) => AttendanceAnalysisItem(
           subjectName: m.subjectName,
@@ -30,7 +32,11 @@ final attendanceAnalysisProvider = Provider<AsyncValue<List<AttendanceAnalysisIt
         return AsyncValue.error(e, st);
       }
     },
-    loading: () => const AsyncValue.loading(),
-    error: (e, st) => AsyncValue.error(e, st),
+    loading: () {
+      return const AsyncValue.loading();
+    },
+    error: (e, st) {
+      return AsyncValue.error(e, st);
+    },
   );
 });

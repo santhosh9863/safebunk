@@ -1,46 +1,63 @@
 import 'package:dio/dio.dart';
 
-import '../../../../core/errors/api_exception.dart';
+import '../../../core/cache/memory_cache.dart';
+import '../../../core/cache/persistent_cache.dart';
+import '../../../core/errors/app_exceptions.dart';
+import '../../../core/network/api_constants.dart';
+import '../../../core/network/api_response_validator.dart';
 import '../models/student_profile.dart';
 
 class ProfileService {
   final Dio _dio;
+  final MemoryCache<StudentProfile> _cache;
 
-  ProfileService({required Dio dio}) : _dio = dio;
+  ProfileService({
+    required Dio dio,
+    required MemoryCache<StudentProfile> cache,
+  })  : _dio = dio,
+        _cache = cache;
 
   Future<StudentProfile> fetchProfile(String studentId) async {
+    final cached = _cache.get(studentId);
+    if (cached != null) {
+      return cached;
+    }
+
+    final persisted = PersistentCache.getProfile(
+      studentId,
+      StudentProfile.fromJson,
+    );
+    if (persisted != null) {
+      _cache.set(studentId, persisted);
+      return persisted;
+    }
+
     try {
       final response = await _dio.get(
-        '/student/get-student-basic-details',
+        ApiConstants.studentBasicDetails,
         queryParameters: {'studentId': studentId},
       );
+
+      ApiResponseValidator.validateContentType(response);
 
       if (response.data is! Map) {
         throw const ServerException('Invalid profile response');
       }
 
-      return StudentProfile.fromJson(response.data as Map<String, dynamic>);
+      final profile = StudentProfile.fromJson(response.data as Map<String, dynamic>);
+      _cache.set(studentId, profile);
+      await _persistProfile(studentId, profile);
+      return profile;
     } on DioException catch (e) {
-      throw _mapError(e);
+      throw mapDioException(e);
     }
   }
 
-  ApiException _mapError(DioException e) {
-    switch (e.type) {
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
-      case DioExceptionType.receiveTimeout:
-        return const TimeoutException('Connection timed out');
-      case DioExceptionType.connectionError:
-        return const NetworkException('No internet connection');
-      case DioExceptionType.badResponse:
-        return switch (e.response?.statusCode) {
-          401 => const UnauthorizedException('Session expired'),
-          500 => const ServerException('Server error'),
-          _ => const ServerException('Request failed'),
-        };
-      default:
-        return const UnknownException('An unexpected error occurred');
-    }
+  void clearCache() {
+    _cache.clear();
+  }
+
+  Future<void> _persistProfile(String studentId, StudentProfile profile) async {
+    await PersistentCache.setProfile(studentId, profile.toJson());
   }
 }

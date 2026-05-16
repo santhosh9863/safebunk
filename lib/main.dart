@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/cache/persistent_cache.dart';
 import 'core/network/dio_client.dart';
+import 'core/session/session_manager.dart';
+import 'core/storage/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
+import 'features/settings/providers/settings_providers.dart';
 import 'providers/auth_provider.dart';
-import 'screens/dashboard_screen.dart';
-import 'screens/login_screen.dart';
-import 'services/api/subject_wise_attendance_service.dart';
-import 'storage/session_storage.dart';
+import 'screens/web_login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  final sessionStorage = SessionStorage();
-  DioClient.init(sessionStorage: sessionStorage);
+  await PersistentCache.init();
 
-  // TEMP: Isolated subject-wise API test
-  _testSubjectWiseApi();
+  final secureStorage = SecureStorageService();
+  final sessionManager = SessionManager(secureStorage);
+  DioClient.init(sessionManager: sessionManager);
 
   runApp(
     ProviderScope(
       overrides: [
-        sessionStorageProvider.overrideWithValue(sessionStorage),
+        secureStorageProvider.overrideWithValue(secureStorage),
       ],
       child: const SafeBunkApp(),
     ),
@@ -33,29 +34,15 @@ class SafeBunkApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
+    final darkMode = ref.watch(darkModeProvider);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'SafeBunk V2',
       theme: AppTheme.lightTheme,
-      home: switch (authState.status) {
-        AuthStatus.unknown => const Scaffold(body: Center(child: CircularProgressIndicator())),
-        AuthStatus.authenticated => const DashboardScreen(),
-        AuthStatus.unauthenticated => const LoginScreen(),
-      },
+      darkTheme: AppTheme.darkTheme,
+      themeMode: darkMode ? ThemeMode.dark : ThemeMode.light,
+      home: const WebLoginScreen(),
     );
-  }
-}
-
-// TEMP: Isolated subject-wise API test. Remove after verification.
-void _testSubjectWiseApi() async {
-  try {
-    final sessionStorage = SessionStorage();
-    final studentId = (await sessionStorage.getStudentId()) ?? '4286';
-    final service = SubjectWiseAttendanceService();
-    await service.fetchSubjectWiseAttendance(studentId: studentId);
-  } catch (e) {
-    // print('[SUBJECT_API] Test error: $e');
   }
 }

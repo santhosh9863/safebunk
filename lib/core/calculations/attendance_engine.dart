@@ -125,7 +125,7 @@ class AttendanceEngine {
 
     final result = map.entries.map((e) {
       final a = e.value;
-      final subj = SubjectAttendance(
+      return SubjectAttendance(
         subjectName: e.key,
         present: a.present,
         absent: a.absent,
@@ -133,16 +133,8 @@ class AttendanceEngine {
         dutyLeave: a.dutyLeave,
         totalHours: a.total,
       );
-      print('[ENGINE] "${subj.subjectName}" — '
-          'P:${subj.present} A:${subj.absent} L:${subj.leave} DL:${subj.dutyLeave} '
-          'Total:${subj.totalHours} '
-          'EffP:${subj.effectivePresent} EffT:${subj.effectiveTotal} '
-          '${subj.percentage.toStringAsFixed(1)}% '
-          'Bunks:${subj.safeBunks} Needed:${subj.classesNeeded}');
-      return subj;
     }).toList();
 
-    print('[ENGINE] Aggregated ${result.length} subjects from ${records.length} records');
     return result;
   }
 

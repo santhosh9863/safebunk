@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
 
-import '../../storage/session_storage.dart';
-import '../errors/api_exception.dart';
+import '../errors/app_exceptions.dart';
+import '../session/session_manager.dart';
+import 'api_constants.dart';
 
 class DioClient {
   DioClient._();
@@ -9,18 +10,24 @@ class DioClient {
   static final DioClient _instance = DioClient._();
   static DioClient get instance => _instance;
 
+  static Future<void> Function()? sessionExpiredHandler;
+
   late final Dio dio;
 
-  static DioClient init({SessionStorage? sessionStorage}) {
+  static DioClient init({SessionManager? sessionManager}) {
     _instance.dio = Dio(
       BaseOptions(
-        baseUrl: 'https://sfcv4.linways.com/academics/api/v1',
+        baseUrl: ApiConstants.apiBaseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
         sendTimeout: const Duration(seconds: 10),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
       ),
     );
-    _instance.dio.interceptors.add(_AuthInterceptor(sessionStorage));
+    _instance.dio.interceptors.add(_AuthInterceptor(sessionManager));
     return _instance;
   }
 
@@ -43,58 +50,46 @@ class DioClient {
     try {
       return await request();
     } on DioException catch (e) {
-      throw _mapError(e);
-    }
-  }
-
-  ApiException _mapError(DioException e) {
-    switch (e.type) {
-      case DioExceptionType.connectionTimeout:
-      case DioExceptionType.sendTimeout:
-      case DioExceptionType.receiveTimeout:
-        return const TimeoutException('Connection timed out');
-      case DioExceptionType.connectionError:
-        return const NetworkException('No internet connection');
-      case DioExceptionType.badResponse:
-        final code = e.response?.statusCode;
-        final body = e.response?.data;
-        final msg = body is Map ? (body['message'] ?? body['error'] ?? '').toString() : null;
-        return switch (code) {
-          401 => UnauthorizedException(msg ?? 'Session expired'),
-          500 => ServerException('Server error', statusCode: code),
-          _ => ServerException(msg ?? 'Request failed', statusCode: code),
-        };
-      default:
-        return const UnknownException('An unexpected error occurred');
+      throw mapDioException(e);
     }
   }
 }
 
+String? _extractCookieValue(String cookies, String cookieName) {
+  final pattern = RegExp('$cookieName=([^;]+)');
+  final match = pattern.firstMatch(cookies);
+  return match?.group(1);
+}
+
 class _AuthInterceptor extends Interceptor {
-  final SessionStorage? _storage;
-  _AuthInterceptor(this._storage);
+  final SessionManager? _sessionManager;
+  _AuthInterceptor(this._sessionManager);
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    if (_storage != null) {
-      final cookies = await _storage.getCookies();
+    if (_sessionManager != null) {
+      final cookies = await _sessionManager.getCookies();
       if (cookies != null && cookies.isNotEmpty) {
-        options.headers['Cookie'] = cookies;
-        final token = _extractAuthSession(cookies);
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
+        options.headers[ApiConstants.cookieHeader] = cookies;
+
+        final authSession = _extractCookieValue(cookies, ApiConstants.authSessionCookie);
+        if (authSession != null && authSession.isNotEmpty) {
+          if (!options.headers.containsKey(ApiConstants.authorizationHeader)) {
+            options.headers[ApiConstants.authorizationHeader] =
+                '${ApiConstants.bearerPrefix}$authSession';
+          }
         }
       }
     }
+
     handler.next(options);
   }
 
-  String? _extractAuthSession(String s) {
-    const p = 'AUTH_SESSION=';
-    final start = s.indexOf(p);
-    if (start == -1) return null;
-    final vStart = start + p.length;
-    final end = s.indexOf('; ', vStart);
-    return end == -1 ? s.substring(vStart) : s.substring(vStart, end);
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
+    if (err.response?.statusCode == 401) {
+      await DioClient.sessionExpiredHandler?.call();
+    }
+    handler.next(err);
   }
 }
