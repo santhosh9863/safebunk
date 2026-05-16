@@ -72,14 +72,17 @@ class _CredentialLoginScreenState extends ConsumerState<CredentialLoginScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Secure Login')),
+      appBar: AppBar(
+        title: const Text('PULSE'),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
         child: Center(
           child: Card(
-            elevation: 3,
+            elevation: 2,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
@@ -89,20 +92,20 @@ class _CredentialLoginScreenState extends ConsumerState<CredentialLoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.lock_outline,
-                      size: 64,
+                      Icons.school_outlined,
+                      size: 56,
                       color: theme.colorScheme.primary,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Secure Login',
+                      'Welcome to PULSE',
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Login with your Linways credentials for the full SafeBunk experience',
+                      'Sign in with your Linways credentials to continue',
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
@@ -152,7 +155,19 @@ class _CredentialLoginScreenState extends ConsumerState<CredentialLoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        '🔒 Connected securely with your college portal to sync attendance data.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       height: 50,
@@ -175,7 +190,7 @@ class _CredentialLoginScreenState extends ConsumerState<CredentialLoginScreen> {
                                 ),
                               )
                             : const Text(
-                                'Login Securely',
+                                'Continue',
                                 style: TextStyle(fontSize: 16),
                               ),
                       ),

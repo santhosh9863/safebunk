@@ -31,17 +31,20 @@ class WebLoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SafeBunk'),
+        title: const Text('PULSE'),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         child: Column(
           children: [
-            const Icon(Icons.school, size: 72, color: Colors.blue),
+            const Icon(Icons.school_outlined, size: 64, color: Colors.blue),
             const SizedBox(height: 12),
             Text(
-              'Welcome to SafeBunk',
-              style: Theme.of(context).textTheme.titleLarge,
+              'Welcome to PULSE',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 32),
             _PrimaryCard(onCredentialsTap: () => _openCredentialLogin(context)),
@@ -85,7 +88,7 @@ class _PrimaryCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Recommended for the full SafeBunk experience',
+              'Recommended for the full PULSE experience',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

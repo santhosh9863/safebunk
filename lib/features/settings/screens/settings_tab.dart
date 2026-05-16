@@ -157,6 +157,26 @@ class SettingsTab extends ConsumerWidget {
           _SettingsCard(
             title: 'Account',
             children: [
+              Center(
+                child: SizedBox(
+                  width: 240,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Version 1.0.0+1',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      const _SignatureSection(),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -168,15 +188,6 @@ class SettingsTab extends ConsumerWidget {
                     side: BorderSide(color: Colors.red.shade200),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: Text(
-                  'Version 1.0.0+1',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -209,6 +220,80 @@ class SettingsTab extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SignatureSection extends StatefulWidget {
+  const _SignatureSection();
+
+  @override
+  State<_SignatureSection> createState() => _SignatureSectionState();
+}
+
+class _SignatureSectionState extends State<_SignatureSection>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fade = _controller.drive(CurveTween(curve: Curves.easeOut));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          'Created by',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 12,
+            color: cs.onSurfaceVariant.withValues(alpha: 0.5),
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Santhosh Krishna R',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            color: cs.onSurfaceVariant.withValues(alpha: 0.75),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 6),
+        FadeTransition(
+          opacity: _fade,
+          child: Text(
+            'Built during attendance anxiety.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.78),
+              fontWeight: FontWeight.w500,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -79,7 +79,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SafeBunk'),
+        title: const Text('PULSE'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
