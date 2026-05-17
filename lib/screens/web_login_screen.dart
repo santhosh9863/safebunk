@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/auth_provider.dart';
+import '../services/analytics_service.dart';
 import 'credential_login_screen.dart';
 import 'pulse_transition_screen.dart';
 
@@ -50,6 +51,9 @@ class _WebLoginScreenState extends ConsumerState<WebLoginScreen> {
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
       if (next.status == AuthStatus.authenticated) {
+        if (previous?.status == AuthStatus.unauthenticated) {
+          AnalyticsService.logLoginSuccess();
+        }
         _navigateToDashboard();
       }
     });

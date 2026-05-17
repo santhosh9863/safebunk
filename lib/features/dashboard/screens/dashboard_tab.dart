@@ -14,6 +14,7 @@ import '../../../providers/attendance_analysis_provider.dart';
 import '../../../providers/attendance_provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/subject_wise_attendance_provider.dart';
+import '../../../services/analytics_service.dart';
 import '../../../features/settings/providers/settings_providers.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
 import '../../dashboard/widgets/attendance_qa_card.dart';
@@ -97,6 +98,7 @@ class _ShimmerWidgetState extends State<_ShimmerWidget>
 
 class _DashboardTabState extends ConsumerState<DashboardTab> {
   bool _profileInitialized = false;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -148,13 +150,32 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
   }
 
   Future<void> _onRefresh() async {
-    ref.read(cacheManagerProvider).clearAll();
-    ref.invalidate(subjectAttendanceProvider);
-    ref.invalidate(subjectWiseAttendanceProvider);
-    final sessionManager = ref.read(sessionManagerProvider);
-    final studentId = await sessionManager.getStudentId();
-    if (studentId != null && studentId.isNotEmpty) {
-      ref.read(profileControllerProvider.notifier).fetchProfile(studentId);
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
+    try {
+      ref.read(cacheManagerProvider).clearAll();
+      ref.invalidate(subjectAttendanceProvider);
+      ref.invalidate(subjectWiseAttendanceProvider);
+      final sessionManager = ref.read(sessionManagerProvider);
+      final studentId = await sessionManager.getStudentId();
+      if (studentId != null && studentId.isNotEmpty) {
+        await ref.read(profileControllerProvider.notifier).fetchProfile(studentId);
+      }
+      AnalyticsService.logAttendanceSync();
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Sync failed'),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.only(
+              bottom: MediaQuery.of(context).padding.bottom + 80,
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isRefreshing = false);
     }
   }
 
@@ -267,7 +288,15 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
         target: target,
         trigger: trigger,
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 12),
+      if (lastUpdated != null) ...[
+        _SyncStatusRow(
+          lastUpdated: lastUpdated,
+          isRefreshing: _isRefreshing,
+          onRefresh: _onRefresh,
+        ),
+        const SizedBox(height: 8),
+      ],
       AttendanceQACard(
         totalPresent: totalPresent,
         totalHours: totalHours,
@@ -1016,6 +1045,108 @@ class _EmptyAttendance extends StatelessWidget {
   }
 }
 
+class _SyncStatusRow extends StatefulWidget {
+  final DateTime? lastUpdated;
+  final bool isRefreshing;
+  final Future<void> Function() onRefresh;
+
+  const _SyncStatusRow({
+    required this.lastUpdated,
+    required this.isRefreshing,
+    required this.onRefresh,
+  });
+
+  @override
+  State<_SyncStatusRow> createState() => _SyncStatusRowState();
+}
+
+class _SyncStatusRowState extends State<_SyncStatusRow>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _spinController;
+
+  @override
+  void initState() {
+    super.initState();
+    _spinController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    if (widget.isRefreshing) _spinController.repeat();
+  }
+
+  @override
+  void didUpdateWidget(_SyncStatusRow old) {
+    super.didUpdateWidget(old);
+    if (widget.isRefreshing && !old.isRefreshing) {
+      _spinController.repeat();
+    } else if (!widget.isRefreshing && old.isRefreshing) {
+      _spinController.stop();
+      _spinController.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _spinController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.lastUpdated == null) return const SizedBox.shrink();
+    final cs = Theme.of(context).colorScheme;
+    final text = _format(widget.lastUpdated!);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Row(
+        children: [
+          Icon(
+            Icons.history,
+            size: 12,
+            color: cs.onSurfaceVariant.withValues(alpha: 0.55),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 11,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.65),
+            ),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: widget.isRefreshing ? null : () => widget.onRefresh(),
+            child: AnimatedBuilder(
+              animation: _spinController,
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: _spinController.value * 2 * pi,
+                  child: child,
+                );
+              },
+              child: Icon(
+                Icons.refresh,
+                size: 16,
+                color: widget.isRefreshing
+                    ? cs.primary.withValues(alpha: 0.4)
+                    : cs.primary.withValues(alpha: 0.65),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static String _format(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inSeconds < 60) return 'Synced just now';
+    if (diff.inMinutes < 60) return 'Synced ${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return 'Synced ${diff.inHours}h ago';
+    return 'Synced ${dt.day}/${dt.month}';
+  }
+}
+
 class _FloatingRefreshButton extends StatefulWidget {
   final Future<void> Function() onRefresh;
 
@@ -1082,7 +1213,7 @@ class _FloatingRefreshButtonState extends State<_FloatingRefreshButton>
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                'Refresh',
+                'Sync attendance',
                 style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
               ),
             ),

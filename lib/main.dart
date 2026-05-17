@@ -13,6 +13,10 @@ import 'core/storage/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/settings/providers/settings_providers.dart';
 import 'providers/auth_provider.dart';
+import 'providers/update_provider.dart';
+import 'services/analytics_service.dart';
+import 'services/update_service.dart';
+import 'shared/widgets/update_dialog.dart';
 import 'screens/web_login_screen.dart';
 
 void main() async {
@@ -52,14 +56,53 @@ void main() async {
   );
 }
 
-class SafeBunkApp extends ConsumerWidget {
+class SafeBunkApp extends ConsumerStatefulWidget {
   const SafeBunkApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SafeBunkApp> createState() => _SafeBunkAppState();
+}
+
+class _SafeBunkAppState extends ConsumerState<SafeBunkApp> {
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  bool _hasShownUpdateDialog = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      AnalyticsService.logAppOpen();
+      ref.read(updateProvider.notifier).checkForUpdate();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(updateProvider, (previous, next) {
+      if (next.status == UpdateStatus.updateAvailable &&
+          next.info != null &&
+          !_hasShownUpdateDialog) {
+        _hasShownUpdateDialog = true;
+        debugPrint('[UpdateService] Update popup shown: ${next.type} update to ${next.info!.latestVersion}');
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _navigatorKey.currentContext != null) {
+            showDialog(
+              context: _navigatorKey.currentContext!,
+              barrierDismissible: next.type != UpdateType.required,
+              builder: (_) => UpdateDialog(
+                info: next.info!,
+                updateType: next.type,
+              ),
+            );
+          }
+        });
+      }
+    });
+
     final darkMode = ref.watch(darkModeProvider);
 
     return MaterialApp(
+      navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'PULSE',
       theme: AppTheme.lightTheme,

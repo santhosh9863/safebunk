@@ -7,6 +7,7 @@ import '../features/subjects/screens/subject_wise_tab.dart';
 import '../features/analytics/screens/analytics_tab.dart';
 import '../features/settings/screens/settings_tab.dart';
 import '../providers/auth_provider.dart';
+import '../services/analytics_service.dart';
 import 'web_login_screen.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
@@ -18,6 +19,12 @@ class MainShellScreen extends ConsumerStatefulWidget {
 
 class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() => AnalyticsService.logDashboardOpen());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +55,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
           setState(() => _currentIndex = index);
           if (index == 0) {
             ref.read(dashboardTabTriggerProvider.notifier).state++;
+            AnalyticsService.logDashboardOpen();
           }
         },
         destinations: const [
