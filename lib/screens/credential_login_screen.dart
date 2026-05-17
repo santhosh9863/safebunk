@@ -29,13 +29,35 @@ class _CredentialLoginScreenState extends ConsumerState<CredentialLoginScreen> {
   }
 
   Future<void> _forgotPassword() async {
-    try {
-      await launchUrl(_linwaysUrl, mode: LaunchMode.externalApplication);
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open Linways')),
-        );
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Reset Password'),
+        content: const Text(
+          'Please reset your password through your institution portal.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Open Portal'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await launchUrl(_linwaysUrl, mode: LaunchMode.externalApplication);
+      } catch (_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not open Linways')),
+          );
+        }
       }
     }
   }
@@ -159,7 +181,7 @@ class _CredentialLoginScreenState extends ConsumerState<CredentialLoginScreen> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(
-                        '🔒 Connected securely with your college portal to sync attendance data.',
+                        'Use the same credentials as your college attendance portal.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 11,

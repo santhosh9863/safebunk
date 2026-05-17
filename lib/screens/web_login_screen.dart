@@ -1,18 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../providers/auth_provider.dart';
 import 'credential_login_screen.dart';
+import 'pulse_transition_screen.dart';
 
-class WebLoginScreen extends StatelessWidget {
+class WebLoginScreen extends ConsumerStatefulWidget {
   const WebLoginScreen({super.key});
+
+  @override
+  ConsumerState<WebLoginScreen> createState() => _WebLoginScreenState();
+}
+
+class _WebLoginScreenState extends ConsumerState<WebLoginScreen> {
+  bool _navigated = false;
 
   static final Uri _linwaysUrl = Uri.parse('https://sfcv4.linways.com/');
 
-  Future<void> _openLinways(BuildContext context) async {
+  Future<void> _openLinways() async {
     try {
       await launchUrl(_linwaysUrl, mode: LaunchMode.externalApplication);
     } catch (_) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not open Linways')),
         );
@@ -20,15 +30,46 @@ class WebLoginScreen extends StatelessWidget {
     }
   }
 
-  void _openCredentialLogin(BuildContext context) {
+  void _openCredentialLogin() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const CredentialLoginScreen()),
     );
   }
 
+  void _navigateToDashboard() {
+    if (_navigated) return;
+    _navigated = true;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const PulseTransitionScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(authProvider, (previous, next) {
+      if (next.status == AuthStatus.authenticated) {
+        _navigateToDashboard();
+      }
+    });
+
+    final authState = ref.watch(authProvider);
+
+    if (authState.status == AuthStatus.authenticated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToDashboard();
+      });
+    }
+
+    if (authState.status == AuthStatus.unknown) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('PULSE'),
@@ -47,9 +88,9 @@ class WebLoginScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            _PrimaryCard(onCredentialsTap: () => _openCredentialLogin(context)),
+            _PrimaryCard(onCredentialsTap: _openCredentialLogin),
             const SizedBox(height: 16),
-            _SecondaryCard(onBrowserTap: () => _openLinways(context)),
+            _SecondaryCard(onBrowserTap: _openLinways),
           ],
         ),
       ),

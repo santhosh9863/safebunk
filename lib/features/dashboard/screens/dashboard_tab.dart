@@ -1,4 +1,4 @@
-import 'dart:math' show pi;
+import 'dart:math' show pi, cos, sin;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,25 +78,19 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
     ) ?? <String, SubjectWiseAttendanceModel>{};
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PULSE'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(authProvider.notifier).logout(),
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          RefreshIndicator(
-            onRefresh: _onRefresh,
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              children: [
-                _ProfileSection(profileState: profileState),
-                const SizedBox(height: 16),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: _onRefresh,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                children: [
+                  _BrandHeader(onLogout: () => ref.read(authProvider.notifier).logout()),
+                  const SizedBox(height: 8),
+                  _ProfileSection(profileState: profileState),
+                  const SizedBox(height: 16),
                 ...analysisAsync.when(
                   loading: () => [const _LoadingIndicator()],
                   error: (e, _) => [
@@ -116,6 +110,7 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
             child: _FloatingRefreshButton(onRefresh: _onRefresh),
           ),
         ],
+      ),
       ),
     );
   }
@@ -330,6 +325,58 @@ class _ProfileError extends StatelessWidget {
   }
 }
 
+class _BrandHeader extends StatelessWidget {
+  final VoidCallback onLogout;
+
+  const _BrandHeader({required this.onLogout});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'PULSE',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.2,
+                  color: cs.onSurface,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Attendance Intelligence',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: cs.onSurfaceVariant.withValues(alpha: 0.70),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          IconButton(
+            icon: Icon(Icons.logout, size: 20),
+            onPressed: onLogout,
+            tooltip: 'Logout',
+            style: IconButton.styleFrom(
+              foregroundColor: cs.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _OverallCard extends StatelessWidget {
   final double percentage;
   final int present;
@@ -365,23 +412,32 @@ class _OverallCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Overall Attendance', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Overall Attendance',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    color: statusColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     label,
-                    style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 13),
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 11,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
             Center(
-              child: _AnimatedGauge(
+              child: _InstrumentGauge(
                 percentage: percentage,
                 present: present,
                 total: total,
@@ -389,12 +445,22 @@ class _OverallCard extends StatelessWidget {
                 trigger: trigger,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Row(
               children: [
-                Expanded(child: _StatChip(label: 'Safe Leaves', value: safeBunks.toString())),
-                const SizedBox(width: 12),
-                Expanded(child: _StatChip(label: 'Must Attend', value: requiredClasses.toString())),
+                Expanded(
+                  child: _StatChip(
+                    label: 'Safe Leaves',
+                    value: safeBunks.toString(),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _StatChip(
+                    label: 'Must Attend',
+                    value: requiredClasses.toString(),
+                  ),
+                ),
               ],
             ),
           ],
@@ -413,14 +479,14 @@ class _OverallCard extends StatelessWidget {
   }
 }
 
-class _AnimatedGauge extends StatefulWidget {
+class _InstrumentGauge extends StatefulWidget {
   final double percentage;
   final int present;
   final int total;
   final Color statusColor;
   final int trigger;
 
-  const _AnimatedGauge({
+  const _InstrumentGauge({
     required this.percentage,
     required this.present,
     required this.total,
@@ -429,37 +495,46 @@ class _AnimatedGauge extends StatefulWidget {
   });
 
   @override
-  State<_AnimatedGauge> createState() => _AnimatedGaugeState();
+  State<_InstrumentGauge> createState() => _InstrumentGaugeState();
 }
 
-class _AnimatedGaugeState extends State<_AnimatedGauge>
+class _InstrumentGaugeState extends State<_InstrumentGauge>
     with SingleTickerProviderStateMixin {
+  static const _gaugeWidth = 220.0;
+  static const _gaugeHeight = 135.0;
+
+  static const _gradientColors = [
+    Color(0xFF1B2D4A),
+    Color(0xFF4A7FB5),
+    Color(0xFF6BB5B5),
+  ];
+
   late final AnimationController _controller;
-  late final Animation<double> _gaugeAnimation;
+  late final Animation<double> _animation;
   double _finalValue = 0;
   int _lastTrigger = 0;
 
   @override
   void initState() {
     super.initState();
-    _finalValue = widget.percentage / 100.0;
+    _finalValue = widget.percentage.clamp(0, 100) / 100.0;
     _lastTrigger = widget.trigger;
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1200),
     );
-    _gaugeAnimation = _controller.drive(
+    _animation = _controller.drive(
       CurveTween(curve: Curves.easeOutCubic),
     );
     _controller.forward();
   }
 
   @override
-  void didUpdateWidget(_AnimatedGauge oldWidget) {
+  void didUpdateWidget(_InstrumentGauge oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.trigger != _lastTrigger) {
       _lastTrigger = widget.trigger;
-      _finalValue = widget.percentage / 100.0;
+      _finalValue = widget.percentage.clamp(0, 100) / 100.0;
       _controller
         ..value = 0
         ..forward();
@@ -477,63 +552,148 @@ class _AnimatedGaugeState extends State<_AnimatedGauge>
     final cs = Theme.of(context).colorScheme;
 
     return SizedBox(
-      width: 240,
-      height: 240,
+      width: _gaugeWidth,
+      height: _gaugeHeight,
       child: Stack(
-        alignment: Alignment.center,
+        clipBehavior: Clip.none,
         children: [
-          Positioned.fill(
-            child: AnimatedBuilder(
-              animation: _gaugeAnimation,
-              builder: (context, child) {
-                return CircularProgressIndicator(
-                  value: _gaugeAnimation.value * _finalValue,
-                  strokeWidth: 6,
-                  backgroundColor: cs.surfaceContainerHighest,
-                  valueColor: AlwaysStoppedAnimation(widget.statusColor),
-                );
-              },
-            ),
+          AnimatedBuilder(
+            animation: _animation,
+            builder: (context, child) {
+              return CustomPaint(
+                painter: _InstrumentPainter(
+                  progress: _animation.value * _finalValue,
+                  trackColor: cs.surfaceContainerHighest,
+                  gradientColors: _gradientColors,
+                ),
+                size: const Size(_gaugeWidth, _gaugeHeight),
+              );
+            },
           ),
-          SizedBox(
-            width: 140,
-            height: 140,
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Transform.translate(
-                    offset: const Offset(0, -8),
-                    child: AnimatedBuilder(
-                      animation: _gaugeAnimation,
-                      builder: (context, child) {
-                        final displayValue = _gaugeAnimation.value * _finalValue * 100;
-                        return Text(
-                          '${displayValue.toStringAsFixed(1)}%',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: widget.statusColor,
-                          ),
-                          textAlign: TextAlign.center,
-                        );
-                      },
-                    ),
+          Positioned(
+            top: 66,
+            left: 0,
+            right: 0,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedBuilder(
+                  animation: _animation,
+                  builder: (context, child) {
+                    final displayValue = _animation.value * _finalValue * 100;
+                    return Text(
+                      '${displayValue.round()}%',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                        color: cs.primary,
+                      ),
+                      textAlign: TextAlign.center,
+                    );
+                  },
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '${widget.present} / ${widget.total} classes',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: cs.onSurfaceVariant,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${widget.present} / ${widget.total}',
-                    style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _InstrumentPainter extends CustomPainter {
+  final double progress;
+  final Color trackColor;
+  final List<Color> gradientColors;
+
+  const _InstrumentPainter({
+    required this.progress,
+    required this.trackColor,
+    required this.gradientColors,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const strokeWidth = 9.0;
+    final halfStroke = strokeWidth / 2;
+    final center = Offset(size.width / 2, size.width / 2);
+    final radius = size.width / 2 - halfStroke - 6;
+
+    final arcRect = Rect.fromCircle(center: center, radius: radius);
+
+    final bgPaint = Paint()
+      ..color = trackColor.withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(arcRect, pi, pi, false, bgPaint);
+
+    if (progress > 0) {
+      final sweepAngle = pi * progress;
+      final progressPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round
+        ..shader = LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+
+      canvas.drawArc(arcRect, pi, sweepAngle, false, progressPaint);
+    }
+
+    final tickPaint = Paint()
+      ..color = trackColor.withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..strokeCap = StrokeCap.round;
+
+    const tickCount = 6;
+    for (int i = 1; i < tickCount; i++) {
+      final angle = pi + (pi / tickCount) * i;
+      final inner = Offset(
+        center.dx + (radius - 5) * cos(angle),
+        center.dy + (radius - 5) * sin(angle),
+      );
+      final outer = Offset(
+        center.dx + (radius + 3) * cos(angle),
+        center.dy + (radius + 3) * sin(angle),
+      );
+      canvas.drawLine(inner, outer, tickPaint);
+    }
+
+    if (progress > 0) {
+      final endpointAngle = pi + pi * progress;
+      final endpointPos = Offset(
+        center.dx + radius * cos(endpointAngle),
+        center.dy + radius * sin(endpointAngle),
+      );
+
+      final markerPaint = Paint()
+        ..color = const Color(0xFF6BB5B5)
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(endpointPos, 4.5, markerPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_InstrumentPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.trackColor != trackColor;
 }
 
 class _StatChip extends StatelessWidget {
@@ -546,16 +706,22 @@ class _StatChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
-          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 1),
+          Text(
+            label,
+            style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+          ),
         ],
       ),
     );
