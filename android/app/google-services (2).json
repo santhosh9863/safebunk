@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "379955099923",
+    "project_id": "pulse-5b489",
+    "storage_bucket": "pulse-5b489.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:379955099923:android:0db17bfbfcaa04189842e6",
+        "android_client_info": {
+          "package_name": "com.example.safebunk_v2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAR9pK-fl3556aoI-j_WTC1WcJ3ToE5rMM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

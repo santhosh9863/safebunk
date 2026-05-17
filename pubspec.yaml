@@ -19,11 +19,25 @@ dependencies:
   fl_chart: ^0.68.0
   flutter_animate: ^4.5.2
   animations: ^2.2.0
+  flutter_local_notifications: ^18.0.1
+  firebase_core: ^4.9.0
+  firebase_analytics: ^12.4.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+
+  adaptive_icon_background: "#F4F5F8"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
+
+  min_sdk_android: 21

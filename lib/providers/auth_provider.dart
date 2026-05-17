@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/cache/cache_manager.dart';
 import '../core/cache/persistent_cache.dart';
+import '../core/errors/app_exceptions.dart';
 import '../core/network/dio_client.dart';
 import '../core/session/session_manager.dart';
 import '../core/storage/secure_storage_service.dart';
@@ -105,6 +106,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> login(String username, String password) async {
+    if (state.isLoading) return;
     state = state.copyWith(isLoading: true, error: null);
     try {
       await _authRepository.login(username, password);
@@ -115,7 +117,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       state = AuthState(
         status: AuthStatus.unauthenticated,
-        error: e.toString().replaceFirst('Exception: ', '').replaceFirst('ApiException: ', ''),
+        error: e is ApiException ? e.message : e.toString(),
       );
     }
   }

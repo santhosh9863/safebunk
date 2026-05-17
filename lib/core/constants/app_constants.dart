@@ -1,5 +1,5 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'SafeBunk V2';
+  static const String appName = 'PULSE';
 }

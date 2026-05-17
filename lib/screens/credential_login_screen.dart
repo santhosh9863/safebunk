@@ -147,7 +147,7 @@ class _CredentialLoginScreenState extends ConsumerState<CredentialLoginScreen> {
                       controller: _registerNumberController,
                       enabled: !authState.isLoading,
                       decoration: InputDecoration(
-                        labelText: 'Register Number / Email',
+                        labelText: 'Register Number / Mobile Number',
                         prefixIcon: const Icon(Icons.person_outline),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -217,10 +217,23 @@ class _CredentialLoginScreenState extends ConsumerState<CredentialLoginScreen> {
                               ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     TextButton(
                       onPressed: authState.isLoading ? null : _forgotPassword,
                       child: const Text('Forgot your password?'),
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        'Credentials are used only for secure attendance syncing via your college portal.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                          height: 1.4,
+                        ),
+                      ),
                     ),
                   ],
                 ),

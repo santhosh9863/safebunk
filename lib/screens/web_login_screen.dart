@@ -91,6 +91,19 @@ class _WebLoginScreenState extends ConsumerState<WebLoginScreen> {
             _PrimaryCard(onCredentialsTap: _openCredentialLogin),
             const SizedBox(height: 16),
             _SecondaryCard(onBrowserTap: _openLinways),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'PULSE is an independent attendance utility. '
+                'Your credentials are used only for secure syncing with your college portal.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  height: 1.4,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -196,7 +209,7 @@ class _SecondaryCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Useful if you forgot your Linways credentials',
+              'Password reset is handled through your college portal.',
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -212,7 +225,7 @@ class _SecondaryCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text('Open Linways'),
+                child: const Text('Open Linways Portal'),
               ),
             ),
           ],

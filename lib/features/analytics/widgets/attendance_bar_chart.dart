@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/calculations/attendance_utils.dart';
 import '../../../models/api/subject_wise_attendance_model.dart';
 import '../../settings/providers/settings_providers.dart';
 
@@ -59,7 +60,7 @@ class AttendanceBarChart extends StatelessWidget {
                         if (index < 0 || index >= subjects.length) return null;
                         final subject = subjects[index];
                         return BarTooltipItem(
-                          '${subject.subjectName}\n',
+                          '${AttendanceUtils.cleanSubjectName(subject.subjectName)}\n',
                           TextStyle(
                             color: theme.colorScheme.onInverseSurface,
                             fontWeight: FontWeight.bold,

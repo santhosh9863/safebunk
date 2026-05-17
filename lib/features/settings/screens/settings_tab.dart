@@ -17,6 +17,8 @@ class SettingsTab extends ConsumerWidget {
     final attendanceTarget = ref.watch(attendanceTargetProvider);
     final attendanceAlerts = ref.watch(attendanceAlertsProvider);
     final lowWarning = ref.watch(lowAttendanceWarningProvider);
+    final dailyReminder = ref.watch(dailyReminderProvider);
+    final weeklySummary = ref.watch(weeklySummaryProvider);
 
     final profile = profileState.profile;
     final displayName = profile?.name ?? (authState.username ?? 'Student');
@@ -149,13 +151,39 @@ class SettingsTab extends ConsumerWidget {
                   onChanged: (v) => ref.read(lowAttendanceWarningProvider.notifier).state = v,
                 ),
               ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                child: Divider(height: 1),
+              ),
+              _SettingsRow(
+                label: 'Daily Reminder',
+                subtitle: 'Gentle daily check-in reminder.',
+                trailing: Switch.adaptive(
+                  value: dailyReminder,
+                  activeTrackColor: theme.colorScheme.primary,
+                  onChanged: (v) => ref.read(dailyReminderProvider.notifier).state = v,
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                child: Divider(height: 1),
+              ),
+              _SettingsRow(
+                label: 'Weekly Summary',
+                subtitle: 'Weekly attendance summary notification.',
+                trailing: Switch.adaptive(
+                  value: weeklySummary,
+                  activeTrackColor: theme.colorScheme.primary,
+                  onChanged: (v) => ref.read(weeklySummaryProvider.notifier).state = v,
+                ),
+              ),
             ],
           ),
 
           const SizedBox(height: 16),
 
           _SettingsCard(
-            title: 'Account',
+            title: 'About',
             children: [
               Center(
                 child: SizedBox(
@@ -170,13 +198,31 @@ class SettingsTab extends ConsumerWidget {
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 4),
+                      Text(
+                        'PULSE \u2014 Attendance Intelligence',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const _PrivacyNote(),
+                      const SizedBox(height: 16),
                       const _SignatureSection(),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          _SettingsCard(
+            title: 'Account',
+            children: [
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -220,6 +266,39 @@ class SettingsTab extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PrivacyNote extends StatelessWidget {
+  const _PrivacyNote();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          'Credentials are used only for secure attendance syncing with your college portal.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            color: cs.onSurfaceVariant.withValues(alpha: 0.5),
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'PULSE is an independent attendance utility.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            color: cs.onSurfaceVariant.withValues(alpha: 0.4),
+            height: 1.4,
+          ),
+        ),
+      ],
     );
   }
 }

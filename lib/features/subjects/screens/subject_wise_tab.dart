@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/calculations/attendance_engine.dart';
+import '../../../core/calculations/attendance_utils.dart';
 import '../../../models/api/subject_wise_attendance_model.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/subject_wise_attendance_provider.dart';
@@ -104,7 +105,7 @@ class _SubjectDetailCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    subject.subjectName,
+                    AttendanceUtils.cleanSubjectName(subject.subjectName),
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

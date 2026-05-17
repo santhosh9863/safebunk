@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/calculations/attendance_utils.dart';
 import '../../../models/api/subject_wise_attendance_model.dart';
 import '../../settings/providers/settings_providers.dart';
 
@@ -45,7 +46,7 @@ class SubjectRankingList extends ConsumerWidget {
               final rank = i + 1;
             return _RankItem(
               rank: rank,
-              subjectName: subject.subjectName,
+              subjectName: AttendanceUtils.cleanSubjectName(subject.subjectName),
               percentage: subject.finalPercentage,
               target: target,
               isLast: i == sorted.length - 1,

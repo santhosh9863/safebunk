@@ -27,4 +27,9 @@ class AttendanceUtils {
   static int clampIntToZero(int value) {
     return value < 0 ? 0 : value;
   }
+
+  static String cleanSubjectName(String? subjectName) {
+    if (subjectName == null || subjectName.isEmpty) return '';
+    return subjectName.replaceFirst(RegExp(r'\s*\([^)]*\)$'), '').trim();
+  }
 }

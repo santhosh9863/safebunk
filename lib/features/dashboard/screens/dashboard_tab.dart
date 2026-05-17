@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/calculations/attendance_engine.dart';
 import '../../../core/calculations/attendance_utils.dart';
+import '../../../core/notifications/notification_providers.dart';
+import '../../../core/notifications/notification_scheduler.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../../profile/models/student_profile.dart';
 import '../../../models/api/subject_wise_attendance_model.dart';
@@ -14,12 +16,83 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/subject_wise_attendance_provider.dart';
 import '../../../features/settings/providers/settings_providers.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
+import '../../dashboard/widgets/attendance_qa_card.dart';
+import '../../dashboard/widgets/attendance_simulator_card.dart';
+import '../../dashboard/widgets/attendance_simulation_helper.dart';
 
 class DashboardTab extends ConsumerStatefulWidget {
   const DashboardTab({super.key});
 
   @override
   ConsumerState<DashboardTab> createState() => _DashboardTabState();
+}
+
+class _ShimmerWidget extends StatefulWidget {
+  final double width;
+  final double height;
+  final double borderRadius;
+
+  const _ShimmerWidget({
+    required this.width,
+    required this.height,
+    this.borderRadius = 8,
+  });
+
+  @override
+  State<_ShimmerWidget> createState() => _ShimmerWidgetState();
+}
+
+class _ShimmerWidgetState extends State<_ShimmerWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+    _animation = Tween<double>(begin: -1, end: 2).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOutSine),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          width: widget.width,
+          height: widget.height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            gradient: LinearGradient(
+              colors: [
+                cs.surfaceContainerHighest.withValues(alpha: 0.4),
+                cs.surfaceContainerHighest.withValues(alpha: 0.7),
+                cs.surfaceContainerHighest.withValues(alpha: 0.4),
+              ],
+              stops: [
+                (_animation.value - 1).clamp(0.0, 1.0),
+                _animation.value.clamp(0.0, 1.0),
+                (_animation.value + 1).clamp(0.0, 1.0),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
 class _DashboardTabState extends ConsumerState<DashboardTab> {
@@ -39,6 +112,39 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
     if (studentId != null && studentId.isNotEmpty) {
       ref.read(profileControllerProvider.notifier).fetchProfile(studentId);
     }
+  }
+
+  void _evaluateNotifications(List<AttendanceAnalysisItem> items) {
+    final scheduler = ref.read(notificationSchedulerProvider);
+    if (scheduler == null) return;
+
+    int totalPresent = 0;
+    int totalHours = 0;
+    for (final item in items) {
+      totalPresent += item.analysis.presentHours;
+      totalHours += item.analysis.totalHours;
+    }
+
+    final overallPct = _computeOverallPercentage(totalPresent, totalHours);
+    final safeBunks = AttendanceEngine.calculateSafeBunks(totalPresent, totalHours);
+    final target = ref.read(attendanceTargetProvider);
+    final alertsEnabled = ref.read(attendanceAlertsProvider);
+    final lowWarningEnabled = ref.read(lowAttendanceWarningProvider);
+    final dailyReminderEnabled = ref.read(dailyReminderProvider);
+    final weeklySummaryEnabled = ref.read(weeklySummaryProvider);
+
+    scheduler.evaluate(
+      overallPercentage: overallPct,
+      safeBunks: safeBunks,
+      attendanceTarget: target,
+      now: DateTime.now(),
+      settings: NotificationSettings(
+        notificationsEnabled: alertsEnabled,
+        lowAttendanceEnabled: lowWarningEnabled,
+        dailyReminderEnabled: dailyReminderEnabled,
+        weeklySummaryEnabled: weeklySummaryEnabled,
+      ),
+    );
   }
 
   Future<void> _onRefresh() async {
@@ -62,8 +168,9 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
     final trigger = ref.watch(dashboardTabTriggerProvider);
 
     ref.listen(attendanceAnalysisProvider, (_, next) {
-      next.whenOrNull(data: (_) {
+      next.whenOrNull(data: (items) {
         ref.read(lastUpdatedProvider.notifier).state = DateTime.now();
+        _evaluateNotifications(items);
       });
     });
 
@@ -144,6 +251,12 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
     final safeBunks = AttendanceEngine.calculateSafeBunks(totalPresent, totalHours);
     final requiredClasses = AttendanceEngine.calculateRequiredClasses(totalPresent, totalHours);
 
+    final subjectEntries = items.map((item) => SubjectEntry(
+      displayName: AttendanceUtils.cleanSubjectName(item.subjectName),
+      presentHours: item.analysis.presentHours,
+      totalHours: item.analysis.totalHours,
+    )).toList();
+
     return [
       _OverallCard(
         percentage: overallPct,
@@ -153,6 +266,19 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
         requiredClasses: requiredClasses,
         target: target,
         trigger: trigger,
+      ),
+      const SizedBox(height: 16),
+      AttendanceQACard(
+        totalPresent: totalPresent,
+        totalHours: totalHours,
+        target: target,
+      ),
+      const SizedBox(height: 16),
+      AttendanceSimulatorCard(
+        subjects: subjectEntries,
+        totalPresent: totalPresent,
+        totalHours: totalHours,
+        target: target,
       ),
     ];
   }
@@ -259,7 +385,6 @@ class _ProfileSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -267,24 +392,17 @@ class _ProfileSkeleton extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Row(
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHighest,
-                shape: BoxShape.circle,
-              ),
-            ),
+            const _ShimmerWidget(width: 56, height: 56, borderRadius: 28),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(height: 16, width: 160, color: cs.surfaceContainerHighest),
+                  const _ShimmerWidget(width: 160, height: 16),
                   const SizedBox(height: 8),
-                  Container(height: 12, width: 120, color: cs.surfaceContainerHighest),
+                  const _ShimmerWidget(width: 120, height: 12),
                   const SizedBox(height: 6),
-                  Container(height: 12, width: 180, color: cs.surfaceContainerHighest),
+                  const _ShimmerWidget(width: 180, height: 12),
                 ],
               ),
             ),
@@ -415,7 +533,7 @@ class _OverallCard extends StatelessWidget {
                 Text(
                   'Overall Attendance',
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 Container(
@@ -435,7 +553,7 @@ class _OverallCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Center(
               child: _InstrumentGauge(
                 percentage: percentage,
@@ -445,7 +563,7 @@ class _OverallCard extends StatelessWidget {
                 trigger: trigger,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -582,7 +700,7 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
                   builder: (context, child) {
                     final displayValue = _animation.value * _finalValue * 100;
                     return Text(
-                      '${displayValue.round()}%',
+                      '${displayValue.toStringAsFixed(1)}%',
                       style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
@@ -706,7 +824,7 @@ class _StatChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
@@ -717,7 +835,7 @@ class _StatChip extends StatelessWidget {
             value,
             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 1),
+          const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
@@ -733,9 +851,73 @@ class _LoadingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: 48),
-      child: Center(child: CircularProgressIndicator()),
+    final cs = Theme.of(context).colorScheme;
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const _ShimmerWidget(width: 140, height: 18),
+                const _ShimmerWidget(width: 60, height: 22, borderRadius: 11),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Center(
+              child: Column(
+                children: [
+                  const _ShimmerWidget(width: 120, height: 48),
+                  const SizedBox(height: 8),
+                  const _ShimmerWidget(width: 100, height: 14),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Column(
+                      children: [
+                        _ShimmerWidget(width: 30, height: 18),
+                        SizedBox(height: 4),
+                        _ShimmerWidget(width: 60, height: 11),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: cs.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Column(
+                      children: [
+                        _ShimmerWidget(width: 30, height: 18),
+                        SizedBox(height: 4),
+                        _ShimmerWidget(width: 60, height: 11),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -749,6 +931,9 @@ class _ErrorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+
+    final displayMessage = _humanizeError(message);
+
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -759,25 +944,42 @@ class _ErrorCard extends StatelessWidget {
             Icon(Icons.cloud_off, size: 48, color: cs.onSurfaceVariant),
             const SizedBox(height: 12),
             const Text(
-              'Failed to load attendance',
+              'Unable to load attendance',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             Text(
-              message,
+              displayMessage,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
+              style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant, height: 1.4),
             ),
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh, size: 18),
-              label: const Text('Retry'),
+              label: const Text('Try Again'),
             ),
           ],
         ),
       ),
     );
+  }
+
+  static String _humanizeError(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('connection') || lower.contains('timeout') || lower.contains('socket')) {
+      return 'Unable to reach your college server. Check your connection and try again.';
+    }
+    if (lower.contains('unauthorized') || lower.contains('session') || lower.contains('expired')) {
+      return 'Your session may have expired. Try refreshing or logging in again.';
+    }
+    if (lower.contains('not found') || lower.contains('404')) {
+      return 'Attendance data is temporarily unavailable.';
+    }
+    if (lower.contains('server') || lower.contains('500') || lower.contains('502') || lower.contains('503')) {
+      return 'The college server encountered an issue. Please try again later.';
+    }
+    return 'Unable to refresh attendance right now.';
   }
 }
 
@@ -798,12 +1000,12 @@ class _EmptyAttendance extends StatelessWidget {
               Icon(Icons.event_busy, size: 48, color: cs.onSurfaceVariant),
               const SizedBox(height: 12),
               const Text(
-                'No attendance data available',
+                'No attendance data yet',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 6),
               Text(
-                'Pull down to refresh',
+                'Pull down to sync your latest records.',
                 style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
               ),
             ],

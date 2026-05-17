@@ -37,7 +37,7 @@ class PulseTransitionScreen extends StatefulWidget {
 
 class _PulseTransitionScreenState extends State<PulseTransitionScreen>
     with SingleTickerProviderStateMixin {
-  static const Color _bgColor = Color(0xFF0F172A);
+  static const Color _bgColor = Color(0xFFF8FAFC);
   static const double _trackWidth = 200.0;
 
   late final AnimationController _controller;
@@ -162,7 +162,7 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
                         fontSize: 42,
                         fontWeight: FontWeight.w300,
                         letterSpacing: 14,
-                        color: Color(0xFFEBEFF5),
+                        color: Color(0xFF1E293B),
                       ),
                     ),
                   ),
@@ -185,7 +185,7 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
                         height: 1.5,
-                        color: Color(0xFF94A3B8),
+                        color: Color(0xFF64748B),
                         letterSpacing: 0.4,
                       ),
                     ),
@@ -233,7 +233,7 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
                                   height: 10,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: const Color(0xFFFBBF24)
+                                    color: const Color(0xFF3B82F6)
                                         .withValues(alpha: effects.active ? 1.0 : 0.25),
                                     border: Border.all(
                                       color: _bgColor,
@@ -242,7 +242,7 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
                                     boxShadow: effects.active
                                         ? [
                                             BoxShadow(
-                                              color: const Color(0xFFFBBF24)
+                                              color: const Color(0xFF3B82F6)
                                                   .withValues(alpha: 0.15 + 0.25 * effects.glow),
                                               blurRadius: 4 + 2 * effects.glow,
                                               spreadRadius: 0.5 + effects.glow,
@@ -270,7 +270,7 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white.withValues(
+                                    color: const Color(0xFF475569).withValues(
                                       alpha: 0.40 + 0.60 * effects.glow,
                                     ),
                                   ),
@@ -288,7 +288,7 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFF94A3B8),
+                      color: Color(0xFF64748B),
                     ),
                   ),
                 ],
@@ -317,7 +317,7 @@ class _ProgressBarPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final trackPaint = Paint()
-      ..color = const Color(0xFF1E293B)
+      ..color = const Color(0xFFE2E8F0)
       ..strokeCap = StrokeCap.round;
 
     final trackRect = RRect.fromRectAndRadius(
@@ -333,11 +333,10 @@ class _ProgressBarPainter extends CustomPainter {
     final fillPaint = Paint()
       ..shader = const LinearGradient(
         colors: [
-          Color(0xFFF87171),
-          Color(0xFFFBBF24),
-          Color(0xFF4ADE80),
+          Color(0xFF60A5FA),
+          Color(0xFF2563EB),
         ],
-        stops: [0.0, 0.50, 1.0],
+        stops: [0.0, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, fillWidth, size.height));
 
     canvas.drawRRect(

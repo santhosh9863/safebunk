@@ -8,6 +8,10 @@ final attendanceAlertsProvider = StateProvider<bool>((ref) => true);
 
 final lowAttendanceWarningProvider = StateProvider<bool>((ref) => true);
 
+final dailyReminderProvider = StateProvider<bool>((ref) => true);
+
+final weeklySummaryProvider = StateProvider<bool>((ref) => true);
+
 (double danger, double safe, double safest) computeThresholds(double target) {
   if (target == 60) return (60, 60, 75);
   return (60, 75, 90);

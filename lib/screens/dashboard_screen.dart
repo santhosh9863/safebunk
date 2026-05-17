@@ -515,7 +515,7 @@ class _SubjectCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    item.subjectName,
+                    AttendanceUtils.cleanSubjectName(item.subjectName),
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

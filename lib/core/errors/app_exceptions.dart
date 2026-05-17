@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 
 sealed class ApiException implements Exception {
@@ -46,6 +47,18 @@ class UnknownException extends ApiException {
   const UnknownException(super.message, {super.statusCode});
 }
 
+class SslException extends ApiException {
+  const SslException(super.message, {super.statusCode});
+}
+
+class DnsException extends ApiException {
+  const DnsException(super.message, {super.statusCode});
+}
+
+class ConnectionRefusedException extends NetworkException {
+  const ConnectionRefusedException([super.message = 'Server refused connection.']);
+}
+
 ApiException mapDioException(DioException e) {
   switch (e.type) {
     case DioExceptionType.connectionTimeout:
@@ -53,7 +66,9 @@ ApiException mapDioException(DioException e) {
     case DioExceptionType.receiveTimeout:
       return const TimeoutException('Connection timed out. Please try again.');
     case DioExceptionType.connectionError:
-      return const NetworkException('No internet connection. Check your network.');
+      return _mapConnectionError(e);
+    case DioExceptionType.badCertificate:
+      return const SslException('Secure connection failed. Certificate verification error.');
     case DioExceptionType.badResponse:
       final code = e.response?.statusCode;
       final body = e.response?.data;
@@ -68,9 +83,56 @@ ApiException mapDioException(DioException e) {
       };
     case DioExceptionType.cancel:
       return const NetworkException('Request was cancelled.');
-    default:
-      return const UnknownException('An unexpected error occurred.');
+    case DioExceptionType.unknown:
+      return _mapUnknownError(e);
   }
+}
+
+ApiException _mapConnectionError(DioException e) {
+  final error = e.error;
+  if (error != null) {
+    final errorMessage = error.toString().toLowerCase();
+    if (errorMessage.contains('dns') || errorMessage.contains('name resolution')) {
+      return const DnsException('Unable to resolve server address. Check your network.');
+    }
+    if (errorMessage.contains('connection refused')) {
+      return const ConnectionRefusedException();
+    }
+    if (errorMessage.contains('no route to host') || errorMessage.contains('unreachable')) {
+      return const NetworkException('Unable to reach server. Server may be down.');
+    }
+    if (errorMessage.contains('software caused connection abort')) {
+      return const NetworkException('Connection was interrupted.');
+    }
+    if (errorMessage.contains('ssl') || errorMessage.contains('certificate') || errorMessage.contains('handshake')) {
+      return const SslException('Secure connection failed. Unable to verify server identity.');
+    }
+  }
+  return const NetworkException('No internet connection. Check your network.');
+}
+
+ApiException _mapUnknownError(DioException e) {
+  final error = e.error;
+  if (error != null) {
+    final errorMessage = error.toString().toLowerCase();
+    if (errorMessage.contains('dns') || errorMessage.contains('name resolution')) {
+      return const DnsException('Unable to resolve server address. Check your network.');
+    }
+    if (errorMessage.contains('connection refused')) {
+      return const ConnectionRefusedException();
+    }
+    if (errorMessage.contains('no route to host') || errorMessage.contains('unreachable')) {
+      return const NetworkException('Unable to reach server. Server may be down.');
+    }
+    if (errorMessage.contains('ssl') || errorMessage.contains('certificate') || errorMessage.contains('handshake')) {
+      return const SslException('Secure connection failed. Unable to verify server identity.');
+    }
+    if (errorMessage.contains('socket') || errorMessage.contains('failed to connect')) {
+      return const NetworkException('Unable to reach server. Check your connection.');
+    }
+  }
+  debugPrint('[Network] Unknown error type: ${e.type}, error: ${e.error?.runtimeType}, message: ${e.message}');
+  return const UnknownException('An unexpected network error occurred.');
 }
 
 String? _extractMessage(dynamic body) {

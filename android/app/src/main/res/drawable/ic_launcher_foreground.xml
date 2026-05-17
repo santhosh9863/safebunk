@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Pulse line symbol -->
+    <path
+        android:pathData="M30,60 L38,60 L44,44 L50,72 L56,48 L62,60 L78,60"
+        android:strokeWidth="3.5"
+        android:strokeColor="#FFFFFF"
+        android:fillColor="@android:color/transparent"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <!-- Small dot at pulse start -->
+    <path
+        android:pathData="M30,58 A2,2 0,1,1 30,62 A2,2 0,1,1 30,58z"
+        android:fillColor="#6BB5B5" />
+    <!-- Small dot at pulse peak -->
+    <path
+        android:pathData="M44,42 A2.5,2.5 0,1,1 44,47 A2.5,2.5 0,1,1 44,42z"
+        android:fillColor="#6BB5B5" />
+</vector>
