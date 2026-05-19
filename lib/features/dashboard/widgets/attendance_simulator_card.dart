@@ -149,6 +149,7 @@ class _AttendanceSimulatorCardState extends State<AttendanceSimulatorCard> {
               _selectedSubjectIndex < widget.subjects.length
           ? _selectedSubjectIndex
           : 0,
+      menuMaxHeight: MediaQuery.of(context).size.height * 0.35,
       decoration: InputDecoration(
         labelText: 'Subject',
         labelStyle: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),
