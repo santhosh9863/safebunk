@@ -14,7 +14,6 @@ class SettingsTab extends ConsumerWidget {
     final profileState = ref.watch(profileControllerProvider);
     final authState = ref.watch(authProvider);
     final darkMode = ref.watch(darkModeProvider);
-    final attendanceTarget = ref.watch(attendanceTargetProvider);
     final attendanceAlerts = ref.watch(attendanceAlertsProvider);
     final lowWarning = ref.watch(lowAttendanceWarningProvider);
     final dailyReminder = ref.watch(dailyReminderProvider);
@@ -101,13 +100,6 @@ class SettingsTab extends ConsumerWidget {
           ),
 
           const SizedBox(height: 20),
-
-          _AttendanceTargetCard(
-            appliedTarget: attendanceTarget,
-            onApply: (v) => ref.read(attendanceTargetProvider.notifier).state = v,
-          ),
-
-          const SizedBox(height: 16),
 
           _SettingsCard(
             title: 'Appearance',
@@ -456,164 +448,4 @@ class _SettingsRow extends StatelessWidget {
   }
 }
 
-class _AttendanceTargetCard extends StatelessWidget {
-  final double appliedTarget;
-  final ValueChanged<double> onApply;
 
-  const _AttendanceTargetCard({
-    required this.appliedTarget,
-    required this.onApply,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final is75 = appliedTarget == 75;
-
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Attendance Preferences',
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _TargetOption(
-              value: 75,
-              label: 'Internal Safe',
-              subtitle: 'Comfortable attendance management.',
-              selected: is75,
-              onTap: () => onApply(75),
-            ),
-            const SizedBox(height: 8),
-            _TargetOption(
-              value: 60,
-              label: 'Semester Minimum',
-              subtitle: 'Minimum threshold for semester safety.',
-              selected: !is75,
-              onTap: () => onApply(60),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _TargetOption extends StatelessWidget {
-  final double value;
-  final String label;
-  final String subtitle;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _TargetOption({
-    required this.value,
-    required this.label,
-    required this.subtitle,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: selected
-                ? theme.colorScheme.primaryContainer
-                : theme.colorScheme.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: selected
-                  ? theme.colorScheme.primary.withValues(alpha: 0.3)
-                  : theme.colorScheme.outlineVariant,
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: selected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${value.round()}%',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: selected
-                        ? theme.colorScheme.onPrimary
-                        : theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: selected
-                            ? theme.colorScheme.onPrimaryContainer
-                            : theme.colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: selected
-                            ? theme.colorScheme.onPrimaryContainer
-                                .withValues(alpha: 0.7)
-                            : theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (selected)
-                Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.check,
-                    size: 14,
-                    color: theme.colorScheme.onPrimary,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
