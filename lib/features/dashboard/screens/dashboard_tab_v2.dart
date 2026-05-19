@@ -97,14 +97,23 @@ class _ShimmerWidgetState extends State<_ShimmerWidget>
 
 class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
   bool _profileInitialized = false;
+  bool _dataInitialized = false;
   bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
-    ref.invalidate(subjectAttendanceProvider);
-    ref.invalidate(subjectWiseAttendanceProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) => _initProfile());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_dataInitialized) {
+      _dataInitialized = true;
+      ref.invalidate(subjectAttendanceProvider);
+      ref.invalidate(subjectWiseAttendanceProvider);
+    }
   }
 
   Future<void> _initProfile() async {
