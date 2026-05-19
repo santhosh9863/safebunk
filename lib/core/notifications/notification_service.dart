@@ -6,6 +6,8 @@ import 'notification_models.dart';
 class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin;
 
+  void Function(String? payload)? onNotificationTap;
+
   NotificationService(this._plugin);
 
   static const _alertsChannelId = 'attendance_alerts';
@@ -17,14 +19,20 @@ class NotificationService {
 
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings();
+    final service = NotificationService(plugin);
+
     const initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
     );
 
-    await plugin.initialize(initSettings);
+    await plugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (response) {
+        service.onNotificationTap?.call(response.payload);
+      },
+    );
 
-    final service = NotificationService(plugin);
     await service._createChannels();
     return service;
   }
@@ -120,6 +128,10 @@ class NotificationService {
         iOS: iosDetails,
       ),
     );
+  }
+
+  Future<void> cancelAll() async {
+    await _plugin.cancelAll();
   }
 
   static String _channelName(String channelId) {

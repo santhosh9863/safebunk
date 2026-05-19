@@ -43,13 +43,35 @@ void main() async {
   final sessionManager = SessionManager(secureStorage);
   DioClient.init(sessionManager: sessionManager);
 
+  final toggles = <Override>{
+    secureStorageProvider.overrideWithValue(secureStorage),
+    notificationStateStoreProvider.overrideWithValue(notificationStore),
+    if (notificationService != null)
+      notificationServiceProvider.overrideWithValue(notificationService),
+  };
+
+  if (notificationService != null) {
+    notificationService.onNotificationTap = (payload) {
+      // Navigation handled by main_shell_screen; just bring app to foreground
+    };
+  }
+
   runApp(
     ProviderScope(
       overrides: [
-        secureStorageProvider.overrideWithValue(secureStorage),
-        notificationStateStoreProvider.overrideWithValue(notificationStore),
-        if (notificationService != null)
-          notificationServiceProvider.overrideWithValue(notificationService),
+        ...toggles,
+        attendanceAlertsProvider.overrideWith(
+          (ref) => notificationStore.getToggleAttendanceAlerts(),
+        ),
+        lowAttendanceWarningProvider.overrideWith(
+          (ref) => notificationStore.getToggleLowAttendanceWarning(),
+        ),
+        dailyReminderProvider.overrideWith(
+          (ref) => notificationStore.getToggleDailyReminder(),
+        ),
+        weeklySummaryProvider.overrideWith(
+          (ref) => notificationStore.getToggleWeeklySummary(),
+        ),
       ],
       child: const SafeBunkApp(),
     ),

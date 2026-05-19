@@ -4,6 +4,7 @@ import '../core/cache/cache_manager.dart';
 import '../core/cache/persistent_cache.dart';
 import '../core/errors/app_exceptions.dart';
 import '../core/network/dio_client.dart';
+import '../core/notifications/notification_providers.dart';
 import '../core/session/session_manager.dart';
 import '../core/storage/secure_storage_service.dart';
 import '../services/api/auth_api_service.dart';
@@ -75,7 +76,7 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   final sessionManager = ref.watch(sessionManagerProvider);
   final cacheManager = ref.watch(cacheManagerProvider);
-  final notifier = AuthNotifier(authRepository, sessionManager, cacheManager);
+  final notifier = AuthNotifier(authRepository, sessionManager, cacheManager, ref);
   DioClient.sessionExpiredHandler = () => notifier.handleSessionExpired();
   return notifier;
 });
@@ -84,9 +85,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
   final SessionManager _sessionManager;
   final CacheManager _cacheManager;
+  final Ref _ref;
 
-  AuthNotifier(this._authRepository, this._sessionManager, this._cacheManager)
-      : super(const AuthState(status: AuthStatus.unknown)) {
+  AuthNotifier(
+    this._authRepository,
+    this._sessionManager,
+    this._cacheManager,
+    this._ref,
+  ) : super(const AuthState(status: AuthStatus.unknown)) {
     _checkSession();
   }
 
@@ -125,12 +131,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     await _authRepository.logout();
     await _cacheManager.clearAll();
+    final store = _ref.read(notificationStateStoreProvider);
+    await store.clearOperationalState();
+    final service = _ref.read(notificationServiceProvider);
+    await service?.cancelAll();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
   Future<void> handleSessionExpired() async {
     await _authRepository.logout();
     await _cacheManager.clearAll();
+    final store = _ref.read(notificationStateStoreProvider);
+    await store.clearOperationalState();
+    final service = _ref.read(notificationServiceProvider);
+    await service?.cancelAll();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 }

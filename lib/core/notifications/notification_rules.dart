@@ -157,10 +157,10 @@ class NotificationRules {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
   }
 
-  static NotificationContent contentForLowAttendance() {
-    return const NotificationContent(
+  static NotificationContent contentForLowAttendance(double percentage) {
+    return NotificationContent(
       title: 'Attendance Alert',
-      body: "You're getting close to your attendance limit.",
+      body: 'Your attendance dropped to ${percentage.toStringAsFixed(1)}%. Attend upcoming classes to stay safe.',
     );
   }
 
@@ -178,10 +178,16 @@ class NotificationRules {
     );
   }
 
-  static NotificationContent contentForWeeklySummary(double percentage) {
+  static NotificationContent contentForWeeklySummary({
+    required double percentage,
+    required int safeBunks,
+  }) {
+    final safeLine = safeBunks > 0
+        ? '\nSafe Leaves: $safeBunks'
+        : '';
     return NotificationContent(
       title: 'Weekly Summary',
-      body: 'Your attendance this week is ${percentage.toStringAsFixed(1)}%.',
+      body: 'Attendance: ${percentage.toStringAsFixed(1)}%$safeLine',
     );
   }
 }

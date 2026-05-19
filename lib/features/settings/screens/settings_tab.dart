@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/notifications/notification_providers.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../../../providers/auth_provider.dart';
 import '../providers/settings_providers.dart';
@@ -127,7 +128,10 @@ class SettingsTab extends ConsumerWidget {
                 trailing: Switch.adaptive(
                   value: attendanceAlerts,
                   activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) => ref.read(attendanceAlertsProvider.notifier).state = v,
+                  onChanged: (v) {
+                    ref.read(attendanceAlertsProvider.notifier).state = v;
+                    ref.read(notificationStateStoreProvider).setToggleAttendanceAlerts(v);
+                  },
                 ),
               ),
               const Padding(
@@ -140,7 +144,10 @@ class SettingsTab extends ConsumerWidget {
                 trailing: Switch.adaptive(
                   value: lowWarning,
                   activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) => ref.read(lowAttendanceWarningProvider.notifier).state = v,
+                  onChanged: (v) {
+                    ref.read(lowAttendanceWarningProvider.notifier).state = v;
+                    ref.read(notificationStateStoreProvider).setToggleLowAttendanceWarning(v);
+                  },
                 ),
               ),
               const Padding(
@@ -153,7 +160,10 @@ class SettingsTab extends ConsumerWidget {
                 trailing: Switch.adaptive(
                   value: dailyReminder,
                   activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) => ref.read(dailyReminderProvider.notifier).state = v,
+                  onChanged: (v) {
+                    ref.read(dailyReminderProvider.notifier).state = v;
+                    ref.read(notificationStateStoreProvider).setToggleDailyReminder(v);
+                  },
                 ),
               ),
               const Padding(
@@ -166,7 +176,10 @@ class SettingsTab extends ConsumerWidget {
                 trailing: Switch.adaptive(
                   value: weeklySummary,
                   activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) => ref.read(weeklySummaryProvider.notifier).state = v,
+                  onChanged: (v) {
+                    ref.read(weeklySummaryProvider.notifier).state = v;
+                    ref.read(notificationStateStoreProvider).setToggleWeeklySummary(v);
+                  },
                 ),
               ),
             ],

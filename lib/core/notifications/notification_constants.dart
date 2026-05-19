@@ -32,6 +32,10 @@ class NotificationIds {
   static const weeklySummary = 1004;
 }
 
+class SafeLeaveMilestones {
+  static const List<int> values = [5, 10, 25, 50];
+}
+
 class NotificationStoreKeys {
   static const firstRunComplete = 'first_run_complete';
   static const lowWarningActive = 'low_warning_active';

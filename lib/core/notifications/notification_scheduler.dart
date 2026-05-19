@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'notification_constants.dart';
 import 'notification_rules.dart';
 import 'notification_service.dart';
@@ -6,6 +8,7 @@ import 'notification_state_store.dart';
 class NotificationScheduler {
   final NotificationService _service;
   final NotificationStateStore _store;
+  DateTime? _lastEvaluationTime;
 
   NotificationScheduler({
     required NotificationService service,
@@ -24,6 +27,13 @@ class NotificationScheduler {
     required DateTime now,
     required NotificationSettings settings,
   }) async {
+    // ── Debounce: skip if called within 2 seconds ──
+    if (_lastEvaluationTime != null &&
+        now.difference(_lastEvaluationTime!).inSeconds < 2) {
+      return;
+    }
+    _lastEvaluationTime = now;
+
     // ── First-run: store baselines silently ──
     if (!settings.notificationsEnabled) return;
 
@@ -54,6 +64,7 @@ class NotificationScheduler {
 
     await _evaluateWeeklySummary(
       percentage: overallPercentage,
+      safeBunks: safeBunks,
       now: now,
       enabled: settings.weeklySummaryEnabled,
     );
@@ -95,7 +106,7 @@ class NotificationScheduler {
       await _service.show(
         id: NotificationIds.lowAttendance,
         channelId: NotificationChannels.attendanceAlerts.id,
-        content: NotificationRules.contentForLowAttendance(),
+        content: NotificationRules.contentForLowAttendance(percentage),
       );
       await _store.setLowWarningActive(true);
       await _store.setLowWarningCooldownUntil(
@@ -122,22 +133,26 @@ class NotificationScheduler {
   }) async {
     if (!enabled) return;
 
-    final lastNotified = _store.getLastNotifiedSafeBunks();
-    final result = NotificationRules.evaluateSafeLeaves(
-      currentSafeBunks: currentBunks,
-      lastNotifiedBunks: lastNotified,
-    );
+    final lastMilestone = _store.getLastSafeLeaveMilestone();
+    final newMilestone = _computeSafeLeaveMilestone(currentBunks);
 
-    if (result.shouldNotify) {
-      final content = NotificationRules.contentForSafeLeaves(currentBunks);
+    if (newMilestone > 0 && newMilestone > lastMilestone) {
+      final content = NotificationRules.contentForSafeLeaves(newMilestone);
       await _service.show(
         id: NotificationIds.safeLeaveAvailable,
         channelId: NotificationChannels.attendanceAlerts.id,
         content: content,
       );
+      await _store.setLastSafeLeaveMilestone(newMilestone);
     }
 
-    await _store.setLastNotifiedSafeBunks(result.newLastNotifiedBunks);
+    await _store.setLastNotifiedSafeBunks(currentBunks);
+  }
+
+  int _computeSafeLeaveMilestone(int safeBunks) {
+    final valid = SafeLeaveMilestones.values.where((m) => m <= safeBunks);
+    if (valid.isEmpty) return 0;
+    return valid.reduce(max);
   }
 
   Future<void> _evaluateDailyReminder({
@@ -169,6 +184,7 @@ class NotificationScheduler {
 
   Future<void> _evaluateWeeklySummary({
     required double percentage,
+    required int safeBunks,
     required DateTime now,
     required bool enabled,
   }) async {
@@ -182,7 +198,10 @@ class NotificationScheduler {
     );
 
     if (result.shouldNotify) {
-      final content = NotificationRules.contentForWeeklySummary(percentage);
+      final content = NotificationRules.contentForWeeklySummary(
+        percentage: percentage,
+        safeBunks: safeBunks,
+      );
       await _service.show(
         id: NotificationIds.weeklySummary,
         channelId: NotificationChannels.summaries.id,
