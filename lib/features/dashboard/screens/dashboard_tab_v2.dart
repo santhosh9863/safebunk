@@ -358,18 +358,39 @@ class _ProfileSection extends StatelessWidget {
   }
 }
 
-class _ProfileCard extends StatelessWidget {
+class _ProfileCard extends StatefulWidget {
   final StudentProfile profile;
 
   const _ProfileCard({required this.profile});
 
   @override
+  State<_ProfileCard> createState() => _ProfileCardState();
+}
+
+class _ProfileCardState extends State<_ProfileCard> {
+  String _cachedSem = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _cachedSem = widget.profile.currentSem;
+  }
+
+  @override
+  void didUpdateWidget(_ProfileCard old) {
+    super.didUpdateWidget(old);
+    if (widget.profile.currentSem.isNotEmpty) {
+      _cachedSem = widget.profile.currentSem;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final name = profile.name;
-    final batchName = profile.batchName;
-    final currentSem = profile.currentSem;
-    final imageUrl = profile.imageUrl;
+    final name = widget.profile.name;
+    final batchName = widget.profile.batchName;
+    final displaySem = _cachedSem;
+    final imageUrl = widget.profile.imageUrl;
 
     return Card(
       elevation: 2,
@@ -412,9 +433,9 @@ class _ProfileCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  if (currentSem.isNotEmpty)
+                  if (displaySem.isNotEmpty)
                     Text(
-                      currentSem,
+                      displaySem,
                       style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
