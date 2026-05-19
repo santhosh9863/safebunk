@@ -524,6 +524,44 @@ class _BrandHeader extends StatelessWidget {
   }
 }
 
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.15),
+            color.withValues(alpha: 0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: color.withValues(alpha: 0.25),
+          width: 0.5,
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w700,
+          fontSize: 10,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+}
+
 class _OverallCard extends StatelessWidget {
   final double percentage;
   final int present;
@@ -546,71 +584,104 @@ class _OverallCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final (label, statusColor) = _computeStatus(percentage);
 
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Overall Attendance',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: statusColor,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: statusColor.withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [
+                cs.surface,
+                cs.surfaceContainerLow.withValues(alpha: 0.3),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Health Overview',
+                    style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
-                      fontSize: 11,
+                      letterSpacing: 0.15,
+                      color: cs.onSurface.withValues(alpha: 0.9),
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Center(
-              child: _InstrumentGauge(
-                percentage: percentage,
-                present: present,
-                total: total,
-                statusColor: statusColor,
-                trigger: trigger,
+                  _StatusBadge(label: label, color: statusColor),
+                ],
               ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _StatChip(
-                    label: 'Safe Leaves',
-                    value: safeBunks.toString(),
+              const SizedBox(height: 20),
+              Center(
+                child: _InstrumentGauge(
+                  percentage: percentage,
+                  present: present,
+                  total: total,
+                  statusColor: statusColor,
+                  trigger: trigger,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                height: 1,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      cs.outlineVariant.withValues(alpha: 0.2),
+                      Colors.transparent,
+                    ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _StatChip(
-                    label: 'Must Attend',
-                    value: requiredClasses.toString(),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _StatChip(
+                      label: 'Safe Leaves',
+                      value: safeBunks.toString(),
+                      color: cs.primary,
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _StatChip(
+                      label: 'Must Attend',
+                      value: requiredClasses.toString(),
+                      color: statusColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -647,14 +718,8 @@ class _InstrumentGauge extends StatefulWidget {
 
 class _InstrumentGaugeState extends State<_InstrumentGauge>
     with SingleTickerProviderStateMixin {
-  static const _gaugeWidth = 220.0;
-  static const _gaugeHeight = 135.0;
-
-  static const _gradientColors = [
-    Color(0xFF1B2D4A),
-    Color(0xFF4A7FB5),
-    Color(0xFF6BB5B5),
-  ];
+  static const _gaugeWidth = 240.0;
+  static const _gaugeHeight = 150.0;
 
   late final AnimationController _controller;
   late final Animation<double> _animation;
@@ -668,10 +733,10 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
     _lastTrigger = widget.trigger;
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1400),
     );
     _animation = _controller.drive(
-      CurveTween(curve: Curves.easeOutCubic),
+      CurveTween(curve: Curves.easeOutQuint),
     );
     _controller.forward();
   }
@@ -697,6 +762,11 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final gradientColors = [
+      widget.statusColor.withValues(alpha: 0.6),
+      widget.statusColor,
+      widget.statusColor.withValues(alpha: 0.8),
+    ];
 
     return SizedBox(
       width: _gaugeWidth,
@@ -711,14 +781,15 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
                 painter: _InstrumentPainter(
                   progress: _animation.value * _finalValue,
                   trackColor: cs.surfaceContainerHighest,
-                  gradientColors: _gradientColors,
+                  gradientColors: gradientColors,
+                  statusColor: widget.statusColor,
                 ),
                 size: const Size(_gaugeWidth, _gaugeHeight),
               );
             },
           ),
           Positioned(
-            top: 66,
+            top: 72,
             left: 0,
             right: 0,
             child: Column(
@@ -731,22 +802,24 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
                     return Text(
                       '${displayValue.toStringAsFixed(1)}%',
                       style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
-                        color: cs.primary,
+                        fontSize: 40,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.8,
+                        color: cs.onSurface,
+                        height: 1.1,
                       ),
                       textAlign: TextAlign.center,
                     );
                   },
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 4),
                 Text(
                   '${widget.present} / ${widget.total} classes',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
-                    color: cs.onSurfaceVariant,
+                    color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+                    letterSpacing: 0.2,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -763,24 +836,26 @@ class _InstrumentPainter extends CustomPainter {
   final double progress;
   final Color trackColor;
   final List<Color> gradientColors;
+  final Color statusColor;
 
   const _InstrumentPainter({
     required this.progress,
     required this.trackColor,
     required this.gradientColors,
+    required this.statusColor,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    const strokeWidth = 9.0;
+    const strokeWidth = 12.0;
     final halfStroke = strokeWidth / 2;
     final center = Offset(size.width / 2, size.width / 2);
-    final radius = size.width / 2 - halfStroke - 6;
+    final radius = size.width / 2 - halfStroke - 8;
 
     final arcRect = Rect.fromCircle(center: center, radius: radius);
 
     final bgPaint = Paint()
-      ..color = trackColor.withValues(alpha: 0.55)
+      ..color = trackColor.withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
@@ -802,26 +877,6 @@ class _InstrumentPainter extends CustomPainter {
       canvas.drawArc(arcRect, pi, sweepAngle, false, progressPaint);
     }
 
-    final tickPaint = Paint()
-      ..color = trackColor.withValues(alpha: 0.35)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..strokeCap = StrokeCap.round;
-
-    const tickCount = 6;
-    for (int i = 1; i < tickCount; i++) {
-      final angle = pi + (pi / tickCount) * i;
-      final inner = Offset(
-        center.dx + (radius - 5) * cos(angle),
-        center.dy + (radius - 5) * sin(angle),
-      );
-      final outer = Offset(
-        center.dx + (radius + 3) * cos(angle),
-        center.dy + (radius + 3) * sin(angle),
-      );
-      canvas.drawLine(inner, outer, tickPaint);
-    }
-
     if (progress > 0) {
       final endpointAngle = pi + pi * progress;
       final endpointPos = Offset(
@@ -829,45 +884,77 @@ class _InstrumentPainter extends CustomPainter {
         center.dy + radius * sin(endpointAngle),
       );
 
+      final glowPaint = Paint()
+        ..color = statusColor.withValues(alpha: 0.25)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+
+      canvas.drawCircle(endpointPos, 8, glowPaint);
+
       final markerPaint = Paint()
-        ..color = const Color(0xFF6BB5B5)
+        ..color = statusColor
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(endpointPos, 4.5, markerPaint);
+      canvas.drawCircle(endpointPos, 5, markerPaint);
+
+      final innerMarkerPaint = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill;
+
+      canvas.drawCircle(endpointPos, 2, innerMarkerPaint);
     }
   }
 
   @override
   bool shouldRepaint(_InstrumentPainter oldDelegate) =>
       oldDelegate.progress != progress ||
-      oldDelegate.trackColor != trackColor;
+      oldDelegate.trackColor != trackColor ||
+      oldDelegate.statusColor != statusColor;
 }
 
 class _StatChip extends StatelessWidget {
   final String label;
   final String value;
+  final Color color;
 
-  const _StatChip({required this.label, required this.value});
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
+        color: cs.surfaceContainerLow.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: 0.3),
+          width: 0.5,
+        ),
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: color,
+              letterSpacing: -0.3,
+            ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             label,
-            style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: cs.onSurfaceVariant.withValues(alpha: 0.8),
+              letterSpacing: 0.3,
+            ),
           ),
         ],
       ),
