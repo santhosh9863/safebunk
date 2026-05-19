@@ -17,7 +17,6 @@ import '../../../providers/subject_wise_attendance_provider.dart';
 import '../../../services/analytics_service.dart';
 import '../../../features/settings/providers/settings_providers.dart';
 import '../../dashboard/providers/dashboard_providers.dart';
-import '../../dashboard/widgets/attendance_qa_card.dart';
 import '../../dashboard/widgets/attendance_simulator_card.dart';
 import '../../dashboard/widgets/attendance_simulation_helper.dart';
 
@@ -297,7 +296,12 @@ class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
         ),
         const SizedBox(height: 8),
       ],
-      AttendanceQACard(
+      _WeeklyOverviewCard(
+        percentage: overallPct,
+        target: target,
+      ),
+      const SizedBox(height: 12),
+      _AttendanceQACardV2(
         totalPresent: totalPresent,
         totalHours: totalHours,
         target: target,
@@ -1045,6 +1049,498 @@ class _StatChip extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _WeeklyOverviewCard extends StatelessWidget {
+  final double percentage;
+  final double target;
+
+  const _WeeklyOverviewCard({
+    required this.percentage,
+    required this.target,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final (label, icon, color, message) = _computeOverview(percentage, target);
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                cs.surface,
+                color.withValues(alpha: 0.03),
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 20, color: color),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      message,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: cs.onSurface,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Currently ${label.toLowerCase()}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.2),
+                    width: 0.5,
+                  ),
+                ),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  (String, IconData, Color, String) _computeOverview(double pct, double target) {
+    final (danger, safe, safest) = computeThresholds(target);
+    final mid = (safe + safest) / 2;
+
+    if (pct >= safest) {
+      return ('Excellent', Icons.check_circle_outline, Colors.teal, 'Attendance is in excellent shape');
+    }
+    if (pct >= mid) {
+      return ('Good', Icons.trending_up, Colors.green, 'Attendance is in good shape');
+    }
+    if (pct >= safe) {
+      return ('On Track', Icons.trending_up, Colors.green, 'Attendance meets minimum requirements');
+    }
+    if (pct >= danger) {
+      return ('At Risk', Icons.info_outline, Colors.orange, 'Attendance needs improvement');
+    }
+    return ('Critical', Icons.warning_amber_outlined, Colors.red, 'Attendance requires immediate action');
+  }
+}
+
+class _QAScenario {
+  final String question;
+  final String subtitle;
+  final int hoursMissed;
+  final int hoursAttended;
+  final int safeOrder;
+  final int lowOrder;
+
+  const _QAScenario({
+    required this.question,
+    required this.subtitle,
+    required this.hoursMissed,
+    required this.hoursAttended,
+    required this.safeOrder,
+    required this.lowOrder,
+  });
+}
+
+const _qaScenarios = [
+  _QAScenario(
+    question: 'Attend all classes this week',
+    subtitle: '30 hours attended, 0 missed',
+    hoursMissed: 0,
+    hoursAttended: 30,
+    safeOrder: 5,
+    lowOrder: 0,
+  ),
+  _QAScenario(
+    question: 'Attend all classes tomorrow',
+    subtitle: '6 hours attended, 0 missed',
+    hoursMissed: 0,
+    hoursAttended: 6,
+    safeOrder: 4,
+    lowOrder: 1,
+  ),
+  _QAScenario(
+    question: 'Miss just the first hour',
+    subtitle: '5 hours attended, 1 missed',
+    hoursMissed: 1,
+    hoursAttended: 5,
+    safeOrder: 0,
+    lowOrder: 2,
+  ),
+  _QAScenario(
+    question: 'Arrive just for the afternoon',
+    subtitle: '3 hours attended, 3 missed',
+    hoursMissed: 3,
+    hoursAttended: 3,
+    safeOrder: 2,
+    lowOrder: 3,
+  ),
+  _QAScenario(
+    question: 'Leave after the first hour',
+    subtitle: '1 hour attended, 5 missed',
+    hoursMissed: 5,
+    hoursAttended: 1,
+    safeOrder: 3,
+    lowOrder: 4,
+  ),
+  _QAScenario(
+    question: 'Take a full day leave',
+    subtitle: '0 attended, 6 hours missed',
+    hoursMissed: 6,
+    hoursAttended: 0,
+    safeOrder: 1,
+    lowOrder: 5,
+  ),
+];
+
+List<_QAScenario> _orderScenarios(double percentage, double target) {
+  final (danger, safe, safest) = computeThresholds(target);
+  final useSafeOrder = percentage >= safe;
+  final sorted = List<_QAScenario>.from(_qaScenarios);
+  sorted.sort((a, b) {
+    final ka = useSafeOrder ? a.safeOrder : a.lowOrder;
+    final kb = useSafeOrder ? b.safeOrder : b.lowOrder;
+    return ka.compareTo(kb);
+  });
+  return sorted;
+}
+
+class _AttendanceQACardV2 extends StatefulWidget {
+  final int totalPresent;
+  final int totalHours;
+  final double target;
+
+  const _AttendanceQACardV2({
+    required this.totalPresent,
+    required this.totalHours,
+    required this.target,
+  });
+
+  @override
+  State<_AttendanceQACardV2> createState() => _AttendanceQACardV2State();
+}
+
+class _AttendanceQACardV2State extends State<_AttendanceQACardV2> {
+  int _expandedIndex = -1;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final scenarios = _orderScenarios(
+      widget.totalHours > 0
+          ? (widget.totalPresent / widget.totalHours) * 100
+          : 0,
+      widget.target,
+    );
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [
+                cs.surface,
+                cs.surfaceContainerLow.withValues(alpha: 0.2),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: cs.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.quiz_outlined, size: 16, color: cs.primary),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'What-if Scenarios',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Padding(
+                padding: const EdgeInsets.only(left: 38),
+                child: Text(
+                  'Tap a scenario to preview attendance impact',
+                  style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
+                ),
+              ),
+              const SizedBox(height: 14),
+              ...List.generate(scenarios.length, (i) {
+                final scenario = scenarios[i];
+                final isExpanded = _expandedIndex == i;
+                return _buildScenarioTile(context, scenario, isExpanded, i);
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScenarioTile(
+    BuildContext context,
+    _QAScenario scenario,
+    bool isExpanded,
+    int index,
+  ) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    final result = AttendanceSimulationHelper.simulate(
+      currentPresent: widget.totalPresent,
+      currentTotal: widget.totalHours,
+      additionalPresent: scenario.hoursAttended,
+      additionalTotal: scenario.hoursMissed + scenario.hoursAttended,
+      target: widget.target,
+    );
+
+    return Column(
+      children: [
+        if (index > 0)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Divider(height: 1, color: cs.outlineVariant.withValues(alpha: 0.2)),
+          ),
+        InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {
+            setState(() {
+              _expandedIndex = isExpanded ? -1 : index;
+            });
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        scenario.question,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        scenario.subtitle,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: cs.onSurfaceVariant.withValues(alpha: 0.65),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: isExpanded
+                        ? cs.primary.withValues(alpha: 0.1)
+                        : cs.surfaceContainerHighest.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    isExpanded ? Icons.remove : Icons.add,
+                    size: 14,
+                    color: isExpanded ? cs.primary : cs.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (isExpanded) _buildResultPanel(context, result),
+      ],
+    );
+  }
+
+  Widget _buildResultPanel(BuildContext context, SimulationResult result) {
+    final cs = Theme.of(context).colorScheme;
+
+    final statusColor = result.isSafe
+        ? Colors.green
+        : result.isWarning
+            ? Colors.orange
+            : Colors.red;
+    final statusLabel = result.isSafe
+        ? 'SAFE'
+        : result.isWarning
+            ? 'WARNING'
+            : 'DANGER';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6, top: 2),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerLow.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: cs.outlineVariant.withValues(alpha: 0.15),
+            width: 0.5,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _buildStat('Predicted', '${result.predictedPercentage.toStringAsFixed(1)}%', null, cs),
+                const SizedBox(width: 16),
+                _buildStat('Change', '${result.difference >= 0 ? '+' : ''}${result.difference.toStringAsFixed(1)}%',
+                    result.difference < 0 ? Colors.red : Colors.green, cs),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: statusColor.withValues(alpha: 0.2),
+                      width: 0.5,
+                    ),
+                  ),
+                  child: Text(
+                    statusLabel,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: statusColor,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.beach_access_outlined, size: 11, color: cs.onSurfaceVariant.withValues(alpha: 0.5)),
+                const SizedBox(width: 4),
+                Text(
+                  'Safe leaves: ${result.predictedSafeBunks}',
+                  style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant.withValues(alpha: 0.7)),
+                ),
+                if (result.predictedSafeBunks < result.currentSafeBunks) ...[
+                  const SizedBox(width: 6),
+                  Text(
+                    '(-${result.currentSafeBunks - result.predictedSafeBunks})',
+                    style: const TextStyle(fontSize: 11, color: Colors.red),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStat(String label, String value, Color? valueColor, ColorScheme cs) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant.withValues(alpha: 0.7))),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: valueColor ?? cs.onSurface,
+            letterSpacing: -0.2,
+          ),
+        ),
+      ],
     );
   }
 }
