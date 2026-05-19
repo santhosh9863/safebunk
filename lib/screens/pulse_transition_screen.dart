@@ -1,32 +1,60 @@
+import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/material.dart';
 
 import 'main_shell_screen.dart';
 
-class _CheckpointCurve extends Curve {
-  const _CheckpointCurve();
+// ── Smooth continuous progress curve ──
+
+class _RefinedCurve extends Curve {
+  const _RefinedCurve();
 
   @override
   double transform(double t) {
-    const phase1End = 0.70;
-    const pauseEnd = 0.82;
+    const p1 = 0.780; // 0 → 75 (smooth easeOutCubic)
+    const p2 = 0.925; // hold at 75 (~500ms)
 
-    if (t < phase1End) {
-      final local = t / phase1End;
-      return 0.75 * _easeInOutCubic(local);
-    } else if (t < pauseEnd) {
+    if (t < p1) {
+      final local = t / p1;
+      return 0.75 * _easeOutCubic(local);
+    } else if (t < p2) {
       return 0.75;
     } else {
-      final local = (t - pauseEnd) / (1.0 - pauseEnd);
-      return 0.75 + 0.25 * _easeInOutCubic(local);
+      final local = (t - p2) / (1.0 - p2);
+      return lerpDouble(0.75, 1.0, _easeOutQuad(local))!;
     }
   }
 
-  static double _easeInOutCubic(double t) {
-    return t < 0.5
-        ? 4 * t * t * t
-        : 1 - 4 * (1 - t) * (1 - t) * (1 - t);
+  static double _easeOutCubic(double t) {
+    final v = 1.0 - t;
+    return 1.0 - v * v * v;
+  }
+
+  static double _easeOutQuad(double t) => t * (2.0 - t);
+}
+
+// ── Loading message rotation ──
+
+class _MessageSequence {
+  static const List<String> messages = [
+    'Preparing your attendance insights',
+    'Syncing attendance intelligence',
+    'Analyzing attendance patterns',
+    'Building your dashboard',
+  ];
+
+  final double controllerValue;
+
+  _MessageSequence(this.controllerValue);
+
+  String get current {
+    final idx = (controllerValue * (messages.length - 1)).round().clamp(0, messages.length - 1);
+    return messages[idx];
   }
 }
+
+// ── Main screen ──
 
 class PulseTransitionScreen extends StatefulWidget {
   const PulseTransitionScreen({super.key});
@@ -36,9 +64,9 @@ class PulseTransitionScreen extends StatefulWidget {
 }
 
 class _PulseTransitionScreenState extends State<PulseTransitionScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   static const Color _bgColor = Color(0xFFF8FAFC);
-  static const double _trackWidth = 200.0;
+  static const double _trackLength = 184.0;
 
   late final AnimationController _controller;
   late final Animation<double> _brandOpacity;
@@ -48,13 +76,28 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
   late final Animation<double> _progress;
   late final Animation<double> _exitOverlay;
 
+  late final AnimationController _breathController;
+  late final Animation<double> _breath;
+
+  String _currentMessage = _MessageSequence.messages[0];
+  double _messageOpacity = 0.0;
+
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
+    _breathController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 3200),
+    );
+    _breath = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _breathController, curve: Curves.easeInOut),
+    );
+    _breathController.repeat(reverse: true);
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 4200),
     );
 
     _brandOpacity = CurvedAnimation(
@@ -74,7 +117,7 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
 
     _taglineOpacity = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.16, 0.30, curve: Curves.easeOut),
+      curve: const Interval(0.14, 0.28, curve: Curves.easeOut),
     );
 
     _taglineOffset = Tween<Offset>(
@@ -83,19 +126,21 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
     ).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.16, 0.30, curve: Curves.easeOut),
+        curve: const Interval(0.14, 0.28, curve: Curves.easeOut),
       ),
     );
 
     _progress = CurvedAnimation(
       parent: _controller,
-      curve: const Interval(0.28, 0.93, curve: _CheckpointCurve()),
+      curve: const Interval(0.28, 0.92, curve: _RefinedCurve()),
     );
 
     _exitOverlay = CurvedAnimation(
       parent: _controller,
       curve: const Interval(0.95, 1.0, curve: Curves.easeIn),
     );
+
+    _messageOpacity = 0.0;
 
     _controller.forward().then((_) {
       if (mounted) {
@@ -111,31 +156,66 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
         );
       }
     });
+
+    _controller.addListener(_updateMessage);
+  }
+
+  void _updateMessage() {
+    final cv = _controller.value;
+    final newMsg = _MessageSequence(cv).current;
+
+    final rawIdx = cv * (_MessageSequence.messages.length - 1);
+    final frac = rawIdx - rawIdx.floor().toDouble();
+    final targetOpacity = frac > 0.5 ? 1.0 - (frac - 0.5) * 2.0 : frac * 2.0;
+    final smoothed = targetOpacity.clamp(0.0, 1.0);
+
+    if (newMsg != _currentMessage) {
+      setState(() {
+        _currentMessage = newMsg;
+      });
+    }
+    setState(() {
+      _messageOpacity = smoothed;
+    });
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_updateMessage);
     _controller.dispose();
+    _breathController.dispose();
     super.dispose();
   }
 
-  ({double scale, double glow, bool active}) _checkpointEffects(double progress) {
-    const center = 0.75;
-    const halfWidth = 0.08;
+  // ── Glow pulse during 75% settled phase ──
 
-    final dist = (progress - center).abs() / halfWidth;
-    if (dist >= 1.0) return (scale: 1.0, glow: 0.0, active: progress >= center);
+  double _glowPulse(double raw) {
+    const holdStart = 0.780;
+    const holdEnd = 0.925;
+    if (raw < holdStart || raw > holdEnd) return 0.0;
+    final local = (raw - holdStart) / (holdEnd - holdStart);
+    if (local < 0.5) {
+      return (local / 0.5) * 0.20;
+    } else {
+      final decay = 1.0 - (local - 0.5) / 0.5;
+      return decay * 0.20;
+    }
+  }
 
-    final bell = 1.0 - dist * dist;
-    return (
-      scale: 1.0 + 0.08 * bell,
-      glow: 0.50 * bell,
-      active: true,
-    );
+  double _bloomPulse(double raw) {
+    const bloomStart = 0.88;
+    const bloomEnd = 0.94;
+    if (raw < bloomStart || raw > bloomEnd) return 0.0;
+    final local = (raw - bloomStart) / (bloomEnd - bloomStart);
+    return math.sin(local * math.pi) * 0.15;
   }
 
   @override
   Widget build(BuildContext context) {
+    final breathValue = _breath.value;
+    final breathScale = 1.0 + breathValue * 0.02;
+    final breathOpacity = 0.96 + breathValue * 0.04;
+
     return Scaffold(
       backgroundColor: _bgColor,
       body: Stack(
@@ -145,14 +225,18 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // ── Brand with breathing ──
                   AnimatedBuilder(
-                    animation: _brandOpacity,
+                    animation: Listenable.merge([_brandOpacity, _breathController]),
                     builder: (context, child) {
                       return Opacity(
-                        opacity: _brandOpacity.value,
+                        opacity: _brandOpacity.value * breathOpacity,
                         child: Transform.translate(
                           offset: _brandOffset.value,
-                          child: child,
+                          child: Transform.scale(
+                            scale: breathScale,
+                            child: child,
+                          ),
                         ),
                       );
                     },
@@ -167,6 +251,7 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
                     ),
                   ),
                   const SizedBox(height: 20),
+                  // ── Tagline ──
                   AnimatedBuilder(
                     animation: _taglineOpacity,
                     builder: (context, child) {
@@ -190,90 +275,68 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 44),
+                  const SizedBox(height: 48),
+                  // ── Progress Track ──
                   SizedBox(
-                    width: _trackWidth,
-                    height: 44,
+                    width: _trackLength,
+                    height: 36,
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
+                        // Track + Fill
                         Positioned(
                           left: 0,
                           right: 0,
-                          top: 8,
+                          top: 10,
                           child: SizedBox(
-                            height: 3,
+                            height: 2,
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(1.5),
+                              borderRadius: BorderRadius.circular(1),
                               child: AnimatedBuilder(
                                 animation: _progress,
                                 builder: (context, child) {
+                                  final p = _progress.value;
+                                  final cv = _controller.value;
+                                  final gp = _glowPulse(cv);
+                                  final bp = _bloomPulse(cv);
+                                  final shimmer = (math.sin(cv * math.pi * 5) * 0.5 + 0.5);
                                   return CustomPaint(
                                     painter: _ProgressBarPainter(
-                                      progress: _progress.value,
+                                      progress: p,
+                                      glowIntensity: gp + bp,
+                                      shimmerPhase: shimmer,
                                     ),
-                                    size: const Size(200, 3),
+                                    size: const Size(_trackLength, 2),
                                   );
                                 },
                               ),
                             ),
                           ),
                         ),
+                        // Percentage
                         Positioned(
-                          left: _trackWidth * 0.75 - 5,
-                          top: 5.5,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
                           child: AnimatedBuilder(
                             animation: _progress,
                             builder: (context, child) {
-                              final effects = _checkpointEffects(_progress.value);
-                              return Transform.scale(
-                                scale: effects.scale,
-                                child: Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFF3B82F6)
-                                        .withValues(alpha: effects.active ? 1.0 : 0.25),
-                                    border: Border.all(
-                                      color: _bgColor,
-                                      width: 2,
-                                    ),
-                                    boxShadow: effects.active
-                                        ? [
-                                            BoxShadow(
-                                              color: const Color(0xFF3B82F6)
-                                                  .withValues(alpha: 0.15 + 0.25 * effects.glow),
-                                              blurRadius: 4 + 2 * effects.glow,
-                                              spreadRadius: 0.5 + effects.glow,
-                                            ),
-                                          ]
-                                        : null,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        Positioned(
-                          left: _trackWidth * 0.75 - 10,
-                          top: 24,
-                          child: AnimatedBuilder(
-                            animation: _progress,
-                            builder: (context, child) {
-                              final effects = _checkpointEffects(_progress.value);
-                              return SizedBox(
-                                width: 20,
-                                child: Text(
-                                  '75',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: const Color(0xFF475569).withValues(
-                                      alpha: 0.40 + 0.60 * effects.glow,
-                                    ),
-                                  ),
+                              final p = _progress.value;
+                              final clampedP = p.clamp(0.0, 1.0);
+                              final pct = (clampedP * 100).round().clamp(0, 100);
+                              final cv = _controller.value;
+                              final gp = _glowPulse(cv);
+                              final bp = _bloomPulse(cv);
+                              final enhanced = (gp + bp).clamp(0.0, 1.0);
+                              final alpha = (0.35 + 0.65 * clampedP).clamp(0.0, 1.0);
+                              return Text(
+                                '$pct%',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xFF1E293B).withValues(alpha: alpha + enhanced * 0.65),
+                                  letterSpacing: 1.2,
                                 ),
                               );
                             },
@@ -282,19 +345,35 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Loading dashboard...',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF64748B),
+                  const SizedBox(height: 20),
+                  // ── Loading messages ──
+                  SizedBox(
+                    height: 18,
+                    child: AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        return Opacity(
+                          opacity: _taglineOpacity.value * 0.55 * _messageOpacity,
+                          child: child,
+                        );
+                      },
+                      child: Text(
+                        _currentMessage,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF64748B),
+                          letterSpacing: 1.0,
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
           ),
+          // ── Exit overlay ──
           Positioned.fill(
             child: IgnorePointer(
               child: FadeTransition(
@@ -309,46 +388,105 @@ class _PulseTransitionScreenState extends State<PulseTransitionScreen>
   }
 }
 
+// ── Progress bar painter with glow and shimmer ──
+
 class _ProgressBarPainter extends CustomPainter {
   final double progress;
+  final double glowIntensity;
+  final double shimmerPhase;
 
-  _ProgressBarPainter({required this.progress});
+  _ProgressBarPainter({
+    required this.progress,
+    required this.glowIntensity,
+    required this.shimmerPhase,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
+    final fillWidth = size.width * progress.clamp(0.0, 1.0);
+    const corner = Radius.circular(1);
+
+    // Track
     final trackPaint = Paint()
       ..color = const Color(0xFFE2E8F0)
       ..strokeCap = StrokeCap.round;
-
     final trackRect = RRect.fromRectAndRadius(
       Rect.fromLTWH(0, 0, size.width, size.height),
-      const Radius.circular(1.5),
+      corner,
     );
     canvas.drawRRect(trackRect, trackPaint);
 
     if (progress <= 0) return;
 
-    final fillWidth = size.width * progress.clamp(0.0, 1.0);
+    // Ambient glow behind fill head
+    if (glowIntensity > 0.01) {
+      final glow = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFF3B82F6).withValues(alpha: glowIntensity * 0.35),
+            const Color(0xFF3B82F6).withValues(alpha: 0),
+          ],
+        ).createShader(Rect.fromLTWH(
+          fillWidth - 24,
+          -6,
+          48,
+          size.height + 12,
+        ));
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, -2, fillWidth + 8, size.height + 4),
+          const Radius.circular(3),
+        ),
+        glow,
+      );
+    }
 
+    // Fill gradient
     final fillPaint = Paint()
       ..shader = const LinearGradient(
         colors: [
           Color(0xFF60A5FA),
-          Color(0xFF2563EB),
+          Color(0xFF3B82F6),
         ],
-        stops: [0.0, 1.0],
       ).createShader(Rect.fromLTWH(0, 0, fillWidth, size.height));
-
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(0, 0, fillWidth, size.height),
-        const Radius.circular(1.5),
+        corner,
       ),
       fillPaint,
     );
+
+    // Subtle shimmer sweep (near-transparent white band)
+    if (fillWidth > 10) {
+      final shimmerX = shimmerPhase * fillWidth;
+      final shimmerPaint = Paint()
+        ..shader = LinearGradient(
+          colors: [
+            const Color(0x00FFFFFF),
+            const Color(0x30FFFFFF),
+            const Color(0x00FFFFFF),
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ).createShader(Rect.fromLTWH(
+          shimmerX - 12,
+          0,
+          24,
+          size.height,
+        ));
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, fillWidth, size.height),
+          corner,
+        ),
+        shimmerPaint,
+      );
+    }
   }
 
   @override
   bool shouldRepaint(_ProgressBarPainter oldDelegate) =>
-      oldDelegate.progress != progress;
+      oldDelegate.progress != progress ||
+      oldDelegate.glowIntensity != glowIntensity ||
+      oldDelegate.shimmerPhase != shimmerPhase;
 }
