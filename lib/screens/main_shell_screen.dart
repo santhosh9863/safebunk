@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/dashboard/providers/dashboard_providers.dart';
-import '../features/dashboard/screens/dashboard_tab.dart';
+import '../features/dashboard/screens/dashboard_tab_v2.dart';
 import '../features/subjects/screens/subject_wise_tab.dart';
 import '../features/analytics/screens/analytics_tab.dart';
 import '../features/settings/screens/settings_tab.dart';
@@ -43,7 +43,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
       body: IndexedStack(
         index: _currentIndex,
         children: const [
-          DashboardTab(),
+          DashboardTabV2(),
           SubjectWiseTab(),
           AnalyticsTab(),
           SettingsTab(),
