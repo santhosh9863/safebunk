@@ -98,6 +98,7 @@ class _ShimmerWidgetState extends State<_ShimmerWidget>
 class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
   bool _profileInitialized = false;
   bool _dataInitialized = false;
+  bool _staleSession = true;
   bool _isRefreshing = false;
 
   @override
@@ -111,6 +112,7 @@ class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
     super.didChangeDependencies();
     if (!_dataInitialized) {
       _dataInitialized = true;
+      _staleSession = true;
       ref.invalidate(subjectAttendanceProvider);
       ref.invalidate(subjectWiseAttendanceProvider);
     }
@@ -192,7 +194,9 @@ class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileControllerProvider);
-    final analysisAsync = ref.watch(attendanceAnalysisProvider);
+    final analysisAsync = _staleSession
+        ? const AsyncValue<List<AttendanceAnalysisItem>>.loading()
+        : ref.watch(attendanceAnalysisProvider);
     final officialAsync = ref.watch(subjectWiseAttendanceProvider);
     final lastUpdated = ref.watch(lastUpdatedProvider);
     final target = ref.watch(attendanceTargetProvider);
@@ -200,6 +204,7 @@ class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
 
     ref.listen(attendanceAnalysisProvider, (_, next) {
       next.whenOrNull(data: (items) {
+        _staleSession = false;
         ref.read(lastUpdatedProvider.notifier).state = DateTime.now();
         _evaluateNotifications(items);
       });
