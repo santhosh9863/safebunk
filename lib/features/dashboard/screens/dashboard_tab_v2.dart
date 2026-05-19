@@ -533,30 +533,50 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            color.withValues(alpha: 0.15),
-            color.withValues(alpha: 0.08),
+            color.withValues(alpha: 0.12),
+            color.withValues(alpha: 0.06),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: color.withValues(alpha: 0.25),
+          color: color.withValues(alpha: 0.2),
           width: 0.5,
         ),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.w700,
-          fontSize: 10,
-          letterSpacing: 0.8,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.4),
+                  blurRadius: 3,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w700,
+              fontSize: 10,
+              letterSpacing: 0.6,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -589,54 +609,70 @@ class _OverallCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: statusColor.withValues(alpha: 0.06),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+            color: statusColor.withValues(alpha: 0.08),
+            blurRadius: 32,
+            offset: const Offset(0, 12),
           ),
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Card(
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             gradient: LinearGradient(
-              colors: [
-                cs.surface,
-                cs.surfaceContainerLow.withValues(alpha: 0.3),
-              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
+              colors: [
+                cs.surface,
+                cs.surfaceContainerLow.withValues(alpha: 0.35),
+              ],
             ),
           ),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    'Health Overview',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.15,
-                      color: cs.onSurface.withValues(alpha: 0.9),
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(Icons.shield_outlined, size: 18, color: statusColor),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Attendance Health',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.2,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                    ],
                   ),
                   _StatusBadge(label: label, color: statusColor),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 26),
               Center(
                 child: _InstrumentGauge(
                   percentage: percentage,
@@ -646,21 +682,23 @@ class _OverallCard extends StatelessWidget {
                   trigger: trigger,
                 ),
               ),
-              const SizedBox(height: 20),
-              Container(
-                height: 1,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Colors.transparent,
-                      cs.outlineVariant.withValues(alpha: 0.2),
-                      Colors.transparent,
-                    ],
+              const SizedBox(height: 26),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: Container(
+                  height: 1,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        cs.outlineVariant.withValues(alpha: 0.0),
+                        cs.outlineVariant.withValues(alpha: 0.12),
+                        cs.outlineVariant.withValues(alpha: 0.0),
+                      ],
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -668,14 +706,16 @@ class _OverallCard extends StatelessWidget {
                       label: 'Safe Leaves',
                       value: safeBunks.toString(),
                       color: cs.primary,
+                      icon: Icons.event_available_outlined,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: _StatChip(
                       label: 'Must Attend',
                       value: requiredClasses.toString(),
                       color: statusColor,
+                      icon: Icons.schedule_outlined,
                     ),
                   ),
                 ],
@@ -718,8 +758,8 @@ class _InstrumentGauge extends StatefulWidget {
 
 class _InstrumentGaugeState extends State<_InstrumentGauge>
     with SingleTickerProviderStateMixin {
-  static const _gaugeWidth = 240.0;
-  static const _gaugeHeight = 150.0;
+  static const _gaugeWidth = 244.0;
+  static const _gaugeHeight = 154.0;
 
   late final AnimationController _controller;
   late final Animation<double> _animation;
@@ -733,7 +773,7 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
     _lastTrigger = widget.trigger;
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1500),
     );
     _animation = _controller.drive(
       CurveTween(curve: Curves.easeOutQuint),
@@ -763,9 +803,9 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final gradientColors = [
-      widget.statusColor.withValues(alpha: 0.6),
+      widget.statusColor.withValues(alpha: 0.5),
       widget.statusColor,
-      widget.statusColor.withValues(alpha: 0.8),
+      widget.statusColor.withValues(alpha: 0.7),
     ];
 
     return SizedBox(
@@ -789,7 +829,7 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
             },
           ),
           Positioned(
-            top: 72,
+            top: 74,
             left: 0,
             right: 0,
             child: Column(
@@ -802,24 +842,24 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
                     return Text(
                       '${displayValue.toStringAsFixed(1)}%',
                       style: TextStyle(
-                        fontSize: 40,
+                        fontSize: 42,
                         fontWeight: FontWeight.w700,
-                        letterSpacing: -0.8,
+                        letterSpacing: -1.0,
                         color: cs.onSurface,
-                        height: 1.1,
+                        height: 1.05,
                       ),
                       textAlign: TextAlign.center,
                     );
                   },
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 5),
                 Text(
                   '${widget.present} / ${widget.total} classes',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
-                    color: cs.onSurfaceVariant.withValues(alpha: 0.7),
-                    letterSpacing: 0.2,
+                    color: cs.onSurfaceVariant.withValues(alpha: 0.6),
+                    letterSpacing: 0.3,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -847,15 +887,23 @@ class _InstrumentPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const strokeWidth = 12.0;
+    const strokeWidth = 14.0;
     final halfStroke = strokeWidth / 2;
     final center = Offset(size.width / 2, size.width / 2);
-    final radius = size.width / 2 - halfStroke - 8;
+    final radius = size.width / 2 - halfStroke - 6;
 
     final arcRect = Rect.fromCircle(center: center, radius: radius);
 
     final bgPaint = Paint()
-      ..color = trackColor.withValues(alpha: 0.35)
+      ..shader = LinearGradient(
+        colors: [
+          trackColor.withValues(alpha: 0.2),
+          trackColor.withValues(alpha: 0.4),
+          trackColor.withValues(alpha: 0.2),
+        ],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(arcRect)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
@@ -864,6 +912,23 @@ class _InstrumentPainter extends CustomPainter {
 
     if (progress > 0) {
       final sweepAngle = pi * progress;
+
+      final glowPaint = Paint()
+        ..shader = LinearGradient(
+          colors: [
+            gradientColors.first.withValues(alpha: 0.3),
+            gradientColors.last.withValues(alpha: 0.1),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ).createShader(arcRect)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth + 6
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+
+      canvas.drawArc(arcRect, pi, sweepAngle, false, glowPaint);
+
       final progressPaint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
@@ -885,22 +950,24 @@ class _InstrumentPainter extends CustomPainter {
       );
 
       final glowPaint = Paint()
-        ..color = statusColor.withValues(alpha: 0.25)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+        ..color = statusColor.withValues(alpha: 0.3)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
 
-      canvas.drawCircle(endpointPos, 8, glowPaint);
+      canvas.drawCircle(endpointPos, 10, glowPaint);
 
       final markerPaint = Paint()
         ..color = statusColor
         ..style = PaintingStyle.fill;
 
-      canvas.drawCircle(endpointPos, 5, markerPaint);
+      canvas.drawCircle(endpointPos, 5.5, markerPaint);
 
-      final innerMarkerPaint = Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.fill;
-
-      canvas.drawCircle(endpointPos, 2, innerMarkerPaint);
+      canvas.drawCircle(
+        endpointPos,
+        2,
+        Paint()
+          ..color = Colors.white
+          ..style = PaintingStyle.fill,
+      );
     }
   }
 
@@ -915,45 +982,65 @@ class _StatChip extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final IconData icon;
 
   const _StatChip({
     required this.label,
     required this.value,
     required this.color,
+    required this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLow.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(14),
+        color: cs.surfaceContainerLow.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: cs.outlineVariant.withValues(alpha: 0.3),
+          color: cs.outlineVariant.withValues(alpha: 0.2),
           width: 0.5,
         ),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: color,
-              letterSpacing: -0.3,
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
+            child: Icon(icon, size: 16, color: color),
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: cs.onSurfaceVariant.withValues(alpha: 0.8),
-              letterSpacing: 0.3,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                    letterSpacing: -0.3,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: cs.onSurfaceVariant.withValues(alpha: 0.7),
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
