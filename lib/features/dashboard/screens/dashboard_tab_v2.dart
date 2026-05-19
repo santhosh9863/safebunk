@@ -102,6 +102,8 @@ class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
   @override
   void initState() {
     super.initState();
+    ref.invalidate(subjectAttendanceProvider);
+    ref.invalidate(subjectWiseAttendanceProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) => _initProfile());
   }
 
