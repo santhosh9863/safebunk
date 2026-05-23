@@ -113,7 +113,8 @@ class UpdateService {
 
   static List<int>? _parseVersion(String version) {
     if (version.isEmpty) return null;
-    final parts = version.split('.').map((e) => int.tryParse(e)).toList();
+    final cleaned = version.trim().split(RegExp(r'[+\-]')).first;
+    final parts = cleaned.split('.').map((e) => int.tryParse(e)).toList();
     if (parts.any((p) => p == null)) return null;
     return parts.cast<int>();
   }
