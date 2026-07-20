@@ -1,0 +1,291 @@
+{
+  "timestamp": "2026-05-23T13:06:30.959Z",
+  "summary": {
+    "total": 10,
+    "authIndicators": 10,
+    "redirects": 6,
+    "cookiesSet": 10
+  },
+  "results": [
+    {
+      "probe": "callback-no-code",
+      "description": "GET accounts.linways.com/oauth/callback without code",
+      "url": "https://accounts.linways.com/oauth/callback",
+      "method": "GET",
+      "head": {
+        "status": 301,
+        "location": "http://accounts.linways.com/oauth/callback/",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "elapsed": 291
+      },
+      "direct": {
+        "status": 301,
+        "location": "http://accounts.linways.com/oauth/callback/",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 153,
+        "bodyPreview": "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>301 Moved Permanently</title>\n</head><body>\n<h1>Moved Permanently</h1>\n<p>The document has moved <a href=\"https://accounts.linways.com/oauth/callback/\">here</a>.</p>\n<hr>\n<address>Apache/2.4.29 (Ubuntu) Server at accounts.linways... [truncated]"
+      },
+      "indicators": [
+        "cookies_set",
+        "redirect_detected",
+        "auth_redirect",
+        "redirect_status"
+      ],
+      "authPossible": true
+    },
+    {
+      "probe": "callback-with-code",
+      "description": "GET accounts.linways.com/oauth/callback with placeholder code",
+      "url": "https://accounts.linways.com/oauth/callback?code=PLACEHOLDER_AUTH_CODE",
+      "method": "GET",
+      "head": {
+        "status": 301,
+        "location": "http://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "elapsed": 191
+      },
+      "direct": {
+        "status": 301,
+        "location": "http://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 177,
+        "bodyPreview": "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>301 Moved Permanently</title>\n</head><body>\n<h1>Moved Permanently</h1>\n<p>The document has moved <a href=\"https://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE\">here</a>.</p>\n<hr>\n<address>Apache/2.4.29 (Ubuntu)... [truncated]"
+      },
+      "indicators": [
+        "cookies_set",
+        "redirect_detected",
+        "auth_redirect",
+        "redirect_status"
+      ],
+      "authPossible": true
+    },
+    {
+      "probe": "callback-with-code-and-state",
+      "description": "GET accounts.linways.com/oauth/callback with code + state",
+      "url": "https://accounts.linways.com/oauth/callback?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+      "method": "GET",
+      "head": {
+        "status": 301,
+        "location": "http://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "elapsed": 185
+      },
+      "direct": {
+        "status": 301,
+        "location": "http://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 168,
+        "bodyPreview": "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>301 Moved Permanently</title>\n</head><body>\n<h1>Moved Permanently</h1>\n<p>The document has moved <a href=\"https://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE&amp;state=PLACEHOLDER_STATE\">here</a>.</p>\n<hr>\n<ad... [truncated]"
+      },
+      "indicators": [
+        "cookies_set",
+        "redirect_detected",
+        "auth_redirect",
+        "redirect_status"
+      ],
+      "authPossible": true
+    },
+    {
+      "probe": "sso-v4-get",
+      "description": "GET sfcv4.linways.com/sso-v4",
+      "url": "https://sfcv4.linways.com/sso-v4",
+      "method": "GET",
+      "head": {
+        "status": 301,
+        "location": "https://sfcv4.linways.com/sso-v4/",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "elapsed": 312
+      },
+      "direct": {
+        "status": 301,
+        "location": "https://sfcv4.linways.com/sso-v4/",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 153,
+        "bodyPreview": "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>301 Moved Permanently</title>\n</head><body>\n<h1>Moved Permanently</h1>\n<p>The document has moved <a href=\"https://sfcv4.linways.com/sso-v4/\">here</a>.</p>\n<hr>\n<address>Apache/2.4.41 (Ubuntu) Server at sfcv4.linways.com Port 443<... [truncated]"
+      },
+      "indicators": [
+        "cookies_set",
+        "redirect_detected",
+        "auth_redirect",
+        "redirect_status"
+      ],
+      "authPossible": true
+    },
+    {
+      "probe": "sso-v4-post-placeholder",
+      "description": "POST sfcv4.linways.com/sso-v4 with placeholder Google identity",
+      "url": "https://sfcv4.linways.com/sso-v4",
+      "method": "POST",
+      "head": {
+        "status": 301,
+        "location": "https://sfcv4.linways.com/sso-v4/",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "elapsed": 168
+      },
+      "direct": {
+        "status": 301,
+        "location": "https://sfcv4.linways.com/sso-v4/",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 256,
+        "bodyPreview": "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>301 Moved Permanently</title>\n</head><body>\n<h1>Moved Permanently</h1>\n<p>The document has moved <a href=\"https://sfcv4.linways.com/sso-v4/\">here</a>.</p>\n<hr>\n<address>Apache/2.4.41 (Ubuntu) Server at sfcv4.linways.com Port 443<... [truncated]"
+      },
+      "indicators": [
+        "cookies_set",
+        "redirect_detected",
+        "auth_redirect",
+        "redirect_status"
+      ],
+      "authPossible": true
+    },
+    {
+      "probe": "sso-v4-post-form",
+      "description": "POST sfcv4.linways.com/sso-v4 as form-urlencoded",
+      "url": "https://sfcv4.linways.com/sso-v4",
+      "method": "POST",
+      "head": {
+        "status": 301,
+        "location": "https://sfcv4.linways.com/sso-v4/",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "elapsed": 241
+      },
+      "direct": {
+        "status": 301,
+        "location": "https://sfcv4.linways.com/sso-v4/",
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 165,
+        "bodyPreview": "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>301 Moved Permanently</title>\n</head><body>\n<h1>Moved Permanently</h1>\n<p>The document has moved <a href=\"https://sfcv4.linways.com/sso-v4/\">here</a>.</p>\n<hr>\n<address>Apache/2.4.41 (Ubuntu) Server at sfcv4.linways.com Port 443<... [truncated]"
+      },
+      "indicators": [
+        "cookies_set",
+        "redirect_detected",
+        "auth_redirect",
+        "redirect_status"
+      ],
+      "authPossible": true
+    },
+    {
+      "probe": "accounts-google-api",
+      "description": "POST accounts.linways.com/api/auth/google",
+      "url": "https://accounts.linways.com/api/auth/google",
+      "method": "POST",
+      "head": {
+        "status": 404,
+        "location": null,
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "elapsed": 169
+      },
+      "direct": {
+        "status": 404,
+        "location": null,
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 197,
+        "bodyPreview": "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n<hr>\n<address>Apache/2.4.29 (Ubuntu) Server at accounts.linways.com Port 80</address>\n</body></html>\n"
+      },
+      "indicators": [
+        "cookies_set"
+      ],
+      "authPossible": true
+    },
+    {
+      "probe": "accounts-api-v1-google",
+      "description": "POST accounts.linways.com/api/v1/auth/google",
+      "url": "https://accounts.linways.com/api/v1/auth/google",
+      "method": "POST",
+      "head": {
+        "status": 404,
+        "location": null,
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "elapsed": 220
+      },
+      "direct": {
+        "status": 404,
+        "location": null,
+        "contentType": "text/html; charset=iso-8859-1",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 162,
+        "bodyPreview": "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n<html><head>\n<title>404 Not Found</title>\n</head><body>\n<h1>Not Found</h1>\n<p>The requested URL was not found on this server.</p>\n<hr>\n<address>Apache/2.4.29 (Ubuntu) Server at accounts.linways.com Port 80</address>\n</body></html>\n"
+      },
+      "indicators": [
+        "cookies_set"
+      ],
+      "authPossible": true
+    },
+    {
+      "probe": "academics-google-login",
+      "description": "POST sfcv4.linways.com/academics/api/v1/auth/google-login",
+      "url": "https://sfcv4.linways.com/academics/api/v1/auth/google-login",
+      "method": "POST",
+      "head": {
+        "status": 401,
+        "location": null,
+        "contentType": "application/json",
+        "setCookieCount": 1,
+        "elapsed": 208
+      },
+      "direct": {
+        "status": 401,
+        "location": null,
+        "contentType": "application/json",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 466,
+        "bodyPreview": "\n\n\n\n{\"status\":\"error\",\"message\":\"Token not found.\"}"
+      },
+      "indicators": [
+        "cookies_set",
+        "auth_required"
+      ],
+      "authPossible": true
+    },
+    {
+      "probe": "academics-sso",
+      "description": "POST sfcv4.linways.com/academics/api/v1/auth/sso",
+      "url": "https://sfcv4.linways.com/academics/api/v1/auth/sso",
+      "method": "POST",
+      "head": {
+        "status": 401,
+        "location": null,
+        "contentType": "application/json",
+        "setCookieCount": 1,
+        "elapsed": 194
+      },
+      "direct": {
+        "status": 401,
+        "location": null,
+        "contentType": "application/json",
+        "setCookieCount": 1,
+        "cookieCount": 0,
+        "elapsed": 278,
+        "bodyPreview": "\n\n\n\n{\"status\":\"error\",\"message\":\"Token not found.\"}"
+      },
+      "indicators": [
+        "cookies_set",
+        "auth_required"
+      ],
+      "authPossible": true
+    }
+  ]
+}

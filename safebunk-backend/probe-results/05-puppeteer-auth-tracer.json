@@ -1,0 +1,407 @@
+{
+  "timestamp": "2026-05-23T14:51:14.502Z",
+  "config": {
+    "loginPage": "https://sfcv4.linways.com/ams/student/login",
+    "studentPage": "https://sfcv4.linways.com/student/",
+    "accountsUrl": "https://accounts.linways.com",
+    "browser": "puppeteer"
+  },
+  "summary": {
+    "sessionEstablished": false,
+    "sessionCookiesFound": [],
+    "oauthCallbacksDetected": 5,
+    "uniqueCallbackUrls": 5,
+    "redirectChainLength": 19,
+    "totalRequests": 725,
+    "totalResponses": 725,
+    "linwaysStatusDistribution": {
+      "200": 700,
+      "301": 1,
+      "302": 2,
+      "307": 1
+    }
+  },
+  "authSequence": [
+    {
+      "timestamp": "2026-05-23T14:51:01.943Z",
+      "event": "postmessage_listener_injected",
+      "details": "Listening for window.postMessage events"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:01.945Z",
+      "event": "navigation_start",
+      "details": "https://sfcv4.linways.com/ams/student/login"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:01.952Z",
+      "event": "oauth_request",
+      "details": "GET https://sfcv4.linways.com/ams/student/login"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:03.122Z",
+      "event": "postmessage",
+      "details": "Origin: https://sfcv4.linways.com dataType: string hasData: true"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:03.598Z",
+      "event": "oauth_request",
+      "details": "GET https://sfcv4.linways.com/academics/api/v1/student/get-student-login-menus/ENABLE_DYNAMIC_LINK_MENUS"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:03.600Z",
+      "event": "oauth_request",
+      "details": "POST https://sfcv4.linways.com/academics/api/v1/auth/sso-url"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:03.600Z",
+      "event": "oauth_request",
+      "details": "POST https://sfcv4.linways.com/academics/api/v1/auth/sso-url-ms"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:03.601Z",
+      "event": "oauth_request",
+      "details": "POST https://sfcv4.linways.com/academics/api/v1/auth/bg-image"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:08.732Z",
+      "event": "google_button_click",
+      "details": "Sign in with Google [BUTTON]"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:08.803Z",
+      "event": "oauth_request_with_params",
+      "details": "GET https://accounts.linways.com/oauth?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc params: {\"state\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:08.812Z",
+      "event": "oauth_response_with_params",
+      "details": "Status: 301 URL: https://accounts.linways.com/oauth?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc params: {\"state\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:08.813Z",
+      "event": "oauth_request_with_params",
+      "details": "GET http://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc params: {\"state\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:08.834Z",
+      "event": "oauth_response_with_params",
+      "details": "Status: 307 URL: http://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc params: {\"state\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:08.835Z",
+      "event": "oauth_request_with_params",
+      "details": "GET https://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc params: {\"state\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.087Z",
+      "event": "oauth_response_with_params",
+      "details": "Status: 302 URL: https://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc params: {\"state\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.088Z",
+      "event": "oauth_request_with_params",
+      "details": "GET https://accounts.google.com/o/oauth2/v2/auth?response_type=code&access_type=online&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&approval_prompt=auto params: {\"state\":\"present\",\"scope\":\"present\",\"client_id\":\"present\",\"redirect_uri\":\"present\",\"response_type\":\"present\",\"access_type\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.245Z",
+      "event": "oauth_response_with_params",
+      "details": "Status: 302 URL: https://accounts.google.com/o/oauth2/v2/auth?response_type=code&access_type=online&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&approval_prompt=auto params: {\"state\":\"present\",\"scope\":\"present\",\"client_id\":\"present\",\"redirect_uri\":\"present\",\"response_type\":\"present\",\"access_type\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.246Z",
+      "event": "oauth_request_with_params",
+      "details": "GET https://accounts.google.com/v3/signin/identifier?opparams=%253F&dsh=S2063947417%3A1779547868719110&access_type=online&approval_prompt=auto&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&o2v=2&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&service=lso&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&flowName=GeneralOAuthFlow&continue=https%3A%2F%2Faccounts.google.com%2Fsignin%2Foauth%2Fconsent%3Fauthuser%3Dunknown%26part%3DAJi8hAMEIxUDH_Ypfj0AKLbyJc9Sd9r4Gy10C1HLYOSJ_h1IPJuuiIBDlb83jWw8eEPf0Y1YVmcOrmpfJL_XpDW2ZRnDt5uQ7j2qe3d05TeNHu8zGUHOgbYGRFLfZ6nQuNSHOjAdhl7ZYy85t08sQfuLCYC6JSy4gY29xt47jRLg1V_X2mMwKzbhRppSwryOuMtK2DUMAA3J1l8_khLvT1RW5ZMOGKhn5SLEB47GThsbPT-ibG0ZVbpkIMzKxizS_AWuU81YHI-pvviu3sMy2TDxI96ajKkvGwh2Ymofk0n1Lvhw_8HVEpbGYAjKmyVd5WdXbGJeTTUs2PqwejbU4PtQbzjVM1JSnQ43bNJqeL8au52UZeaQ9ZnDm6Cl-lt2IFk4DOgbR2koyCDSdv2S3Hvr7-3-RG_z7zx-dBxve0zNB3_59wPmyl2jNjGuKBr0PJd_W37vwNJQeYGnn4somtnv863FlI0C4UwYtiDF03oBwl95DHH-5aU%26flowName%3DGeneralOAuthFlow%26as%3DS2063947417%253A1779547868719110%26client_id%3D538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com%26requestPath%3D%252Fsignin%252Foauth%252Fconsent%23&app_domain=https%3A%2F%2Faccounts.linways.com&rart=ANgoxcc30KJHvzz4Q-7s-8-JtiQEYhasrSnA7kScoSR7VfV1Bq0Bl-oQ4PcFDoGLJBb-eakGQr5RzwEzp47XLCx_4gLVuwKri0rkWmRULVvc4d9eHw5qa20 params: {\"state\":\"present\",\"scope\":\"present\",\"client_id\":\"present\",\"redirect_uri\":\"present\",\"response_type\":\"present\",\"access_type\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.405Z",
+      "event": "oauth_response_with_params",
+      "details": "Status: 200 URL: https://accounts.google.com/v3/signin/identifier?opparams=%253F&dsh=S2063947417%3A1779547868719110&access_type=online&approval_prompt=auto&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&o2v=2&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&service=lso&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&flowName=GeneralOAuthFlow&continue=https%3A%2F%2Faccounts.google.com%2Fsignin%2Foauth%2Fconsent%3Fauthuser%3Dunknown%26part%3DAJi8hAMEIxUDH_Ypfj0AKLbyJc9Sd9r4Gy10C1HLYOSJ_h1IPJuuiIBDlb83jWw8eEPf0Y1YVmcOrmpfJL_XpDW2ZRnDt5uQ7j2qe3d05TeNHu8zGUHOgbYGRFLfZ6nQuNSHOjAdhl7ZYy85t08sQfuLCYC6JSy4gY29xt47jRLg1V_X2mMwKzbhRppSwryOuMtK2DUMAA3J1l8_khLvT1RW5ZMOGKhn5SLEB47GThsbPT-ibG0ZVbpkIMzKxizS_AWuU81YHI-pvviu3sMy2TDxI96ajKkvGwh2Ymofk0n1Lvhw_8HVEpbGYAjKmyVd5WdXbGJeTTUs2PqwejbU4PtQbzjVM1JSnQ43bNJqeL8au52UZeaQ9ZnDm6Cl-lt2IFk4DOgbR2koyCDSdv2S3Hvr7-3-RG_z7zx-dBxve0zNB3_59wPmyl2jNjGuKBr0PJd_W37vwNJQeYGnn4somtnv863FlI0C4UwYtiDF03oBwl95DHH-5aU%26flowName%3DGeneralOAuthFlow%26as%3DS2063947417%253A1779547868719110%26client_id%3D538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com%26requestPath%3D%252Fsignin%252Foauth%252Fconsent%23&app_domain=https%3A%2F%2Faccounts.linways.com&rart=ANgoxcc30KJHvzz4Q-7s-8-JtiQEYhasrSnA7kScoSR7VfV1Bq0Bl-oQ4PcFDoGLJBb-eakGQr5RzwEzp47XLCx_4gLVuwKri0rkWmRULVvc4d9eHw5qa20 params: {\"state\":\"present\",\"scope\":\"present\",\"client_id\":\"present\",\"redirect_uri\":\"present\",\"response_type\":\"present\",\"access_type\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.534Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/excm=_b,_tp,identifierview/ed=1/dg=0/wt=2/ujg=1/rs=AOaEmlE7fFskHgsLnNdHErRzI3vKfyc2SQ/dti=1/m=_b,_tp"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.701Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/ck=boq-identity.AccountsSignInUi.uC7NA5t_8pU.L.B1.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/exm=_b,_tp/excm=_b,_tp,identifierview/ed=1/wt=2/ujg=1/rs=AOaEmlEsIOV471JzZU4Bs7O_7vm3lr63LQ/ee=ASJRFf:DAnQ7e;Al0B8:kibjWe;DaIJ8c:iAskyc;EVNhjf:pw70Gc;EkYFhd:GwYlN;EmZ2Bf:zr1jrb;JsbNhc:Xd8iUd;K5nYTd:ZDZcre;LBgRLc:XVMNvd;Me32dd:MEeYgc;NJ1rfe:yGfSdd;NPKaK:PVlQOd;NSEoX:lazG7b;Pjplud:EEDORb;QGR0gd:Mlhmy;Qi0VDf:vUyhef;SMDL4c:K0PMbc;SNUn3:ZwDk9d;ScI3Yc:e7Hzgb;UpnZUd:nnwwYc;Uvc8o:VDovNc;UyjXyd:qXkWrc;VlRiDf:j7ZRif;XdiAjb:NLiXbe;YIZmRd:A1yn5d;a56pNe:JEfCwb;cEt90b:ws9Tlc;dIoSBb:SpsfSb;dowIGb:ebZ3mb;eBAeSb:zbML3c;iFQyKf:vfuNJf;lGvXed:Gtn19d;lOO0Vd:OTA3Ae;nTuGK:JKNPM;oGtAuc:sOXFj;oSUNyd:K0PMbc;oXZmbc:tUnxGc;pXdRYb:L9OGUe;qQEoOc:KUM7Z;qafBPd:yDVVkb;qddgKe:xQtZb;sHdTOe:nSePib;twueg:ouk7y;vNjB7d:YTxL4;wR5FRb:siKnQd;wc73nd:kqeOEd;yxTchf:KUM7Z/dti=1/m=byfTOb,lsjVmc,LEikZe"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.730Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/ck=boq-identity.AccountsSignInUi.uC7NA5t_8pU.L.B1.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/exm=LEikZe,_b,_tp,byfTOb,lsjVmc/excm=_b,_tp,identifierview/ed=1/wt=2/ujg=1/rs=AOaEmlEsIOV471JzZU4Bs7O_7vm3lr63LQ/ee=ASJRFf:DAnQ7e;Al0B8:kibjWe;DaIJ8c:iAskyc;EVNhjf:pw70Gc;EkYFhd:GwYlN;EmZ2Bf:zr1jrb;JsbNhc:Xd8iUd;K5nYTd:ZDZcre;LBgRLc:XVMNvd;Me32dd:MEeYgc;NJ1rfe:yGfSdd;NPKaK:PVlQOd;NSEoX:lazG7b;Pjplud:EEDORb;QGR0gd:Mlhmy;Qi0VDf:vUyhef;SMDL4c:K0PMbc;SNUn3:ZwDk9d;ScI3Yc:e7Hzgb;UpnZUd:nnwwYc;Uvc8o:VDovNc;UyjXyd:qXkWrc;VlRiDf:j7ZRif;XdiAjb:NLiXbe;YIZmRd:A1yn5d;a56pNe:JEfCwb;cEt90b:ws9Tlc;dIoSBb:SpsfSb;dowIGb:ebZ3mb;eBAeSb:zbML3c;iFQyKf:vfuNJf;lGvXed:Gtn19d;lOO0Vd:OTA3Ae;nTuGK:JKNPM;oGtAuc:sOXFj;oSUNyd:K0PMbc;oXZmbc:tUnxGc;pXdRYb:L9OGUe;qQEoOc:KUM7Z;qafBPd:yDVVkb;qddgKe:xQtZb;sHdTOe:nSePib;twueg:ouk7y;vNjB7d:YTxL4;wR5FRb:siKnQd;wc73nd:kqeOEd;yxTchf:KUM7Z/dti=1/m=n73qwf,SCuOPb,IZT63,YYmHzb,vfuNJf,UUJqVe,ws9Tlc,KUM7Z,siKnQd,gJzDyc,cciGGe,m9oV,vjKJJ,y5vRwf,DqMihc,K1ZKnb,DiaQ5,lkFgGf,SD8Jgb,mvkUhe,CMcBD,Fndnac,t2srLd,z0u0L,xiZRqc,L9OGUe,PrPYRd,MpJwZc,cYShmd,hc6Ubd,inNHtf,oLggrd,eWuMIe,WpP9Yc,xQtZb,lwddkf,SpsfSb,tUnxGc,EFQ78c,zbML3c,zr1jrb,vHEMJe,YTxL4,YHI3We,Uas9Hd,zy0vNb,K0PMbc,MY7mZe,qmdT9,GwYlN,NLiXbe,LDQI"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.736Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/ck=boq-identity.AccountsSignInUi.uC7NA5t_8pU.L.B1.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/exm=CMcBD,DiaQ5,DqMihc,EFQ78c,Fndnac,GwYlN,IZT63,K0PMbc,K1ZKnb,KUM7Z,L9OGUe,LDQI,LEikZe,MY7mZe,MpJwZc,NLiXbe,PrPYRd,SCuOPb,SD8Jgb,SpsfSb,UUJqVe,Uas9Hd,WpP9Yc,YHI3We,YTxL4,YYmHzb,_b,_tp,byfTOb,cYShmd,cciGGe,eWuMIe,gJzDyc,hc6Ubd,inNHtf,lkFgGf,lsjVmc,lwddkf,m9oV,mvkUhe,n73qwf,oLggrd,qmdT9,siKnQd,t2srLd,tUnxGc,vHEMJe,vfuNJf,vjKJJ,ws9Tlc,xQtZb,xiZRqc,y5vRwf,z0u0L,zbML3c,zr1jrb,zy0vNb/excm=_b,_tp,identifierview/ed=1/wt=2/ujg=1/rs=AOaEmlEsIOV471JzZU4Bs7O_7vm3lr63LQ/ee=ASJRFf:DAnQ7e;Al0B8:kibjWe;DaIJ8c:iAskyc;EVNhjf:pw70Gc;EkYFhd:GwYlN;EmZ2Bf:zr1jrb;JsbNhc:Xd8iUd;K5nYTd:ZDZcre;LBgRLc:XVMNvd;Me32dd:MEeYgc;NJ1rfe:yGfSdd;NPKaK:PVlQOd;NSEoX:lazG7b;Pjplud:EEDORb;QGR0gd:Mlhmy;Qi0VDf:vUyhef;SMDL4c:K0PMbc;SNUn3:ZwDk9d;ScI3Yc:e7Hzgb;UpnZUd:nnwwYc;Uvc8o:VDovNc;UyjXyd:qXkWrc;VlRiDf:j7ZRif;XdiAjb:NLiXbe;YIZmRd:A1yn5d;a56pNe:JEfCwb;cEt90b:ws9Tlc;dIoSBb:SpsfSb;dowIGb:ebZ3mb;eBAeSb:zbML3c;iFQyKf:vfuNJf;lGvXed:Gtn19d;lOO0Vd:OTA3Ae;nTuGK:JKNPM;oGtAuc:sOXFj;oSUNyd:K0PMbc;oXZmbc:tUnxGc;pXdRYb:L9OGUe;qQEoOc:KUM7Z;qafBPd:yDVVkb;qddgKe:xQtZb;sHdTOe:nSePib;twueg:ouk7y;vNjB7d:YTxL4;wR5FRb:siKnQd;wc73nd:kqeOEd;yxTchf:KUM7Z/dti=1/m=ltDFwf,rmumx,E87wgc,GCY0Tb,qPYxq,Tbb4sb,pxq3x,f8Gu1e,soHxf,YgOFye,oqkvIf,yRXbo,bTi8wc,ywOR5c,PHUIyb"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.845Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/ck=boq-identity.AccountsSignInUi.uC7NA5t_8pU.L.B1.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/exm=CMcBD,DiaQ5,DqMihc,E87wgc,EFQ78c,Fndnac,GCY0Tb,GwYlN,IZT63,K0PMbc,K1ZKnb,KUM7Z,L9OGUe,LDQI,LEikZe,MY7mZe,MpJwZc,NLiXbe,PHUIyb,PrPYRd,SCuOPb,SD8Jgb,SpsfSb,Tbb4sb,UUJqVe,Uas9Hd,WpP9Yc,YHI3We,YTxL4,YYmHzb,YgOFye,_b,_tp,bTi8wc,byfTOb,cYShmd,cciGGe,eWuMIe,f8Gu1e,gJzDyc,hc6Ubd,inNHtf,lkFgGf,lsjVmc,ltDFwf,lwddkf,m9oV,mvkUhe,n73qwf,oLggrd,oqkvIf,pxq3x,qPYxq,qmdT9,rmumx,siKnQd,soHxf,t2srLd,tUnxGc,vHEMJe,vfuNJf,vjKJJ,ws9Tlc,xQtZb,xiZRqc,y5vRwf,yRXbo,ywOR5c,z0u0L,zbML3c,zr1jrb,zy0vNb/excm=_b,_tp,identifierview/ed=1/wt=2/ujg=1/rs=AOaEmlEsIOV471JzZU4Bs7O_7vm3lr63LQ/ee=ASJRFf:DAnQ7e;Al0B8:kibjWe;DaIJ8c:iAskyc;EVNhjf:pw70Gc;EkYFhd:GwYlN;EmZ2Bf:zr1jrb;JsbNhc:Xd8iUd;K5nYTd:ZDZcre;LBgRLc:XVMNvd;Me32dd:MEeYgc;NJ1rfe:yGfSdd;NPKaK:PVlQOd;NSEoX:lazG7b;Pjplud:EEDORb;QGR0gd:Mlhmy;Qi0VDf:vUyhef;SMDL4c:K0PMbc;SNUn3:ZwDk9d;ScI3Yc:e7Hzgb;UpnZUd:nnwwYc;Uvc8o:VDovNc;UyjXyd:qXkWrc;VlRiDf:j7ZRif;XdiAjb:NLiXbe;YIZmRd:A1yn5d;a56pNe:JEfCwb;cEt90b:ws9Tlc;dIoSBb:SpsfSb;dowIGb:ebZ3mb;eBAeSb:zbML3c;iFQyKf:vfuNJf;lGvXed:Gtn19d;lOO0Vd:OTA3Ae;nTuGK:JKNPM;oGtAuc:sOXFj;oSUNyd:K0PMbc;oXZmbc:tUnxGc;pXdRYb:L9OGUe;qQEoOc:KUM7Z;qafBPd:yDVVkb;qddgKe:xQtZb;sHdTOe:nSePib;twueg:ouk7y;vNjB7d:YTxL4;wR5FRb:siKnQd;wc73nd:kqeOEd;yxTchf:KUM7Z/dti=1/m=p3hmRc,LvGhrf,RqjULd"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.846Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/ck=boq-identity.AccountsSignInUi.uC7NA5t_8pU.L.B1.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/exm=CMcBD,DiaQ5,DqMihc,E87wgc,EFQ78c,Fndnac,GCY0Tb,GwYlN,IZT63,K0PMbc,K1ZKnb,KUM7Z,L9OGUe,LDQI,LEikZe,LvGhrf,MY7mZe,MpJwZc,NLiXbe,PHUIyb,PrPYRd,RqjULd,SCuOPb,SD8Jgb,SpsfSb,Tbb4sb,UUJqVe,Uas9Hd,WpP9Yc,YHI3We,YTxL4,YYmHzb,YgOFye,_b,_tp,bTi8wc,byfTOb,cYShmd,cciGGe,eWuMIe,f8Gu1e,gJzDyc,hc6Ubd,inNHtf,lkFgGf,lsjVmc,ltDFwf,lwddkf,m9oV,mvkUhe,n73qwf,oLggrd,oqkvIf,p3hmRc,pxq3x,qPYxq,qmdT9,rmumx,siKnQd,soHxf,t2srLd,tUnxGc,vHEMJe,vfuNJf,vjKJJ,ws9Tlc,xQtZb,xiZRqc,y5vRwf,yRXbo,ywOR5c,z0u0L,zbML3c,zr1jrb,zy0vNb/excm=_b,_tp,identifierview/ed=1/wt=2/ujg=1/rs=AOaEmlEsIOV471JzZU4Bs7O_7vm3lr63LQ/ee=ASJRFf:DAnQ7e;Al0B8:kibjWe;DaIJ8c:iAskyc;EVNhjf:pw70Gc;EkYFhd:GwYlN;EmZ2Bf:zr1jrb;JsbNhc:Xd8iUd;K5nYTd:ZDZcre;LBgRLc:XVMNvd;Me32dd:MEeYgc;NJ1rfe:yGfSdd;NPKaK:PVlQOd;NSEoX:lazG7b;Pjplud:EEDORb;QGR0gd:Mlhmy;Qi0VDf:vUyhef;SMDL4c:K0PMbc;SNUn3:ZwDk9d;ScI3Yc:e7Hzgb;UpnZUd:nnwwYc;Uvc8o:VDovNc;UyjXyd:qXkWrc;VlRiDf:j7ZRif;XdiAjb:NLiXbe;YIZmRd:A1yn5d;a56pNe:JEfCwb;cEt90b:ws9Tlc;dIoSBb:SpsfSb;dowIGb:ebZ3mb;eBAeSb:zbML3c;iFQyKf:vfuNJf;lGvXed:Gtn19d;lOO0Vd:OTA3Ae;nTuGK:JKNPM;oGtAuc:sOXFj;oSUNyd:K0PMbc;oXZmbc:tUnxGc;pXdRYb:L9OGUe;qQEoOc:KUM7Z;qafBPd:yDVVkb;qddgKe:xQtZb;sHdTOe:nSePib;twueg:ouk7y;vNjB7d:YTxL4;wR5FRb:siKnQd;wc73nd:kqeOEd;yxTchf:KUM7Z/dti=1/m=ZwDk9d,RMhBfe"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.847Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/ck=boq-identity.AccountsSignInUi.uC7NA5t_8pU.L.B1.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/exm=CMcBD,DiaQ5,DqMihc,E87wgc,EFQ78c,Fndnac,GCY0Tb,GwYlN,IZT63,K0PMbc,K1ZKnb,KUM7Z,L9OGUe,LDQI,LEikZe,LvGhrf,MY7mZe,MpJwZc,NLiXbe,PHUIyb,PrPYRd,RMhBfe,RqjULd,SCuOPb,SD8Jgb,SpsfSb,Tbb4sb,UUJqVe,Uas9Hd,WpP9Yc,YHI3We,YTxL4,YYmHzb,YgOFye,ZwDk9d,_b,_tp,bTi8wc,byfTOb,cYShmd,cciGGe,eWuMIe,f8Gu1e,gJzDyc,hc6Ubd,inNHtf,lkFgGf,lsjVmc,ltDFwf,lwddkf,m9oV,mvkUhe,n73qwf,oLggrd,oqkvIf,p3hmRc,pxq3x,qPYxq,qmdT9,rmumx,siKnQd,soHxf,t2srLd,tUnxGc,vHEMJe,vfuNJf,vjKJJ,ws9Tlc,xQtZb,xiZRqc,y5vRwf,yRXbo,ywOR5c,z0u0L,zbML3c,zr1jrb,zy0vNb/excm=_b,_tp,identifierview/ed=1/wt=2/ujg=1/rs=AOaEmlEsIOV471JzZU4Bs7O_7vm3lr63LQ/ee=ASJRFf:DAnQ7e;Al0B8:kibjWe;DaIJ8c:iAskyc;EVNhjf:pw70Gc;EkYFhd:GwYlN;EmZ2Bf:zr1jrb;JsbNhc:Xd8iUd;K5nYTd:ZDZcre;LBgRLc:XVMNvd;Me32dd:MEeYgc;NJ1rfe:yGfSdd;NPKaK:PVlQOd;NSEoX:lazG7b;Pjplud:EEDORb;QGR0gd:Mlhmy;Qi0VDf:vUyhef;SMDL4c:K0PMbc;SNUn3:ZwDk9d;ScI3Yc:e7Hzgb;UpnZUd:nnwwYc;Uvc8o:VDovNc;UyjXyd:qXkWrc;VlRiDf:j7ZRif;XdiAjb:NLiXbe;YIZmRd:A1yn5d;a56pNe:JEfCwb;cEt90b:ws9Tlc;dIoSBb:SpsfSb;dowIGb:ebZ3mb;eBAeSb:zbML3c;iFQyKf:vfuNJf;lGvXed:Gtn19d;lOO0Vd:OTA3Ae;nTuGK:JKNPM;oGtAuc:sOXFj;oSUNyd:K0PMbc;oXZmbc:tUnxGc;pXdRYb:L9OGUe;qQEoOc:KUM7Z;qafBPd:yDVVkb;qddgKe:xQtZb;sHdTOe:nSePib;twueg:ouk7y;vNjB7d:YTxL4;wR5FRb:siKnQd;wc73nd:kqeOEd;yxTchf:KUM7Z/dti=1/m=ZDZcre,w9hDv,A7fCU"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.847Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/ck=boq-identity.AccountsSignInUi.uC7NA5t_8pU.L.B1.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/exm=A7fCU,CMcBD,DiaQ5,DqMihc,E87wgc,EFQ78c,Fndnac,GCY0Tb,GwYlN,IZT63,K0PMbc,K1ZKnb,KUM7Z,L9OGUe,LDQI,LEikZe,LvGhrf,MY7mZe,MpJwZc,NLiXbe,PHUIyb,PrPYRd,RMhBfe,RqjULd,SCuOPb,SD8Jgb,SpsfSb,Tbb4sb,UUJqVe,Uas9Hd,WpP9Yc,YHI3We,YTxL4,YYmHzb,YgOFye,ZDZcre,ZwDk9d,_b,_tp,bTi8wc,byfTOb,cYShmd,cciGGe,eWuMIe,f8Gu1e,gJzDyc,hc6Ubd,inNHtf,lkFgGf,lsjVmc,ltDFwf,lwddkf,m9oV,mvkUhe,n73qwf,oLggrd,oqkvIf,p3hmRc,pxq3x,qPYxq,qmdT9,rmumx,siKnQd,soHxf,t2srLd,tUnxGc,vHEMJe,vfuNJf,vjKJJ,w9hDv,ws9Tlc,xQtZb,xiZRqc,y5vRwf,yRXbo,ywOR5c,z0u0L,zbML3c,zr1jrb,zy0vNb/excm=_b,_tp,identifierview/ed=1/wt=2/ujg=1/rs=AOaEmlEsIOV471JzZU4Bs7O_7vm3lr63LQ/ee=ASJRFf:DAnQ7e;Al0B8:kibjWe;DaIJ8c:iAskyc;EVNhjf:pw70Gc;EkYFhd:GwYlN;EmZ2Bf:zr1jrb;JsbNhc:Xd8iUd;K5nYTd:ZDZcre;LBgRLc:XVMNvd;Me32dd:MEeYgc;NJ1rfe:yGfSdd;NPKaK:PVlQOd;NSEoX:lazG7b;Pjplud:EEDORb;QGR0gd:Mlhmy;Qi0VDf:vUyhef;SMDL4c:K0PMbc;SNUn3:ZwDk9d;ScI3Yc:e7Hzgb;UpnZUd:nnwwYc;Uvc8o:VDovNc;UyjXyd:qXkWrc;VlRiDf:j7ZRif;XdiAjb:NLiXbe;YIZmRd:A1yn5d;a56pNe:JEfCwb;cEt90b:ws9Tlc;dIoSBb:SpsfSb;dowIGb:ebZ3mb;eBAeSb:zbML3c;iFQyKf:vfuNJf;lGvXed:Gtn19d;lOO0Vd:OTA3Ae;nTuGK:JKNPM;oGtAuc:sOXFj;oSUNyd:K0PMbc;oXZmbc:tUnxGc;pXdRYb:L9OGUe;qQEoOc:KUM7Z;qafBPd:yDVVkb;qddgKe:xQtZb;sHdTOe:nSePib;twueg:ouk7y;vNjB7d:YTxL4;wR5FRb:siKnQd;wc73nd:kqeOEd;yxTchf:KUM7Z/dti=1/m=iAskyc,ziXSP"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.851Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/ck=boq-identity.AccountsSignInUi.uC7NA5t_8pU.L.B1.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/exm=A7fCU,CMcBD,DiaQ5,DqMihc,E87wgc,EFQ78c,Fndnac,GCY0Tb,GwYlN,IZT63,K0PMbc,K1ZKnb,KUM7Z,L9OGUe,LDQI,LEikZe,LvGhrf,MY7mZe,MpJwZc,NLiXbe,PHUIyb,PrPYRd,RMhBfe,RqjULd,SCuOPb,SD8Jgb,SpsfSb,Tbb4sb,UUJqVe,Uas9Hd,WpP9Yc,YHI3We,YTxL4,YYmHzb,YgOFye,ZDZcre,ZwDk9d,_b,_tp,bTi8wc,byfTOb,cYShmd,cciGGe,eWuMIe,f8Gu1e,gJzDyc,hc6Ubd,iAskyc,inNHtf,lkFgGf,lsjVmc,ltDFwf,lwddkf,m9oV,mvkUhe,n73qwf,oLggrd,oqkvIf,p3hmRc,pxq3x,qPYxq,qmdT9,rmumx,siKnQd,soHxf,t2srLd,tUnxGc,vHEMJe,vfuNJf,vjKJJ,w9hDv,ws9Tlc,xQtZb,xiZRqc,y5vRwf,yRXbo,ywOR5c,z0u0L,zbML3c,ziXSP,zr1jrb,zy0vNb/excm=_b,_tp,identifierview/ed=1/wt=2/ujg=1/rs=AOaEmlEsIOV471JzZU4Bs7O_7vm3lr63LQ/ee=ASJRFf:DAnQ7e;Al0B8:kibjWe;DaIJ8c:iAskyc;EVNhjf:pw70Gc;EkYFhd:GwYlN;EmZ2Bf:zr1jrb;JsbNhc:Xd8iUd;K5nYTd:ZDZcre;LBgRLc:XVMNvd;Me32dd:MEeYgc;NJ1rfe:yGfSdd;NPKaK:PVlQOd;NSEoX:lazG7b;Pjplud:EEDORb;QGR0gd:Mlhmy;Qi0VDf:vUyhef;SMDL4c:K0PMbc;SNUn3:ZwDk9d;ScI3Yc:e7Hzgb;UpnZUd:nnwwYc;Uvc8o:VDovNc;UyjXyd:qXkWrc;VlRiDf:j7ZRif;XdiAjb:NLiXbe;YIZmRd:A1yn5d;a56pNe:JEfCwb;cEt90b:ws9Tlc;dIoSBb:SpsfSb;dowIGb:ebZ3mb;eBAeSb:zbML3c;iFQyKf:vfuNJf;lGvXed:Gtn19d;lOO0Vd:OTA3Ae;nTuGK:JKNPM;oGtAuc:sOXFj;oSUNyd:K0PMbc;oXZmbc:tUnxGc;pXdRYb:L9OGUe;qQEoOc:KUM7Z;qafBPd:yDVVkb;qddgKe:xQtZb;sHdTOe:nSePib;twueg:ouk7y;vNjB7d:YTxL4;wR5FRb:siKnQd;wc73nd:kqeOEd;yxTchf:KUM7Z/dti=1/m=P6sQOc"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:09.987Z",
+      "event": "postmessage",
+      "details": "Origin: https://accounts.youtube.com dataType: string hasData: true"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:10.182Z",
+      "event": "oauth_request",
+      "details": "GET https://www.gstatic.com/_/mss/boq-identity/_/js/k=boq-identity.AccountsSignInUi.en_US.alsf3k9Xrdw.es5.O/ck=boq-identity.AccountsSignInUi.uC7NA5t_8pU.L.B1.O/am=iW8AAACEQhQhA4D__38DAAggiA74ngVoAoQMAAAAAAAAAABYAAAAjQ/d=1/exm=A7fCU,CMcBD,DiaQ5,DqMihc,E87wgc,EFQ78c,Fndnac,GCY0Tb,GwYlN,IZT63,K0PMbc,K1ZKnb,KUM7Z,L9OGUe,LDQI,LEikZe,LvGhrf,MY7mZe,MpJwZc,NLiXbe,P6sQOc,PHUIyb,PrPYRd,RMhBfe,RqjULd,SCuOPb,SD8Jgb,SpsfSb,Tbb4sb,UUJqVe,Uas9Hd,WpP9Yc,YHI3We,YTxL4,YYmHzb,YgOFye,ZDZcre,ZwDk9d,_b,_tp,bTi8wc,byfTOb,cYShmd,cciGGe,eWuMIe,f8Gu1e,gJzDyc,hc6Ubd,iAskyc,inNHtf,lkFgGf,lsjVmc,ltDFwf,lwddkf,m9oV,mvkUhe,n73qwf,oLggrd,oqkvIf,p3hmRc,pxq3x,qPYxq,qmdT9,rmumx,siKnQd,soHxf,t2srLd,tUnxGc,vHEMJe,vfuNJf,vjKJJ,w9hDv,ws9Tlc,xQtZb,xiZRqc,y5vRwf,yRXbo,ywOR5c,z0u0L,zbML3c,ziXSP,zr1jrb,zy0vNb/excm=_b,_tp,identifierview/ed=1/wt=2/ujg=1/rs=AOaEmlEsIOV471JzZU4Bs7O_7vm3lr63LQ/ee=ASJRFf:DAnQ7e;Al0B8:kibjWe;DaIJ8c:iAskyc;EVNhjf:pw70Gc;EkYFhd:GwYlN;EmZ2Bf:zr1jrb;JsbNhc:Xd8iUd;K5nYTd:ZDZcre;LBgRLc:XVMNvd;Me32dd:MEeYgc;NJ1rfe:yGfSdd;NPKaK:PVlQOd;NSEoX:lazG7b;Pjplud:EEDORb;QGR0gd:Mlhmy;Qi0VDf:vUyhef;SMDL4c:K0PMbc;SNUn3:ZwDk9d;ScI3Yc:e7Hzgb;UpnZUd:nnwwYc;Uvc8o:VDovNc;UyjXyd:qXkWrc;VlRiDf:j7ZRif;XdiAjb:NLiXbe;YIZmRd:A1yn5d;a56pNe:JEfCwb;cEt90b:ws9Tlc;dIoSBb:SpsfSb;dowIGb:ebZ3mb;eBAeSb:zbML3c;iFQyKf:vfuNJf;lGvXed:Gtn19d;lOO0Vd:OTA3Ae;nTuGK:JKNPM;oGtAuc:sOXFj;oSUNyd:K0PMbc;oXZmbc:tUnxGc;pXdRYb:L9OGUe;qQEoOc:KUM7Z;qafBPd:yDVVkb;qddgKe:xQtZb;sHdTOe:nSePib;twueg:ouk7y;vNjB7d:YTxL4;wR5FRb:siKnQd;wc73nd:kqeOEd;yxTchf:KUM7Z/dti=1/m=Wt6vjf,hhhU8,FCpbqb,WhJNk"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:10.199Z",
+      "event": "oauth_request_with_params",
+      "details": "POST https://play.google.com/log?hasfast=true&authuser=0&format=json params: {\"authuser\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:10.202Z",
+      "event": "oauth_request_with_params",
+      "details": "POST https://play.google.com/log?hasfast=true&authuser=0&format=json params: {\"authuser\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:10.322Z",
+      "event": "oauth_response_with_params",
+      "details": "Status: 200 URL: https://play.google.com/log?hasfast=true&authuser=0&format=json params: {\"authuser\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:10.323Z",
+      "event": "oauth_response_with_params",
+      "details": "Status: 200 URL: https://play.google.com/log?hasfast=true&authuser=0&format=json params: {\"authuser\":\"present\"}"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:12.850Z",
+      "event": "oauth_request",
+      "details": "POST https://accounts.google.com/v3/signin/_/AccountsSignInUi/browserinfo?f.sid=8891991594786628129&bl=boq_identityfrontendauthuiserver_20260510.08_p0&hl=en-US&_reqid=73273&rt=j"
+    },
+    {
+      "timestamp": "2026-05-23T14:51:14.499Z",
+      "event": "current_url",
+      "details": "https://accounts.google.com/v3/signin/identifier?opparams=%253F&dsh=S2063947417%3A1779547868719110&access_type=online&approval_prompt=auto&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&o2v=2&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&service=lso&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&flowName=GeneralOAuthFlow&continue=https%3A%2F%2Faccounts.google.com%2Fsignin%2Foauth%2Fconsent%3Fauthuser%3Dunknown%26part%3DAJi8hAMEIxUDH_Ypfj0AKLbyJc9Sd9r4Gy10C1HLYOSJ_h1IPJuuiIBDlb83jWw8eEPf0Y1YVmcOrmpfJL_XpDW2ZRnDt5uQ7j2qe3d05TeNHu8zGUHOgbYGRFLfZ6nQuNSHOjAdhl7ZYy85t08sQfuLCYC6JSy4gY29xt47jRLg1V_X2mMwKzbhRppSwryOuMtK2DUMAA3J1l8_khLvT1RW5ZMOGKhn5SLEB47GThsbPT-ibG0ZVbpkIMzKxizS_AWuU81YHI-pvviu3sMy2TDxI96ajKkvGwh2Ymofk0n1Lvhw_8HVEpbGYAjKmyVd5WdXbGJeTTUs2PqwejbU4PtQbzjVM1JSnQ43bNJqeL8au52UZeaQ9ZnDm6Cl-lt2IFk4DOgbR2koyCDSdv2S3Hvr7-3-RG_z7zx-dBxve0zNB3_59wPmyl2jNjGuKBr0PJd_W37vwNJQeYGnn4somtnv863FlI0C4UwYtiDF03oBwl95DHH-5aU%26flowName%3DGeneralOAuthFlow%26as%3DS2063947417%253A1779547868719110%26client_id%3D538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com%26requestPath%3D%252Fsignin%252Foauth%252Fconsent%23&app_domain=https%3A%2F%2Faccounts.linways.com&rart=ANgoxcc30KJHvzz4Q-7s-8-JtiQEYhasrSnA7kScoSR7VfV1Bq0Bl-oQ4PcFDoGLJBb-eakGQr5RzwEzp47XLCx_4gLVuwKri0rkWmRULVvc4d9eHw5qa20"
+    }
+  ],
+  "redirectChain": [
+    {
+      "url": "https://accounts.linways.com/oauth?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.linways.com/oauth?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": 301,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.linways.com/oauth?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "http://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "http://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": 307,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.linways.com/oauth?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "http://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": 302,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.linways.com/oauth?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "http://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&access_type=online&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&approval_prompt=auto",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&access_type=online&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&approval_prompt=auto",
+      "status": 302,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.linways.com/oauth?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "http://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&access_type=online&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&approval_prompt=auto",
+      "status": null,
+      "classification": "oauth"
+    },
+    {
+      "url": "https://accounts.google.com/v3/signin/identifier?opparams=%253F&dsh=S2063947417%3A1779547868719110&access_type=online&approval_prompt=auto&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&o2v=2&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&service=lso&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&flowName=GeneralOAuthFlow&continue=https%3A%2F%2Faccounts.google.com%2Fsignin%2Foauth%2Fconsent%3Fauthuser%3Dunknown%26part%3DAJi8hAMEIxUDH_Ypfj0AKLbyJc9Sd9r4Gy10C1HLYOSJ_h1IPJuuiIBDlb83jWw8eEPf0Y1YVmcOrmpfJL_XpDW2ZRnDt5uQ7j2qe3d05TeNHu8zGUHOgbYGRFLfZ6nQuNSHOjAdhl7ZYy85t08sQfuLCYC6JSy4gY29xt47jRLg1V_X2mMwKzbhRppSwryOuMtK2DUMAA3J1l8_khLvT1RW5ZMOGKhn5SLEB47GThsbPT-ibG0ZVbpkIMzKxizS_AWuU81YHI-pvviu3sMy2TDxI96ajKkvGwh2Ymofk0n1Lvhw_8HVEpbGYAjKmyVd5WdXbGJeTTUs2PqwejbU4PtQbzjVM1JSnQ43bNJqeL8au52UZeaQ9ZnDm6Cl-lt2IFk4DOgbR2koyCDSdv2S3Hvr7-3-RG_z7zx-dBxve0zNB3_59wPmyl2jNjGuKBr0PJd_W37vwNJQeYGnn4somtnv863FlI0C4UwYtiDF03oBwl95DHH-5aU%26flowName%3DGeneralOAuthFlow%26as%3DS2063947417%253A1779547868719110%26client_id%3D538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com%26requestPath%3D%252Fsignin%252Foauth%252Fconsent%23&app_domain=https%3A%2F%2Faccounts.linways.com&rart=ANgoxcc30KJHvzz4Q-7s-8-JtiQEYhasrSnA7kScoSR7VfV1Bq0Bl-oQ4PcFDoGLJBb-eakGQr5RzwEzp47XLCx_4gLVuwKri0rkWmRULVvc4d9eHw5qa20",
+      "status": 200,
+      "classification": "redirect"
+    }
+  ],
+  "cookieTimeline": [
+    {
+      "label": "after_login_page_load",
+      "totalCookies": 5,
+      "sessionCookies": [],
+      "cookieDomains": [
+        ".linways.com",
+        ".google.com",
+        "accounts.google.com"
+      ]
+    },
+    {
+      "label": "pre_google_click",
+      "totalCookies": 5,
+      "sessionCookies": [],
+      "cookieDomains": [
+        ".linways.com",
+        ".google.com",
+        "accounts.google.com"
+      ]
+    },
+    {
+      "label": "post_google_click",
+      "totalCookies": 5,
+      "sessionCookies": [],
+      "cookieDomains": [
+        ".linways.com",
+        ".google.com",
+        "accounts.google.com"
+      ]
+    },
+    {
+      "label": "post_auth_redirect",
+      "totalCookies": 5,
+      "sessionCookies": [],
+      "cookieDomains": [
+        ".linways.com",
+        ".google.com",
+        "accounts.google.com"
+      ]
+    }
+  ],
+  "cookieDelta": {
+    "added": [],
+    "removed": [],
+    "modified": [
+      {
+        "name": "_cfuvid",
+        "domain": ".linways.com"
+      }
+    ],
+    "addedCount": 0,
+    "removedCount": 0,
+    "modifiedCount": 1
+  },
+  "storageTimeline": [
+    {
+      "label": "after_login_page_load",
+      "localStorageKeys": 4,
+      "sessionStorageKeys": 0,
+      "localStorageEntries": {
+        "token": "__REDACTED__",
+        "inactivityTrackerCheckedTime": "1779547748591",
+        "inActiveTrackerChecked": "true",
+        "enableInactivityTracker": "false"
+      },
+      "sessionStorageEntries": {}
+    },
+    {
+      "label": "pre_google_click",
+      "localStorageKeys": 4,
+      "sessionStorageKeys": 0,
+      "localStorageEntries": {
+        "token": "__REDACTED__",
+        "inactivityTrackerCheckedTime": "1779547748591",
+        "inActiveTrackerChecked": "true",
+        "enableInactivityTracker": "false"
+      },
+      "sessionStorageEntries": {}
+    },
+    {
+      "label": "post_google_click",
+      "localStorageKeys": 0,
+      "sessionStorageKeys": 0,
+      "localStorageEntries": {},
+      "sessionStorageEntries": {}
+    },
+    {
+      "label": "post_auth_redirect",
+      "localStorageKeys": 0,
+      "sessionStorageKeys": 0,
+      "localStorageEntries": {},
+      "sessionStorageEntries": {}
+    }
+  ],
+  "oauthCallbackUrls": [
+    "https://accounts.linways.com/oauth?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+    "http://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+    "https://accounts.linways.com/oauth/?state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc",
+    "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&access_type=online&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&approval_prompt=auto",
+    "https://accounts.google.com/v3/signin/identifier?opparams=%253F&dsh=S2063947417%3A1779547868719110&access_type=online&approval_prompt=auto&client_id=538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com&o2v=2&redirect_uri=https%3A%2F%2Faccounts.linways.com%2Foauth%2Fcallback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile&service=lso&state=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ2ZXIiOiJWNCIsImRvbSI6InNmY3Y0LmxpbndheXMuY29tIiwiY2MiOiJTRkMiLCJ1dCI6IlNUVURFTlQiLCJmYWlsdXJlX3JlZGlyIjoiJTJGYW1zJTJGc3R1ZGVudCUyRmxvZ2luIiwibW9iIjowfQ.zhuQjJOaxFzwQ9GrM9nXBW8VPBK-pHO9yyuIqFJa8Dc&flowName=GeneralOAuthFlow&continue=https%3A%2F%2Faccounts.google.com%2Fsignin%2Foauth%2Fconsent%3Fauthuser%3Dunknown%26part%3DAJi8hAMEIxUDH_Ypfj0AKLbyJc9Sd9r4Gy10C1HLYOSJ_h1IPJuuiIBDlb83jWw8eEPf0Y1YVmcOrmpfJL_XpDW2ZRnDt5uQ7j2qe3d05TeNHu8zGUHOgbYGRFLfZ6nQuNSHOjAdhl7ZYy85t08sQfuLCYC6JSy4gY29xt47jRLg1V_X2mMwKzbhRppSwryOuMtK2DUMAA3J1l8_khLvT1RW5ZMOGKhn5SLEB47GThsbPT-ibG0ZVbpkIMzKxizS_AWuU81YHI-pvviu3sMy2TDxI96ajKkvGwh2Ymofk0n1Lvhw_8HVEpbGYAjKmyVd5WdXbGJeTTUs2PqwejbU4PtQbzjVM1JSnQ43bNJqeL8au52UZeaQ9ZnDm6Cl-lt2IFk4DOgbR2koyCDSdv2S3Hvr7-3-RG_z7zx-dBxve0zNB3_59wPmyl2jNjGuKBr0PJd_W37vwNJQeYGnn4somtnv863FlI0C4UwYtiDF03oBwl95DHH-5aU%26flowName%3DGeneralOAuthFlow%26as%3DS2063947417%253A1779547868719110%26client_id%3D538696630470-entej6vo20n10hhj1fmtm4ivp6mv19v2.apps.googleusercontent.com%26requestPath%3D%252Fsignin%252Foauth%252Fconsent%23&app_domain=https%3A%2F%2Faccounts.linways.com&rart=ANgoxcc30KJHvzz4Q-7s-8-JtiQEYhasrSnA7kScoSR7VfV1Bq0Bl-oQ4PcFDoGLJBb-eakGQr5RzwEzp47XLCx_4gLVuwKri0rkWmRULVvc4d9eHw5qa20"
+  ],
+  "sessionEstablishmentPoint": null,
+  "finalAuthenticatedEndpoint": null
+}

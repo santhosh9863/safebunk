@@ -1,0 +1,123 @@
+{
+  "timestamp": "2026-05-23T13:06:45.457Z",
+  "scenariosAnalyzed": 3,
+  "results": [
+    {
+      "scenario": "callback-redirect-chain",
+      "description": "Simulate callback from Google to Linways accounts, follow through to SFC",
+      "startUrl": "https://accounts.linways.com/oauth/callback?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+      "analysis": {
+        "hops": 3,
+        "domains": [
+          "accounts.linways.com"
+        ],
+        "cookiesByDomain": {},
+        "sessionCookies": [],
+        "authFlowComplete": false,
+        "finalRedirectTarget": "https://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+        "finalStatus": 500,
+        "cookiesFound": 0,
+        "sessionCookiesFound": 0,
+        "sessionCookieNames": []
+      },
+      "chain": [
+        {
+          "order": 0,
+          "url": "https://accounts.linways.com/oauth/callback?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+          "status": 301,
+          "location": "http://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+          "contentType": "text/html; charset=iso-8859-1",
+          "setCookieCount": 1,
+          "elapsed": 536
+        },
+        {
+          "order": 0,
+          "url": "http://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+          "status": 301,
+          "location": "https://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+          "contentType": "text/html; charset=UTF-8",
+          "setCookieCount": 0,
+          "elapsed": 90
+        },
+        {
+          "order": 0,
+          "url": "https://accounts.linways.com/oauth/callback/?code=PLACEHOLDER_AUTH_CODE&state=PLACEHOLDER_STATE",
+          "status": 500,
+          "location": null,
+          "contentType": "text/html; charset=UTF-8",
+          "setCookieCount": 1,
+          "elapsed": 389
+        }
+      ]
+    },
+    {
+      "scenario": "sso-v4-redirect-chain",
+      "description": "Start at sso-v4, follow through to authenticated session",
+      "startUrl": "https://sfcv4.linways.com/sso-v4",
+      "analysis": {
+        "hops": 2,
+        "domains": [
+          "sfcv4.linways.com"
+        ],
+        "cookiesByDomain": {},
+        "sessionCookies": [],
+        "authFlowComplete": false,
+        "finalRedirectTarget": "https://sfcv4.linways.com/sso-v4/",
+        "finalStatus": 200,
+        "cookiesFound": 0,
+        "sessionCookiesFound": 0,
+        "sessionCookieNames": []
+      },
+      "chain": [
+        {
+          "order": 0,
+          "url": "https://sfcv4.linways.com/sso-v4",
+          "status": 301,
+          "location": "https://sfcv4.linways.com/sso-v4/",
+          "contentType": "text/html; charset=iso-8859-1",
+          "setCookieCount": 1,
+          "elapsed": 235
+        },
+        {
+          "order": 0,
+          "url": "https://sfcv4.linways.com/sso-v4/",
+          "status": 200,
+          "location": null,
+          "contentType": "text/html; charset=UTF-8",
+          "setCookieCount": 2,
+          "elapsed": 492
+        }
+      ]
+    },
+    {
+      "scenario": "accounts-root-redirect",
+      "description": "Check if accounts.linways.com root redirects",
+      "startUrl": "https://accounts.linways.com",
+      "analysis": {
+        "hops": 1,
+        "domains": [
+          "accounts.linways.com"
+        ],
+        "cookiesByDomain": {},
+        "sessionCookies": [],
+        "authFlowComplete": false,
+        "finalRedirectTarget": "https://accounts.linways.com",
+        "finalStatus": 403,
+        "cookiesFound": 0,
+        "sessionCookiesFound": 0,
+        "sessionCookieNames": []
+      },
+      "chain": [
+        {
+          "order": 0,
+          "url": "https://accounts.linways.com",
+          "status": 403,
+          "location": null,
+          "contentType": "text/html; charset=iso-8859-1",
+          "setCookieCount": 1,
+          "elapsed": 256
+        }
+      ]
+    }
+  ]
+}
