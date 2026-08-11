@@ -33,6 +33,10 @@ migrate_working_dir/
 /build/
 /coverage/
 
+# Node / backend
+**/node_modules/
+safebunk-backend/data/
+
 # Symbolication related
 app.*.symbols
 
