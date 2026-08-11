@@ -4,6 +4,7 @@ import '../core/cache/memory_cache.dart';
 import '../models/api/subject_wise_attendance_model.dart';
 import '../services/api/subject_wise_attendance_service.dart';
 import '../services/repositories/subject_wise_attendance_repository.dart';
+import 'attendance_provider.dart';
 import 'auth_provider.dart';
 
 final _subjectWiseCacheProvider = Provider<MemoryCache<List<SubjectWiseAttendanceModel>>>((ref) {
@@ -14,8 +15,11 @@ final _subjectWiseCacheProvider = Provider<MemoryCache<List<SubjectWiseAttendanc
 
 final _subjectWiseRepositoryProvider = Provider<SubjectWiseAttendanceRepository>((ref) {
   return SubjectWiseAttendanceRepository(
-    service: SubjectWiseAttendanceService(),
+    service: SubjectWiseAttendanceService(
+      termsService: ref.watch(attendanceTermsServiceProvider),
+    ),
     cache: ref.watch(_subjectWiseCacheProvider),
+    termsService: ref.watch(attendanceTermsServiceProvider),
   );
 });
 

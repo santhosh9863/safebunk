@@ -7,7 +7,9 @@ class ApiConstants {
 
   static const String login = '/auth/student-login-credentials';
   static const String dailyAttendance = '/attendance/daily-attendance';
+  static const String dailyAttendanceDateFetch = '/attendance/daily-attendance-date-fetch';
   static const String subjectWiseAttendance = '/attendance/subject-wise-attendance-report';
+  static const String studiedTerms = '/attendance/fetch-student-studied-terms';
   static const String studentBasicDetails = '/student/get-student-basic-details';
 
   static const String studentId = 'studentId';

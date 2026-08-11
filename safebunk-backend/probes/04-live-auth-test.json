@@ -1,0 +1,1894 @@
+{
+  "timestamp": "2026-05-23T14:25:56.851Z",
+  "config": {
+    "hasIdToken": true,
+    "hasAccessToken": false,
+    "hasEmail": true,
+    "tokenPreview": "eyJhbGciOiJSUzI1NiIs..."
+  },
+  "baseline": {
+    "endpoints": {
+      "google-login": {
+        "status": 401,
+        "location": null,
+        "contentType": "application/json",
+        "setCookieCount": 1,
+        "bodyLength": 51
+      },
+      "sso": {
+        "status": 401,
+        "location": null,
+        "contentType": "application/json",
+        "setCookieCount": 0,
+        "bodyLength": 51
+      }
+    }
+  },
+  "stats": {
+    "totalTests": 51,
+    "promisingCount": 0,
+    "highestScore": 0,
+    "endpointCounts": {
+      "null/google-login/idToken-only/origin-sfc": 1,
+      "null/google-login/idToken-email/origin-sfc": 1,
+      "null/google-login/idToken-email-provider/origin-sfc": 1,
+      "null/google-login/credential-format/origin-sfc": 1,
+      "null/google-login/full-profile/origin-sfc": 1,
+      "true/google-login/credential-form/origin-sfc": 1,
+      "true/google-login/idToken-form/origin-sfc": 1,
+      "true/google-login/idToken-email-form/origin-sfc": 1,
+      "null/google-login/idToken-only/origin-accounts": 1,
+      "null/google-login/idToken-email/origin-accounts": 1,
+      "null/google-login/idToken-email-provider/origin-accounts": 1,
+      "null/google-login/credential-format/origin-accounts": 1,
+      "null/google-login/full-profile/origin-accounts": 1,
+      "true/google-login/credential-form/origin-accounts": 1,
+      "true/google-login/idToken-form/origin-accounts": 1,
+      "true/google-login/idToken-email-form/origin-accounts": 1,
+      "null/google-login/idToken-only/origin-sfc-login": 1,
+      "null/google-login/idToken-email/origin-sfc-login": 1,
+      "null/google-login/idToken-email-provider/origin-sfc-login": 1,
+      "null/google-login/credential-format/origin-sfc-login": 1,
+      "null/google-login/full-profile/origin-sfc-login": 1,
+      "true/google-login/credential-form/origin-sfc-login": 1,
+      "true/google-login/idToken-form/origin-sfc-login": 1,
+      "true/google-login/idToken-email-form/origin-sfc-login": 1,
+      "null/sso/idToken-only/origin-sfc": 1,
+      "null/sso/idToken-email/origin-sfc": 1,
+      "null/sso/idToken-email-provider/origin-sfc": 1,
+      "null/sso/credential-format/origin-sfc": 1,
+      "null/sso/full-profile/origin-sfc": 1,
+      "true/sso/credential-form/origin-sfc": 1,
+      "true/sso/idToken-form/origin-sfc": 1,
+      "true/sso/idToken-email-form/origin-sfc": 1,
+      "null/sso/idToken-only/origin-accounts": 1,
+      "null/sso/idToken-email/origin-accounts": 1,
+      "null/sso/idToken-email-provider/origin-accounts": 1,
+      "null/sso/credential-format/origin-accounts": 1,
+      "null/sso/full-profile/origin-accounts": 1,
+      "true/sso/credential-form/origin-accounts": 1,
+      "true/sso/idToken-form/origin-accounts": 1,
+      "true/sso/idToken-email-form/origin-accounts": 1,
+      "null/sso/idToken-only/origin-sfc-login": 1,
+      "null/sso/idToken-email/origin-sfc-login": 1,
+      "null/sso/idToken-email-provider/origin-sfc-login": 1,
+      "null/sso/credential-format/origin-sfc-login": 1,
+      "null/sso/full-profile/origin-sfc-login": 1,
+      "true/sso/credential-form/origin-sfc-login": 1,
+      "true/sso/idToken-form/origin-sfc-login": 1,
+      "true/sso/idToken-email-form/origin-sfc-login": 1,
+      "callback/undefined/idToken-as-code/default": 1,
+      "csrf-aware/google-login/idToken-email-provider/origin-sfc": 1,
+      "csrf-aware/sso/idToken-email-provider/origin-sfc": 1
+    }
+  },
+  "promising": [],
+  "results": [
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc",
+      "payload": "idToken-only",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 0,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 217,
+        "totalMs": 218
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "5438e2da98f01592",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 6,
+      "signals": [
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc",
+      "payload": "idToken-email",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 166,
+        "totalMs": 167
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "61e58b0ec12400b5",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc",
+      "payload": "idToken-email-provider",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 182,
+        "totalMs": 183
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "91491058d1d4fd93",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc",
+      "payload": "credential-format",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 2,
+        "requestMs": 501,
+        "totalMs": 503
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "30ff3734ef4b22b7",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc",
+      "payload": "full-profile",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 463,
+        "totalMs": 464
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "8b6dab3026c792ce",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "google-login",
+      "origin": "origin-sfc",
+      "payload": "credential-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 172,
+        "totalMs": 173
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "91d598861ef55da5",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "google-login",
+      "origin": "origin-sfc",
+      "payload": "idToken-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 5,
+        "requestMs": 182,
+        "totalMs": 187
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "6aed4d25953202d9",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "google-login",
+      "origin": "origin-sfc",
+      "payload": "idToken-email-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 161,
+        "totalMs": 162
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "d561f002970d2361",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-accounts",
+      "payload": "idToken-only",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 161,
+        "totalMs": 162
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "5bab961f2f67e00e",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-accounts",
+      "payload": "idToken-email",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 532,
+        "totalMs": 533
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "9e7bdf24596d2ae1",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-accounts",
+      "payload": "idToken-email-provider",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 153,
+        "totalMs": 154
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "01cb809fb8335c7c",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-accounts",
+      "payload": "credential-format",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 153,
+        "totalMs": 154
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "6fa7c05f7cadf854",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-accounts",
+      "payload": "full-profile",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 158,
+        "totalMs": 159
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "ff73698c69438623",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "google-login",
+      "origin": "origin-accounts",
+      "payload": "credential-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 163,
+        "totalMs": 164
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "f8de47dd2acf56ac",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "google-login",
+      "origin": "origin-accounts",
+      "payload": "idToken-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 153,
+        "totalMs": 154
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "85327d740e4a4d80",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "google-login",
+      "origin": "origin-accounts",
+      "payload": "idToken-email-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 152,
+        "totalMs": 153
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "dadb4986a260a952",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-only",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 2,
+        "requestMs": 170,
+        "totalMs": 172
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "9188efb55644e637",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-email",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 495,
+        "totalMs": 496
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "b5a49b4f6aedccf5",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-email-provider",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 181,
+        "totalMs": 182
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "7e04e7932869149c",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc-login",
+      "payload": "credential-format",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 476,
+        "totalMs": 477
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "8a575400ab605df8",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "google-login",
+      "origin": "origin-sfc-login",
+      "payload": "full-profile",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 0,
+        "requestMs": 446,
+        "totalMs": 446
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "0249dcb4918438a3",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "google-login",
+      "origin": "origin-sfc-login",
+      "payload": "credential-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 406,
+        "totalMs": 407
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "d9f51b694d5428dd",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "google-login",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 188,
+        "totalMs": 189
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "b83f50c3e6d43c9f",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "google-login",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-email-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 0,
+        "requestMs": 149,
+        "totalMs": 149
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "8d67027ffdb2a8c1",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 11,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc",
+      "payload": "idToken-only",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 160,
+        "totalMs": 161
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "eea4fbf15463aeaa",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc",
+      "payload": "idToken-email",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 170,
+        "totalMs": 171
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "860bb981f86a3dae",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc",
+      "payload": "idToken-email-provider",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 0,
+        "requestMs": 158,
+        "totalMs": 158
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "8e6c5a3f5ad66c36",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc",
+      "payload": "credential-format",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 167,
+        "totalMs": 168
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "d1358cb932595a86",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc",
+      "payload": "full-profile",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 412,
+        "totalMs": 413
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "0b499307763ae1f8",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "sso",
+      "origin": "origin-sfc",
+      "payload": "credential-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 525,
+        "totalMs": 526
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "488d7acc375e2ba1",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "sso",
+      "origin": "origin-sfc",
+      "payload": "idToken-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 436,
+        "totalMs": 437
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "dc847507d2367c64",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "sso",
+      "origin": "origin-sfc",
+      "payload": "idToken-email-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 148,
+        "totalMs": 149
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "1392a1f92202f419",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-accounts",
+      "payload": "idToken-only",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 441,
+        "totalMs": 442
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "9fe439d5bf0d52cf",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-accounts",
+      "payload": "idToken-email",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 153,
+        "totalMs": 154
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "381f60a1eb4bbb18",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-accounts",
+      "payload": "idToken-email-provider",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 149,
+        "totalMs": 150
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "d7446421efef4078",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-accounts",
+      "payload": "credential-format",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 162,
+        "totalMs": 163
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "09e642da4d1a1648",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-accounts",
+      "payload": "full-profile",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 149,
+        "totalMs": 150
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "3032a50988777f1b",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "sso",
+      "origin": "origin-accounts",
+      "payload": "credential-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 477,
+        "totalMs": 478
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "d110e51775b21f32",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "sso",
+      "origin": "origin-accounts",
+      "payload": "idToken-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 159,
+        "totalMs": 160
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "07735491156f1348",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "sso",
+      "origin": "origin-accounts",
+      "payload": "idToken-email-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 0,
+        "requestMs": 151,
+        "totalMs": 151
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "b969226d8e796959",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-only",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 154,
+        "totalMs": 155
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "138eae5c2bdf7cea",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-email",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 164,
+        "totalMs": 165
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "8650bb792cd11c8d",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-email-provider",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 0,
+        "requestMs": 151,
+        "totalMs": 151
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "c1641bc752b8f354",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc-login",
+      "payload": "credential-format",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 163,
+        "totalMs": 164
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "dbdd4db75857e6f7",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": null,
+      "endpoint": "sso",
+      "origin": "origin-sfc-login",
+      "payload": "full-profile",
+      "contentType": "json",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 169,
+        "totalMs": 170
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "0dcd2bcc01b86fad",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "sso",
+      "origin": "origin-sfc-login",
+      "payload": "credential-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 159,
+        "totalMs": 160
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "79ced56b7cebe415",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "sso",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 416,
+        "totalMs": 417
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "db9ae3fc16d495b8",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": true,
+      "endpoint": "sso",
+      "origin": "origin-sfc-login",
+      "payload": "idToken-email-form",
+      "contentType": "form",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 434,
+        "totalMs": 435
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "17a687bba3449a52",
+      "redirectHops": 0,
+      "redirectChain": [],
+      "bodyLength": 51,
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": "callback",
+      "payload": "idToken-as-code",
+      "chainLength": 1,
+      "chain": [
+        {
+          "status": 500,
+          "location": null,
+          "classification": "none",
+          "timing": {
+            "dnsLookupMs": 56,
+            "requestMs": 272,
+            "totalMs": 328
+          }
+        }
+      ],
+      "chainClassifications": [
+        "none"
+      ],
+      "terminated": null,
+      "finalStatus": 500,
+      "finalUrl": "https://accounts.linways.com/oauth/callback/?code=__REDACTED__&state=live-test",
+      "cookieNames": [],
+      "sessionCookieNames": [],
+      "score": 0,
+      "signals": []
+    },
+    {
+      "type": "csrf-aware",
+      "endpoint": "google-login",
+      "origin": "origin-sfc",
+      "payload": "idToken-email-provider",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 0,
+      "preCookieCount": 0,
+      "preSessionCookies": [],
+      "csrfTokensFound": 0,
+      "csrfTokenSources": [],
+      "timing": {
+        "dnsLookupMs": 1,
+        "requestMs": 498,
+        "totalMs": 499
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "d0140977f5af3fc6",
+      "postCookieNames": [],
+      "sessionCookieNames": [],
+      "redirectHops": 0,
+      "redirectChain": [],
+      "score": 6,
+      "signals": [
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    },
+    {
+      "type": "csrf-aware",
+      "endpoint": "sso",
+      "origin": "origin-sfc",
+      "payload": "idToken-email-provider",
+      "status": 401,
+      "location": null,
+      "redirectClassification": "none",
+      "setCookieCount": 1,
+      "preCookieCount": 0,
+      "preSessionCookies": [],
+      "csrfTokensFound": 0,
+      "csrfTokenSources": [],
+      "timing": {
+        "dnsLookupMs": 2,
+        "requestMs": 173,
+        "totalMs": 175
+      },
+      "cookieDelta": {
+        "added": [],
+        "removed": [],
+        "modified": [],
+        "addedCount": 0,
+        "removedCount": 0,
+        "modifiedCount": 0
+      },
+      "fingerprint": "268927e063a0bcdf",
+      "postCookieNames": [],
+      "sessionCookieNames": [],
+      "redirectHops": 0,
+      "redirectChain": [],
+      "score": 16,
+      "signals": [
+        "cookies_set",
+        "status_401_endpoint_exists",
+        "cookie_count_differs"
+      ]
+    }
+  ]
+}

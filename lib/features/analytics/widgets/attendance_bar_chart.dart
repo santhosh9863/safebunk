@@ -85,19 +85,29 @@ class AttendanceBarChart extends StatelessWidget {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 38,
+                        reservedSize: 46,
                         getTitlesWidget: (value, meta) {
                           final index = value.toInt();
                           if (index < 0 || index >= subjects.length) {
                             return const SizedBox.shrink();
                           }
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              _shortenSubjectName(subjects[index].subjectName),
-                              style: const TextStyle(fontSize: 9),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
+                          // One label per bar, each constrained to its own
+                          // slot so adjacent labels can never overlap.
+                          final slotWidth = (meta.parentAxisSize /
+                                  subjects.length)
+                              .clamp(0.0, 96.0)
+                              .toDouble();
+                          return SizedBox(
+                            width: slotWidth,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                chartDisplayName(subjects[index].subjectName),
+                                style: const TextStyle(fontSize: 10),
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 2,
+                              ),
                             ),
                           );
                         },
@@ -197,7 +207,11 @@ class AttendanceBarChart extends StatelessWidget {
   }
 }
 
-const _subjectLabelMap = <String, String>{
+/// Chart-only display aliases for subject names.
+///
+/// Presentation only: original subject names (data) are never modified,
+/// persisted, or sent back to the API.
+const Map<String, String> subjectChartAliases = <String, String>{
   'artificial intelligence': 'AI',
   'artificial intelligence lab': 'AIL',
   'design and analysis of algorithms': 'DAA',
@@ -208,11 +222,24 @@ const _subjectLabelMap = <String, String>{
   'probability and statistics': 'PS',
   'general english': 'ENG',
   'kannada': 'KAN',
+  'web programming': 'Web Prog.',
+  'web programming lab': 'Web Prog. Lab',
+  'data analytics': 'Data Analytics',
+  'data analytics lab': 'Data Analytics Lab',
+  'software engineering': 'Software Eng.',
+  'project': 'Project',
+  'quantitative techniques': 'Quant. Tech.',
+  'cryptography and network security': 'Crypto & NS',
+  'placement': 'Placement',
 };
 
-String _shortenSubjectName(String name) {
-  final cleaned = name.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
-  return _subjectLabelMap[cleaned.toLowerCase()] ?? cleaned;
+/// Short display name for chart X-axis labels (and Analytics summary rows).
+///
+/// Falls back to the original subject name (with parenthetical codes
+/// stripped) when no alias exists, so unknown subjects never crash.
+String chartDisplayName(String subjectName) {
+  final cleaned = subjectName.replaceAll(RegExp(r'\s*\([^)]*\)'), '').trim();
+  return subjectChartAliases[cleaned.toLowerCase()] ?? cleaned;
 }
 
 class _LegendDot extends StatelessWidget {

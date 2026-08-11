@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 
@@ -5,26 +7,46 @@ import '../../core/errors/app_exceptions.dart';
 import '../../core/network/api_constants.dart';
 import '../../core/network/api_response_validator.dart';
 import '../../models/api/daily_attendance_model.dart';
+import 'attendance_terms_service.dart';
 
 class AttendanceApiService {
   final Dio _dio;
+  final AttendanceTermsService _termsService;
 
-  AttendanceApiService(this._dio);
+  AttendanceApiService(this._dio, {AttendanceTermsService? termsService})
+      : _termsService = termsService ?? AttendanceTermsService();
 
   Future<List<DailyAttendanceModel>> fetchDailyAttendance({
     required String studentId,
-    String fromDate = '2026-02-03',
-    String toDate = '2026-05-30',
+    String? fromDate,
+    String? toDate,
   }) async {
+    var resolvedFromDate = fromDate;
+    var resolvedToDate = toDate;
+
+    if (resolvedFromDate == null || resolvedToDate == null) {
+      final currentTerm = await _termsService.fetchCurrentTerm(studentId);
+      if (currentTerm != null) {
+        resolvedFromDate = resolvedFromDate ?? currentTerm.startDate;
+        resolvedToDate = resolvedToDate ?? currentTerm.endDate;
+      }
+    }
+
+    if (resolvedFromDate == null || resolvedToDate == null || resolvedFromDate.isEmpty || resolvedToDate.isEmpty) {
+      return [];
+    }
+
+    debugPrint('[Term] [daily] outgoing request → fromDate=$resolvedFromDate toDate=$resolvedToDate');
+
     try {
+      final paramsJson = jsonEncode({
+        'studentId': studentId,
+        'fromDate': resolvedFromDate,
+        'toDate': resolvedToDate,
+      });
       final response = await _dio.get(
         ApiConstants.dailyAttendance,
-        queryParameters: {
-          'toDate': toDate,
-          'fromDate': fromDate,
-          'emitAsResetWhileReset': 'true',
-          'studentId': studentId,
-        },
+        queryParameters: {'params': paramsJson},
       );
 
       ApiResponseValidator.validateContentType(response);

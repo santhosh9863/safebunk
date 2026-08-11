@@ -1,0 +1,56 @@
+{
+  "timestamp": "2026-05-23T13:06:54.491Z",
+  "summary": {
+    "sourcesAnalyzed": 3,
+    "totalSessionCandidates": 0,
+    "totalCookies": 0,
+    "candidateNames": []
+  },
+  "analyses": [
+    {
+      "source": "sfc-portal-session",
+      "totalCookies": 0,
+      "byDomain": {},
+      "bySecurity": {
+        "secure": 0,
+        "httpOnly": 0,
+        "bothSecureAndHttpOnly": 0,
+        "neither": 0,
+        "session": 0,
+        "persistent": 0
+      },
+      "sessionCandidates": [],
+      "otherCookies": []
+    },
+    {
+      "source": "accounts-domain-cookies",
+      "totalCookies": 0,
+      "byDomain": {},
+      "bySecurity": {
+        "secure": 0,
+        "httpOnly": 0,
+        "bothSecureAndHttpOnly": 0,
+        "neither": 0,
+        "session": 0,
+        "persistent": 0
+      },
+      "sessionCandidates": [],
+      "otherCookies": []
+    },
+    {
+      "source": "academics-api-cookies",
+      "totalCookies": 0,
+      "byDomain": {},
+      "bySecurity": {
+        "secure": 0,
+        "httpOnly": 0,
+        "bothSecureAndHttpOnly": 0,
+        "neither": 0,
+        "session": 0,
+        "persistent": 0
+      },
+      "sessionCandidates": [],
+      "otherCookies": []
+    }
+  ]
+}

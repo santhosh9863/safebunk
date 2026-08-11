@@ -5,11 +5,19 @@ import '../core/network/dio_client.dart';
 import '../models/api/course_attendance_model.dart';
 import '../models/api/daily_attendance_model.dart';
 import '../services/api/attendance_api_service.dart';
+import '../services/api/attendance_terms_service.dart';
 import '../services/repositories/attendance_repository.dart';
 import 'auth_provider.dart';
 
+final attendanceTermsServiceProvider = Provider<AttendanceTermsService>((ref) {
+  return AttendanceTermsService();
+});
+
 final _apiServiceProvider = Provider<AttendanceApiService>((ref) {
-  return AttendanceApiService(DioClient.instance.dio);
+  return AttendanceApiService(
+    DioClient.instance.dio,
+    termsService: ref.watch(attendanceTermsServiceProvider),
+  );
 });
 
 final _attendanceCacheProvider = Provider<MemoryCache<List<DailyAttendanceModel>>>((ref) {
@@ -22,6 +30,7 @@ final _repositoryProvider = Provider<AttendanceRepository>((ref) {
   return AttendanceRepository(
     api: ref.watch(_apiServiceProvider),
     cache: ref.watch(_attendanceCacheProvider),
+    termsService: ref.watch(attendanceTermsServiceProvider),
   );
 });
 

@@ -150,6 +150,7 @@ class _AttendanceSimulatorCardState extends State<AttendanceSimulatorCard> {
           ? _selectedSubjectIndex
           : 0,
       menuMaxHeight: MediaQuery.of(context).size.height * 0.35,
+      isExpanded: true,
       decoration: InputDecoration(
         labelText: 'Subject',
         labelStyle: TextStyle(fontSize: 13, color: cs.onSurfaceVariant),

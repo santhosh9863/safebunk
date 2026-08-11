@@ -8,23 +8,47 @@ import '../../core/network/api_constants.dart';
 import '../../core/network/api_response_validator.dart';
 import '../../core/network/dio_client.dart';
 import '../../models/api/subject_wise_attendance_model.dart';
+import 'attendance_terms_service.dart';
 
 class SubjectWiseAttendanceService {
   final Dio _dio;
+  final AttendanceTermsService _termsService;
 
-  SubjectWiseAttendanceService() : _dio = DioClient.instance.dio;
+  SubjectWiseAttendanceService({AttendanceTermsService? termsService})
+      : _dio = DioClient.instance.dio,
+        _termsService = termsService ?? AttendanceTermsService();
 
   Future<List<SubjectWiseAttendanceModel>> fetchSubjectWiseAttendance({
     required String studentId,
-    String termId = '4',
-    String startDate = '2026-02-03',
-    String endDate = '2026-05-30',
+    String? termId,
+    String? startDate,
+    String? endDate,
   }) async {
+    var resolvedTermId = termId;
+    var resolvedStartDate = startDate;
+    var resolvedEndDate = endDate;
+
+    if (resolvedTermId == null) {
+      final currentTerm = await _termsService.fetchCurrentTerm(studentId);
+      if (currentTerm != null) {
+        resolvedTermId = currentTerm.termId;
+        resolvedStartDate = resolvedStartDate ?? currentTerm.startDate;
+        resolvedEndDate = resolvedEndDate ?? currentTerm.endDate;
+      }
+    }
+
+    if (resolvedTermId == null || resolvedTermId.isEmpty) {
+      return [];
+    }
+
+    debugPrint('[Term] [subject-wise] outgoing request → termId=$resolvedTermId '
+        'startDate=${resolvedStartDate ?? ''} endDate=${resolvedEndDate ?? ''}');
+
     final filter = {
       'firstTime': false,
-      'termId': termId,
-      'startDate': startDate,
-      'endDate': endDate,
+      'termId': resolvedTermId,
+      'startDate': resolvedStartDate,
+      'endDate': resolvedEndDate,
       'studentId': studentId,
       'academicStatus': 'ACTIVE',
       'mapping': 'STUDENT-SUBJECT-WISE',

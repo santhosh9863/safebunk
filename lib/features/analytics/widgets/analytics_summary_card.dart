@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/calculations/attendance_utils.dart';
 import '../../../models/api/subject_wise_attendance_model.dart';
 import '../../settings/providers/settings_providers.dart';
+import 'attendance_bar_chart.dart';
 
 class AnalyticsSummaryCard extends StatelessWidget {
   final List<SubjectWiseAttendanceModel> subjects;
@@ -58,7 +58,7 @@ class AnalyticsSummaryCard extends StatelessWidget {
               icon: Icons.arrow_upward,
               iconColor: Colors.green,
               label: 'Highest',
-              detail: '${AttendanceUtils.cleanSubjectName(highest.subjectName)} (${highest.finalPercentage.toStringAsFixed(1)}%)',
+              detail: '${chartDisplayName(highest.subjectName)} (${highest.finalPercentage.toStringAsFixed(1)}%)',
             ),
             const SizedBox(height: 8),
             _HighlightRow(
@@ -69,7 +69,7 @@ class AnalyticsSummaryCard extends StatelessWidget {
                       ? Colors.orange
                       : Colors.green,
               label: 'Lowest',
-              detail: '${AttendanceUtils.cleanSubjectName(lowest.subjectName)} (${lowest.finalPercentage.toStringAsFixed(1)}%)',
+              detail: '${chartDisplayName(lowest.subjectName)} (${lowest.finalPercentage.toStringAsFixed(1)}%)',
             ),
             const SizedBox(height: 12),
             Row(

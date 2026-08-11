@@ -293,16 +293,6 @@ class _PrivacyNote extends StatelessWidget {
             height: 1.4,
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          'PULSE is an independent attendance utility.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11,
-            color: cs.onSurfaceVariant.withValues(alpha: 0.4),
-            height: 1.4,
-          ),
-        ),
       ],
     );
   }
@@ -361,6 +351,16 @@ class _SignatureSectionState extends State<_SignatureSection>
             fontSize: 13,
             color: cs.onSurfaceVariant.withValues(alpha: 0.75),
             fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'From final year BCA C Sec.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            color: cs.onSurfaceVariant.withValues(alpha: 0.4),
+            height: 1.4,
           ),
         ),
         const SizedBox(height: 6),

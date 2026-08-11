@@ -1,0 +1,393 @@
+{
+  "timestamp": "2026-07-20T10:06:10.209Z",
+  "student": null,
+  "config": {
+    "base": "https://sfcv4.linways.com",
+    "api": "https://sfcv4.linways.com/academics/api/v1",
+    "endpointsProbed": 37
+  },
+  "summary": {
+    "total": 37,
+    "status200": 0,
+    "status401": 0,
+    "status404": 37,
+    "status500": 0,
+    "errors": 0,
+    "withKeywords": 0
+  },
+  "promising": [],
+  "all": [
+    {
+      "method": "GET",
+      "endpoint": "/timetable/student-timetable",
+      "status": 404,
+      "elapsed": 154,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/timetable/weekly-timetable",
+      "status": 404,
+      "elapsed": 150,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/timetable/list",
+      "status": 404,
+      "elapsed": 138,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/timetable/my-timetable",
+      "status": 404,
+      "elapsed": 142,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/timetable",
+      "status": 404,
+      "elapsed": 143,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/weekly-schedule",
+      "status": 404,
+      "elapsed": 140,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/my-schedule",
+      "status": 404,
+      "elapsed": 430,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/get-student-timetable",
+      "status": 404,
+      "elapsed": 182,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/get-weekly-timetable",
+      "status": 404,
+      "elapsed": 174,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/get-schedule",
+      "status": 404,
+      "elapsed": 199,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/get-class-schedule",
+      "status": 404,
+      "elapsed": 194,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedule/student-schedule",
+      "status": 404,
+      "elapsed": 181,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedule/weekly",
+      "status": 404,
+      "elapsed": 152,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/class-schedule/student",
+      "status": 404,
+      "elapsed": 178,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/class-schedule/student-wise-schedule",
+      "status": 404,
+      "elapsed": 140,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/class-schedule/list",
+      "status": 404,
+      "elapsed": 154,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/attendance/timetable",
+      "status": 404,
+      "elapsed": 140,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/attendance/weekly-schedule",
+      "status": 404,
+      "elapsed": 145,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/ams/student/timetable",
+      "status": 404,
+      "elapsed": 150,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/ams/student/weekly-schedule",
+      "status": 404,
+      "elapsed": 140,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/academics/student/timetable",
+      "status": 404,
+      "elapsed": 141,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/timetable/student-timetable",
+      "status": 404,
+      "elapsed": 268,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/student/get-student-timetable",
+      "status": 404,
+      "elapsed": 142,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/student/timetable",
+      "status": 404,
+      "elapsed": 149,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/student/my-schedule",
+      "status": 404,
+      "elapsed": 129,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/timetable/student-timetable",
+      "params": {
+        "studentId": ""
+      },
+      "status": 404,
+      "elapsed": 143,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/timetable/weekly-timetable",
+      "params": {
+        "studentId": ""
+      },
+      "status": 404,
+      "elapsed": 138,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/timetable",
+      "params": {
+        "studentId": ""
+      },
+      "status": 404,
+      "elapsed": 143,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/get-student-timetable",
+      "params": {
+        "studentId": ""
+      },
+      "status": 404,
+      "elapsed": 152,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/my-schedule",
+      "params": {
+        "studentId": ""
+      },
+      "status": 404,
+      "elapsed": 183,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/weekly-schedule",
+      "params": {
+        "studentId": ""
+      },
+      "status": 404,
+      "elapsed": 151,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedule/weekly",
+      "params": {
+        "studentId": ""
+      },
+      "status": 404,
+      "elapsed": 140,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/timetable/list",
+      "params": {
+        "studentId": "",
+        "semester": ""
+      },
+      "status": 404,
+      "elapsed": 285,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/student/timetable",
+      "params": {
+        "registerNo": ""
+      },
+      "status": 404,
+      "elapsed": 152,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/timetable/student-timetable",
+      "params": {
+        "registerNo": ""
+      },
+      "status": 404,
+      "elapsed": 146,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/schedule/weekly",
+      "params": {
+        "semester": "",
+        "department": ""
+      },
+      "status": 404,
+      "elapsed": 350,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/timetable/list",
+      "params": {
+        "semester": "",
+        "batch": ""
+      },
+      "status": 404,
+      "elapsed": 311,
+      "len": 23,
+      "kw": false,
+      "preview": "{\"message\":\"Not found\"}"
+    }
+  ]
+}

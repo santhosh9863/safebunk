@@ -6,12 +6,14 @@ class PersistentCache {
   static const _dailyAttendanceBox = 'daily_attendance';
   static const _subjectWiseBox = 'subject_wise_attendance';
   static const _profileBox = 'profile';
+  static const _academicTermBox = 'academic_term';
 
   static Future<void> init() async {
     await Hive.initFlutter();
     await Hive.openBox<String>(_dailyAttendanceBox);
     await Hive.openBox<String>(_subjectWiseBox);
     await Hive.openBox<String>(_profileBox);
+    await Hive.openBox<String>(_academicTermBox);
   }
 
   static List<T>? getDailyAttendance<T>(String studentId, T Function(Map<String, dynamic>) fromJson) {
@@ -83,11 +85,39 @@ class PersistentCache {
     } catch (_) {}
   }
 
+  static String? getStoredTermId(String studentId) {
+    try {
+      return Hive.box<String>(_academicTermBox).get(studentId);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<void> setStoredTermId(String studentId, String termId) async {
+    try {
+      await Hive.box<String>(_academicTermBox).put(studentId, termId);
+    } catch (_) {}
+  }
+
+  static Future<void> deleteStudentAttendance(String studentId) async {
+    for (final boxName in [_dailyAttendanceBox, _subjectWiseBox]) {
+      try {
+        final box = Hive.box<String>(boxName);
+        for (final key in box.keys.toList()) {
+          if (key == studentId || key.startsWith('$studentId:')) {
+            await box.delete(key);
+          }
+        }
+      } catch (_) {}
+    }
+  }
+
   static Future<void> clearAll() async {
     try {
       await Hive.box<String>(_dailyAttendanceBox).clear();
       await Hive.box<String>(_subjectWiseBox).clear();
       await Hive.box<String>(_profileBox).clear();
+      await Hive.box<String>(_academicTermBox).clear();
     } catch (_) {}
   }
 

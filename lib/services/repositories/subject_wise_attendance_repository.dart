@@ -1,47 +1,63 @@
 import '../../core/cache/memory_cache.dart';
 import '../../core/cache/persistent_cache.dart';
 import '../../models/api/subject_wise_attendance_model.dart';
+import '../api/attendance_terms_service.dart';
 import '../api/subject_wise_attendance_service.dart';
 
 class SubjectWiseAttendanceRepository {
   final SubjectWiseAttendanceService _service;
+  final AttendanceTermsService _termsService;
   final MemoryCache<List<SubjectWiseAttendanceModel>> _cache;
 
   SubjectWiseAttendanceRepository({
     required SubjectWiseAttendanceService service,
     required MemoryCache<List<SubjectWiseAttendanceModel>> cache,
+    AttendanceTermsService? termsService,
   })  : _service = service,
-        _cache = cache;
+        _cache = cache,
+        _termsService = termsService ?? AttendanceTermsService() {
+    _termsService.addTermChangeListener((_, _) => _cache.clear());
+  }
 
   Future<List<SubjectWiseAttendanceModel>> fetchSubjectWiseAttendance({
     required String studentId,
-    String termId = '4',
-    String startDate = '2026-02-03',
-    String endDate = '2026-05-30',
+    String? termId,
+    String? startDate,
+    String? endDate,
   }) async {
-    final cached = _cache.get(studentId);
+    final currentTerm = await _termsService.fetchCurrentTerm(studentId);
+    final resolvedTermId = termId ?? currentTerm?.termId ?? '';
+    final resolvedStartDate = startDate ?? currentTerm?.startDate ?? '';
+    final resolvedEndDate = endDate ?? currentTerm?.endDate ?? '';
+
+    if (resolvedTermId.isEmpty) {
+      return [];
+    }
+
+    final cacheKey = '$studentId:$resolvedTermId';
+    final cached = _cache.get(cacheKey);
     if (cached != null) {
       return cached;
     }
 
     final persisted = PersistentCache.getSubjectWiseAttendance(
-      studentId,
+      cacheKey,
       SubjectWiseAttendanceModel.fromJson,
     );
     if (persisted != null) {
-      _cache.set(studentId, persisted);
+      _cache.set(cacheKey, persisted);
       return persisted;
     }
 
     final result = await _service.fetchSubjectWiseAttendance(
       studentId: studentId,
-      termId: termId,
-      startDate: startDate,
-      endDate: endDate,
+      termId: resolvedTermId,
+      startDate: resolvedStartDate,
+      endDate: resolvedEndDate,
     );
 
-    _cache.set(studentId, result);
-    await _persistSubjectWiseAttendance(studentId, result);
+    _cache.set(cacheKey, result);
+    await _persistSubjectWiseAttendance(cacheKey, result);
     return result;
   }
 
@@ -50,10 +66,10 @@ class SubjectWiseAttendanceRepository {
   }
 
   Future<void> _persistSubjectWiseAttendance(
-    String studentId,
+    String cacheKey,
     List<SubjectWiseAttendanceModel> records,
   ) async {
     final jsonList = records.map((r) => r.toJson()).toList();
-    await PersistentCache.setSubjectWiseAttendance(studentId, jsonList);
+    await PersistentCache.setSubjectWiseAttendance(cacheKey, jsonList);
   }
 }
