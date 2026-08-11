@@ -26,6 +26,11 @@ export interface FcmSendResult {
 export class FcmService {
   private readonly logger = new Logger(FcmService.name);
 
+  /** True when no service-account credentials are configured (dev mode). */
+  get isDevMode(): boolean {
+    return getApps().length === 0;
+  }
+
   private ensureInitialized(): void {
     if (getApps().length > 0) return;
 

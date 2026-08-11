@@ -107,17 +107,29 @@ export class AttendanceWatcherService {
       const key = `${record.date}|${record.subjectName}|${record.hour}`;
       if (snapshot.records[key] === record.status) continue;
 
-      snapshot.records[key] = record.status;
-      changed = true;
-
       const eventType = this.rules.statusToEvent(record.status);
-      if (!eventType) continue;
+      if (!eventType) {
+        // Unnotifiable status (leave etc.) — record it as baseline anyway.
+        snapshot.records[key] = record.status;
+        changed = true;
+        continue;
+      }
 
-      await this.notifications.dispatchEvent(studentId, {
+      const eventId = `${studentId}|att|${key}|${record.status}`;
+      const delivered = await this.notifications.dispatchEvent(studentId, {
         type: eventType,
         subjectName: record.subjectName,
-        eventId: `${studentId}|att|${key}|${record.status}`,
+        eventId,
       });
+
+      // Only advance the baseline when the event was delivered (or already
+      // processed). Otherwise the event stays pending and is re-attempted on
+      // the next poll — this is what makes "phone off → phone on" and
+      // "transient FCM outage" delivery work without duplicates.
+      if (delivered || this.notifications.isProcessed(eventId)) {
+        snapshot.records[key] = record.status;
+        changed = true;
+      }
     }
 
     if (changed) {
@@ -159,36 +171,54 @@ export class AttendanceWatcherService {
       // First observation — silent baseline.
       snapshot.lastPct = overall;
       snapshot.lastPctEventDate = today;
-    } else {
-      const { event, milestones } = this.rules.evaluateAttendanceTransition(
-        snapshot.lastPct,
-        overall,
-      );
-      const isNewDay = snapshot.lastPctEventDate !== today;
-
-      // One best event per day (plus milestones on that same transition).
-      if (event && isNewDay) {
-        const percentEvent: NotificationEventPayload = {
-          type: event,
-          percentage: overall,
-          eventId: `${studentId}|pct|${today}|${event}`,
-        };
-        await this.notifications.dispatchEvent(studentId, percentEvent);
-
-        for (const milestone of milestones) {
-          if (preferences.milestonesEnabled === false) continue;
-          await this.notifications.dispatchEvent(studentId, {
-            type: milestone,
-            percentage: overall,
-            eventId: `${studentId}|pct|${today}|${milestone}`,
-          });
-        }
-        snapshot.lastPctEventDate = today;
-      }
-
-      snapshot.lastPct = overall;
+      snapshots[studentId] = snapshot;
+      this.store.set(STORE_SNAPSHOTS, snapshots);
+      return;
     }
 
+    const { event, milestones } = this.rules.evaluateAttendanceTransition(
+      snapshot.lastPct,
+      overall,
+    );
+    const isNewDay = snapshot.lastPctEventDate !== today;
+
+    // One best event per day (plus milestones on that same transition). The
+    // baseline only advances once the events were actually delivered, so a
+    // transient FCM failure is re-attempted on the next poll instead of being
+    // silently lost.
+    if (event && isNewDay) {
+      const percentEvent: NotificationEventPayload = {
+        type: event,
+        percentage: overall,
+        eventId: `${studentId}|pct|${today}|${event}`,
+      };
+      let allDelivered =
+        (await this.notifications.dispatchEvent(studentId, percentEvent)) ||
+        this.notifications.isProcessed(percentEvent.eventId as string);
+
+      for (const milestone of milestones) {
+        if (preferences.milestonesEnabled === false) continue;
+        const milestoneEvent: NotificationEventPayload = {
+          type: milestone,
+          percentage: overall,
+          eventId: `${studentId}|pct|${today}|${milestone}`,
+        };
+        const ok =
+          (await this.notifications.dispatchEvent(studentId, milestoneEvent)) ||
+          this.notifications.isProcessed(milestoneEvent.eventId as string);
+        if (!ok) allDelivered = false;
+      }
+
+      if (!allDelivered) {
+        // Keep the previous baseline so the transition is retried next poll.
+        snapshots[studentId] = snapshot;
+        this.store.set(STORE_SNAPSHOTS, snapshots);
+        return;
+      }
+      snapshot.lastPctEventDate = today;
+    }
+
+    snapshot.lastPct = overall;
     snapshots[studentId] = snapshot;
     this.store.set(STORE_SNAPSHOTS, snapshots);
   }

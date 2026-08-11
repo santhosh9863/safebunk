@@ -3,6 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { JsonStoreService } from '../common/store/json-store.service';
 import { NotificationsService } from './notifications.service';
 import { PlannedReminder } from './timetable-watcher.service';
+import { ttlSecondsFor } from './notification-events';
 
 const STORE_REMINDERS = 'plannedReminders';
 
@@ -11,7 +12,8 @@ const STORE_REMINDERS = 'plannedReminders';
  * minute; anything whose fire time has arrived and is still unprocessed is
  * delivered through FCM (OS-level delivery — no app process needed). Class
  * reminders carry a short FCM TTL so a stale "starts in 5 minutes" never
- * arrives hours later.
+ * arrives hours later — and any reminder that could not be delivered within
+ * its TTL window is dropped instead of firing late.
  */
 @Injectable()
 export class NotificationSchedulerService {
@@ -40,6 +42,16 @@ export class NotificationSchedulerService {
 
       for (const reminder of due) {
         if (this.notifications.isProcessed(reminder.eventId)) continue;
+
+        // Time-sensitive reminders never fire after their delivery window has
+        // passed — a "class starts in 5 minutes" is useless 30 minutes later.
+        const ttlMs = ttlSecondsFor(reminder.type) * 1000;
+        if (now - reminder.fireAt > ttlMs) {
+          this.logger.log(
+            `Dropping stale reminder ${reminder.type} for ${reminder.studentId} (fired ${new Date(reminder.fireAt).toISOString()})`,
+          );
+          continue;
+        }
 
         await this.notifications.dispatchEvent(reminder.studentId, {
           type: reminder.type,

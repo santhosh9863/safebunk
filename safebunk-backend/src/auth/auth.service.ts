@@ -3,6 +3,7 @@ import * as crypto from 'crypto';
 import { LinwaysService } from '../linways/linways.service';
 import { LINWAYS_ENDPOINTS } from '../linways/linways.constants';
 import { CacheService } from '../cache/cache.service';
+import { JsonStoreService } from '../common/store/json-store.service';
 
 export interface Session {
   token: string;
@@ -11,6 +12,8 @@ export interface Session {
   cookies: string;
   createdAt: number;
 }
+
+const STORE_SESSIONS = 'authSessions';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +24,35 @@ export class AuthService {
   constructor(
     private readonly linwaysService: LinwaysService,
     private readonly cacheService: CacheService,
-  ) {}
+    private readonly store: JsonStoreService,
+  ) {
+    // Restore sessions from disk so the background notification watchers
+    // keep working across backend restarts/redeploys.
+    this.restoreSessions();
+  }
+
+  private restoreSessions(): void {
+    try {
+      const stored = this.store.get<Session[]>(STORE_SESSIONS) ?? [];
+      const now = Date.now();
+      let restored = 0;
+      for (const session of stored) {
+        if (!session?.token || !session?.studentId || !session?.cookies) continue;
+        if (now - session.createdAt > this.sessionTtlMs) continue;
+        this.sessions.set(session.token, session);
+        restored++;
+      }
+      if (restored > 0) {
+        this.logger.log(`Restored ${restored} session(s) from store`);
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to restore sessions: ${error}`);
+    }
+  }
+
+  private persistSessions(): void {
+    this.store.set(STORE_SESSIONS, Array.from(this.sessions.values()));
+  }
 
   async login(username: string, password: string): Promise<{ session: Session; studentInfo: any }> {
     const loginPayload = { username, password };
@@ -55,6 +86,7 @@ export class AuthService {
     };
 
     this.sessions.set(sessionToken, session);
+    this.persistSessions();
 
     this.logger.log(`Session created for ${username} (${studentInfo.studentId})`);
 
@@ -87,19 +119,23 @@ export class AuthService {
 
   async logout(token: string): Promise<void> {
     this.sessions.delete(token);
+    this.persistSessions();
   }
 
   /** All non-expired sessions — used by the background notification watchers. */
   getActiveSessions(): Session[] {
     const now = Date.now();
     const active: Session[] = [];
+    let pruned = false;
     for (const [token, session] of this.sessions.entries()) {
       if (now - session.createdAt > this.sessionTtlMs) {
         this.sessions.delete(token);
+        pruned = true;
         continue;
       }
       active.push(session);
     }
+    if (pruned) this.persistSessions();
     return active;
   }
 

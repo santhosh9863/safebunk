@@ -20,6 +20,7 @@ class NotificationPreferences {
   final bool bunkEnabled;
   final bool classRemindersEnabled;
   final bool milestonesEnabled;
+  final bool timetableEnabled;
   final bool roastingEnabled;
   final ClassReminderTiming reminderTiming;
 
@@ -29,6 +30,7 @@ class NotificationPreferences {
     this.bunkEnabled = true,
     this.classRemindersEnabled = true,
     this.milestonesEnabled = true,
+    this.timetableEnabled = true,
     this.roastingEnabled = true,
     this.reminderTiming = ClassReminderTiming.minutes10,
   });
@@ -39,6 +41,7 @@ class NotificationPreferences {
     bool? bunkEnabled,
     bool? classRemindersEnabled,
     bool? milestonesEnabled,
+    bool? timetableEnabled,
     bool? roastingEnabled,
     ClassReminderTiming? reminderTiming,
   }) {
@@ -48,6 +51,7 @@ class NotificationPreferences {
       bunkEnabled: bunkEnabled ?? this.bunkEnabled,
       classRemindersEnabled: classRemindersEnabled ?? this.classRemindersEnabled,
       milestonesEnabled: milestonesEnabled ?? this.milestonesEnabled,
+      timetableEnabled: timetableEnabled ?? this.timetableEnabled,
       roastingEnabled: roastingEnabled ?? this.roastingEnabled,
       reminderTiming: reminderTiming ?? this.reminderTiming,
     );
@@ -65,6 +69,7 @@ class NotificationPreferences {
           bunkEnabled == other.bunkEnabled &&
           classRemindersEnabled == other.classRemindersEnabled &&
           milestonesEnabled == other.milestonesEnabled &&
+          timetableEnabled == other.timetableEnabled &&
           roastingEnabled == other.roastingEnabled &&
           reminderTiming == other.reminderTiming;
 
@@ -75,6 +80,7 @@ class NotificationPreferences {
         bunkEnabled,
         classRemindersEnabled,
         milestonesEnabled,
+        timetableEnabled,
         roastingEnabled,
         reminderTiming,
       );

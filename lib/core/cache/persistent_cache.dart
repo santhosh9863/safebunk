@@ -7,6 +7,7 @@ class PersistentCache {
   static const _subjectWiseBox = 'subject_wise_attendance';
   static const _profileBox = 'profile';
   static const _academicTermBox = 'academic_term';
+  static const _timetableBox = 'timetable';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -14,6 +15,7 @@ class PersistentCache {
     await Hive.openBox<String>(_subjectWiseBox);
     await Hive.openBox<String>(_profileBox);
     await Hive.openBox<String>(_academicTermBox);
+    await Hive.openBox<String>(_timetableBox);
   }
 
   static List<T>? getDailyAttendance<T>(String studentId, T Function(Map<String, dynamic>) fromJson) {
@@ -96,6 +98,30 @@ class PersistentCache {
   static Future<void> setStoredTermId(String studentId, String termId) async {
     try {
       await Hive.box<String>(_academicTermBox).put(studentId, termId);
+    } catch (_) {}
+  }
+
+  static List<T>? getTimetable<T>(String key, T Function(Map<String, dynamic>) fromJson) {
+    try {
+      final box = Hive.box<String>(_timetableBox);
+      final jsonStr = box.get(key);
+      if (jsonStr == null) return null;
+
+      final decoded = jsonDecode(jsonStr) as List;
+      return decoded
+          .whereType<Map>()
+          .map((e) => fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } catch (_) {
+      _safeDelete(_timetableBox, key);
+      return null;
+    }
+  }
+
+  static Future<void> setTimetable(String key, List<Map<String, dynamic>> items) async {
+    try {
+      final box = Hive.box<String>(_timetableBox);
+      await box.put(key, jsonEncode(items));
     } catch (_) {}
   }
 

@@ -165,7 +165,13 @@ export class NotificationsService {
     if (!this.eventEnabled(preferences, event.type)) return false;
 
     const devices = this.getDevices(studentId).filter((d) => d.enabled);
-    if (devices.length === 0) return false;
+    if (devices.length === 0) {
+      // No reachable device yet (user logged out / token not registered).
+      // Leave the event unprocessed so it can be delivered later if a device
+      // registers while the event is still meaningful. Watchers and the
+      // scheduler re-attempt on their next tick.
+      return false;
+    }
 
     const content = this.contentService.build(event, preferences);
     const fullEvent: NotificationEventPayload = {
@@ -175,17 +181,30 @@ export class NotificationsService {
     };
 
     let anyDelivered = false;
+    let anyInvalidToken = false;
     for (const device of devices) {
       const result = await this.fcmService.sendToDevice(device.fcmToken, fullEvent, content);
       if (result.error === 'invalid-token') {
+        anyInvalidToken = true;
         await this.deactivateToken(studentId, device.fcmToken);
       }
       if (result.delivered) anyDelivered = true;
     }
 
-    // Even in dev mode the event is marked processed so real delivery is
-    // idempotent once FCM is configured.
-    await this.markProcessed(eventId);
+    if (this.fcmService.isDevMode) {
+      // Dev mode: mark processed so delivery is idempotent once real FCM
+      // credentials are configured.
+      await this.markProcessed(eventId);
+      return anyDelivered;
+    }
+
+    // Only mark the event processed once it actually reached FCM (or every
+    // device token was invalid). Transient failures stay unprocessed so the
+    // watchers / scheduler retry — FCM itself queues the message for offline
+    // phones until the per-type TTL expires.
+    if (anyDelivered || anyInvalidToken) {
+      await this.markProcessed(eventId);
+    }
     return anyDelivered;
   }
 
@@ -226,7 +245,7 @@ export class NotificationsService {
       case 'nextClass':
         return preferences.classRemindersEnabled !== false;
       case 'timetableUpdated':
-        return preferences.attendanceEnabled !== false;
+        return preferences.timetableEnabled !== false;
       default:
         return true;
     }

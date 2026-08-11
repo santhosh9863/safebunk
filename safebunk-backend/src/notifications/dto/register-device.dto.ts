@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export enum DevicePlatform {
   android = 'android',
@@ -16,6 +16,7 @@ export class RegisterDeviceDto {
   platform?: DevicePlatform;
 
   @IsOptional()
+  @IsBoolean()
   enabled?: boolean;
 }
 

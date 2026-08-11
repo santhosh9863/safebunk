@@ -26,6 +26,18 @@ class NotificationSettings extends Notifier<NotificationPreferences> {
   NotificationPreferences build() {
     ref.watch(attendanceAlertsProvider);
     ref.watch(lowAttendanceWarningProvider);
+    // The legacy settings toggles are written directly by the settings UI;
+    // mirror any change to the backend so server delivery stays in sync.
+    ref.listen(attendanceAlertsProvider, (previous, next) {
+      if (previous == next) return;
+      state = state.copyWith(attendanceEnabled: next);
+      _syncToBackend();
+    });
+    ref.listen(lowAttendanceWarningProvider, (previous, next) {
+      if (previous == next) return;
+      state = state.copyWith(bunkEnabled: next);
+      _syncToBackend();
+    });
     final store = ref.watch(notificationStateStoreProvider);
     return NotificationPreferences(
       masterEnabled: store.getMasterEnabled(),
@@ -33,6 +45,7 @@ class NotificationSettings extends Notifier<NotificationPreferences> {
       bunkEnabled: ref.read(lowAttendanceWarningProvider),
       classRemindersEnabled: store.getClassRemindersEnabled(),
       milestonesEnabled: store.getMilestonesEnabled(),
+      timetableEnabled: store.getTimetableEnabled(),
       roastingEnabled: store.getRoastingEnabled(),
       reminderTiming: _timingFromMinutes(store.getReminderTimingMinutes()),
     );
@@ -53,6 +66,12 @@ class NotificationSettings extends Notifier<NotificationPreferences> {
   Future<void> setMilestonesEnabled(bool value) async {
     await ref.read(notificationStateStoreProvider).setMilestonesEnabled(value);
     state = state.copyWith(milestonesEnabled: value);
+    _syncToBackend();
+  }
+
+  Future<void> setTimetableEnabled(bool value) async {
+    await ref.read(notificationStateStoreProvider).setTimetableEnabled(value);
+    state = state.copyWith(timetableEnabled: value);
     _syncToBackend();
   }
 
@@ -79,8 +98,10 @@ class NotificationSettings extends Notifier<NotificationPreferences> {
           .updatePreferences(
             masterEnabled: prefs.masterEnabled,
             attendanceEnabled: prefs.attendanceEnabled,
+            bunkEnabled: prefs.bunkEnabled,
             classRemindersEnabled: prefs.classRemindersEnabled,
             milestonesEnabled: prefs.milestonesEnabled,
+            timetableEnabled: prefs.timetableEnabled,
             roastingEnabled: prefs.roastingEnabled,
             reminderTimingMinutes: prefs.reminderTiming.minutes,
           ),

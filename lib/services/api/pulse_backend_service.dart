@@ -121,8 +121,10 @@ class PulseBackendService {
   Future<void> updatePreferences({
     required bool masterEnabled,
     required bool attendanceEnabled,
+    required bool bunkEnabled,
     required bool classRemindersEnabled,
     required bool milestonesEnabled,
+    required bool timetableEnabled,
     required bool roastingEnabled,
     required int reminderTimingMinutes,
   }) async {
@@ -134,9 +136,10 @@ class PulseBackendService {
         data: {
           'masterEnabled': masterEnabled,
           'attendanceEnabled': attendanceEnabled,
-          'bunkEnabled': true,
+          'bunkEnabled': bunkEnabled,
           'classRemindersEnabled': classRemindersEnabled,
           'milestonesEnabled': milestonesEnabled,
+          'timetableEnabled': timetableEnabled,
           'roastingEnabled': roastingEnabled,
           'reminderTiming': '$reminderTimingMinutes',
         },

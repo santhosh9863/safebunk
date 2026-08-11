@@ -235,6 +235,21 @@ class SettingsTab extends ConsumerWidget {
                 child: Divider(height: 1),
               ),
               _SettingsRow(
+                label: 'Timetable Changes',
+                subtitle: 'Get notified when your timetable is updated.',
+                trailing: Switch.adaptive(
+                  value: notificationPrefs.timetableEnabled,
+                  activeTrackColor: theme.colorScheme.primary,
+                  onChanged: (v) => ref
+                      .read(notificationSettingsProvider.notifier)
+                      .setTimetableEnabled(v),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 4),
+                child: Divider(height: 1),
+              ),
+              _SettingsRow(
                 label: 'Roast Mode',
                 subtitle: 'Gen-Z energy, or straight facts.',
                 trailing: Switch.adaptive(

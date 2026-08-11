@@ -29,6 +29,10 @@ export class NotificationPreferencesDto {
 
   @IsOptional()
   @IsBoolean()
+  timetableEnabled?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
   roastingEnabled?: boolean;
 
   @IsOptional()
@@ -42,6 +46,7 @@ export const DEFAULT_PREFERENCES: NotificationPreferencesDto = {
   bunkEnabled: true,
   classRemindersEnabled: true,
   milestonesEnabled: true,
+  timetableEnabled: true,
   roastingEnabled: true,
   reminderTiming: ReminderTiming.minutes10,
 };

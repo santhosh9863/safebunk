@@ -11,11 +11,16 @@ class ApiConstants {
   static const String subjectWiseAttendance = '/attendance/subject-wise-attendance-report';
   static const String studiedTerms = '/attendance/fetch-student-studied-terms';
   static const String studentBasicDetails = '/student/get-student-basic-details';
+  static const String studentDailySchedule = '/student/get-my-daily-schedule';
+  static const String timetable = '/timetable';
+  static const String timetableDayHours = '/timetable/day-hours';
 
   static const String studentId = 'studentId';
   static const String fromDate = 'fromDate';
   static const String toDate = 'toDate';
   static const String emitAsResetWhileReset = 'emitAsResetWhileReset';
+  static const String batchId = 'batchId';
+  static const String getDaywise = 'getDaywise';
 
   static const String username = 'username';
   static const String password = 'password';

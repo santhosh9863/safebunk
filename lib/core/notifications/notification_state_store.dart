@@ -154,6 +154,7 @@ class NotificationStateStore {
     await _box?.delete('toggle_master');
     await _box?.delete('toggle_class_reminders');
     await _box?.delete('toggle_milestones');
+    await _box?.delete('toggle_timetable');
     await _box?.delete('toggle_roasting');
     await _box?.delete('reminder_timing');
     await _box?.delete('scheduled_reminder_ids');
@@ -216,6 +217,15 @@ class NotificationStateStore {
 
   bool getMilestonesEnabled() {
     final val = _box?.get('toggle_milestones');
+    return val == null ? true : val == '1';
+  }
+
+  Future<void> setTimetableEnabled(bool value) async {
+    await _box?.put('toggle_timetable', value ? '1' : '0');
+  }
+
+  bool getTimetableEnabled() {
+    final val = _box?.get('toggle_timetable');
     return val == null ? true : val == '1';
   }
 

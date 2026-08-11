@@ -19,6 +19,9 @@ import 'services/analytics_service.dart';
 import 'services/update_service.dart';
 import 'shared/widgets/update_dialog.dart';
 import 'screens/web_login_screen.dart';
+import 'screens/main_shell_screen.dart';
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,12 +58,6 @@ void main() async {
       notificationServiceProvider.overrideWithValue(notificationService),
   };
 
-  if (notificationService != null) {
-    notificationService.onNotificationTap = (payload) {
-      // Navigation handled by main_shell_screen; just bring app to foreground
-    };
-  }
-
   runApp(
     ProviderScope(
       overrides: [
@@ -91,12 +88,30 @@ class SafeBunkApp extends ConsumerStatefulWidget {
 }
 
 class _SafeBunkAppState extends ConsumerState<SafeBunkApp> {
-  final _navigatorKey = GlobalKey<NavigatorState>();
   bool _hasShownUpdateDialog = false;
 
   @override
   void initState() {
     super.initState();
+
+    // Notification taps (local + FCM background/terminated) bring the user
+    // back to the dashboard when a session is active. If no session exists
+    // yet the login screen's restore flow handles navigation on its own.
+    Future<void> handleNotificationOpen() async {
+      final auth = ref.read(authProvider);
+      if (auth.status != AuthStatus.authenticated) return;
+      final context = rootNavigatorKey.currentContext;
+      if (context == null) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainShellScreen()),
+        (route) => false,
+      );
+    }
+
+    FcmController.onMessageOpened = (type, eventId) => handleNotificationOpen();
+    ref.read(notificationServiceProvider)?.onNotificationTap = (_) =>
+        handleNotificationOpen();
+
     Future.microtask(() {
       AnalyticsService.logAppOpen();
       ref.read(updateProvider.notifier).checkForUpdate();
@@ -112,9 +127,9 @@ class _SafeBunkAppState extends ConsumerState<SafeBunkApp> {
         _hasShownUpdateDialog = true;
         debugPrint('[UpdateService] Update popup shown: ${next.type} update to ${next.info!.latestVersion}');
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted && _navigatorKey.currentContext != null) {
+          if (mounted && rootNavigatorKey.currentContext != null) {
             showDialog(
-              context: _navigatorKey.currentContext!,
+              context: rootNavigatorKey.currentContext!,
               barrierDismissible: next.type != UpdateType.required,
               builder: (_) => UpdateDialog(
                 info: next.info!,
@@ -129,7 +144,7 @@ class _SafeBunkAppState extends ConsumerState<SafeBunkApp> {
     final darkMode = ref.watch(darkModeProvider);
 
     return MaterialApp(
-      navigatorKey: _navigatorKey,
+      navigatorKey: rootNavigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'PULSE',
       theme: AppTheme.lightTheme,
