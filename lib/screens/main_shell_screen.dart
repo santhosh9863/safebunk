@@ -5,6 +5,7 @@ import '../features/dashboard/providers/dashboard_providers.dart';
 import '../features/dashboard/screens/dashboard_tab_v2.dart';
 import '../features/subjects/screens/subject_wise_tab.dart';
 import '../features/analytics/screens/analytics_tab.dart';
+import '../features/notifications/presentation/notification_observer.dart';
 import '../features/settings/screens/settings_tab.dart';
 import '../providers/auth_provider.dart';
 import '../services/analytics_service.dart';
@@ -40,13 +41,18 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
     });
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: const [
-          DashboardTabV2(),
-          SubjectWiseTab(),
-          AnalyticsTab(),
-          SettingsTab(),
+      body: Stack(
+        children: [
+          const NotificationObserver(),
+          IndexedStack(
+            index: _currentIndex,
+            children: const [
+              DashboardTabV2(),
+              SubjectWiseTab(),
+              AnalyticsTab(),
+              SettingsTab(),
+            ],
+          ),
         ],
       ),
       bottomNavigationBar: NavigationBar(

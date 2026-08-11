@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/cache/memory_cache.dart';
@@ -24,6 +25,9 @@ final _subjectWiseRepositoryProvider = Provider<SubjectWiseAttendanceRepository>
 });
 
 final subjectWiseAttendanceProvider = FutureProvider<List<SubjectWiseAttendanceModel>>((ref) async {
+  // Watch auth so this recomputes on account switch even without explicit
+  // invalidation (parity with _studentIdProvider in attendance_provider.dart).
+  ref.watch(authProvider);
   final sessionManager = ref.watch(sessionManagerProvider);
   final studentId = (await sessionManager.getStudentId()) ?? '';
   if (studentId.isEmpty) {
@@ -32,6 +36,7 @@ final subjectWiseAttendanceProvider = FutureProvider<List<SubjectWiseAttendanceM
   final repo = ref.watch(_subjectWiseRepositoryProvider);
   try {
     final subjects = await repo.fetchSubjectWiseAttendance(studentId: studentId);
+    debugPrint('[AccountSwitch] subjectWise for "$studentId" -> ${subjects.length} subjects');
     return subjects;
   } catch (_) {
     rethrow;

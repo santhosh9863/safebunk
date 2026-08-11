@@ -5,8 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/calculations/attendance_engine.dart';
 import '../../../core/calculations/attendance_utils.dart';
-import '../../../core/notifications/notification_providers.dart';
-import '../../../core/notifications/notification_scheduler.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../../profile/models/student_profile.dart';
 import '../../../models/api/subject_wise_attendance_model.dart';
@@ -100,6 +98,7 @@ class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
   bool _dataInitialized = false;
   bool _staleSession = true;
   bool _isRefreshing = false;
+  bool _autoRefreshed = false;
 
   @override
   void initState() {
@@ -113,6 +112,7 @@ class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
     if (!_dataInitialized) {
       _dataInitialized = true;
       _staleSession = true;
+      debugPrint('[AccountSwitch] Dashboard mounted: invalidating attendance providers, gate=loading');
       ref.invalidate(subjectAttendanceProvider);
       ref.invalidate(subjectWiseAttendanceProvider);
     }
@@ -128,37 +128,15 @@ class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
     }
   }
 
-  void _evaluateNotifications(List<AttendanceAnalysisItem> items) {
-    final scheduler = ref.read(notificationSchedulerProvider);
-    if (scheduler == null) return;
-
-    int totalPresent = 0;
-    int totalHours = 0;
-    for (final item in items) {
-      totalPresent += item.analysis.presentHours;
-      totalHours += item.analysis.totalHours;
-    }
-
-    final overallPct = _computeOverallPercentage(totalPresent, totalHours);
-    final safeBunks = AttendanceEngine.calculateSafeBunks(totalPresent, totalHours);
-    final target = ref.read(attendanceTargetProvider);
-    final alertsEnabled = ref.read(attendanceAlertsProvider);
-    final lowWarningEnabled = ref.read(lowAttendanceWarningProvider);
-    final dailyReminderEnabled = ref.read(dailyReminderProvider);
-    final weeklySummaryEnabled = ref.read(weeklySummaryProvider);
-
-    scheduler.evaluate(
-      overallPercentage: overallPct,
-      safeBunks: safeBunks,
-      attendanceTarget: target,
-      now: DateTime.now(),
-      settings: NotificationSettings(
-        notificationsEnabled: alertsEnabled,
-        lowAttendanceEnabled: lowWarningEnabled,
-        dailyReminderEnabled: dailyReminderEnabled,
-        weeklySummaryEnabled: weeklySummaryEnabled,
-      ),
-    );
+  void _scheduleAutoRefresh() {
+    if (_autoRefreshed || !mounted) return;
+    _autoRefreshed = true;
+    // After a fresh login/restored session the dashboard is guaranteed to
+    // fetch live data. Run one more refresh shortly after the first load so
+    // Linways' async sync is reflected and no stale persisted data lingers.
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) _onRefresh();
+    });
   }
 
   Future<void> _onRefresh() async {
@@ -203,11 +181,24 @@ class _DashboardTabV2State extends ConsumerState<DashboardTabV2> {
     final trigger = ref.watch(dashboardTabTriggerProvider);
 
     ref.listen(attendanceAnalysisProvider, (_, next) {
-      next.whenOrNull(data: (items) {
-        _staleSession = false;
-        ref.read(lastUpdatedProvider.notifier).state = DateTime.now();
-        _evaluateNotifications(items);
-      });
+      next.when(
+        data: (items) {
+          _staleSession = false;
+          ref.read(lastUpdatedProvider.notifier).state = DateTime.now();
+          debugPrint(
+            '[AccountSwitch] analysis data -> ${items.length} subjects, '
+            'first="${items.isEmpty ? '-' : AttendanceUtils.cleanSubjectName(items.first.subjectName)}"',
+          );
+          _scheduleAutoRefresh();
+        },
+        error: (e, _) {
+          debugPrint('[AccountSwitch] analysis error: $e');
+          // Release the loading gate so the error card renders instead of
+          // leaving the dashboard stuck on the spinner.
+          _staleSession = false;
+        },
+        loading: () {},
+      );
     });
 
     final officialMap = officialAsync.whenOrNull(
@@ -804,13 +795,14 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
 
   late final AnimationController _controller;
   late final Animation<double> _animation;
-  double _finalValue = 0;
+  double _fromValue = 0;
+  double _targetValue = 0;
   int _lastTrigger = 0;
 
   @override
   void initState() {
     super.initState();
-    _finalValue = widget.percentage.clamp(0, 100) / 100.0;
+    _targetValue = widget.percentage.clamp(0, 100).toDouble();
     _lastTrigger = widget.trigger;
     _controller = AnimationController(
       vsync: this,
@@ -822,13 +814,23 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
     _controller.forward();
   }
 
+  double get _displayValue => _fromValue + (_targetValue - _fromValue) * _animation.value;
+
   @override
   void didUpdateWidget(_InstrumentGauge oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.trigger != _lastTrigger) {
+    if (widget.trigger != _lastTrigger || widget.percentage != oldWidget.percentage) {
       _lastTrigger = widget.trigger;
-      _finalValue = widget.percentage.clamp(0, 100) / 100.0;
+      final from = _displayValue;
+      final target = widget.percentage.clamp(0, 100).toDouble();
+      debugPrint(
+        '[AccountSwitch] Gauge didUpdateWidget: ${oldWidget.percentage.toStringAsFixed(1)}% -> '
+        '${widget.percentage.toStringAsFixed(1)}% (trigger ${oldWidget.trigger} -> ${widget.trigger})',
+      );
+      _fromValue = from;
+      _targetValue = target;
       _controller
+        ..stop()
         ..value = 0
         ..forward();
     }
@@ -860,7 +862,7 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
             builder: (context, child) {
               return CustomPaint(
                 painter: _InstrumentPainter(
-                  progress: _animation.value * _finalValue,
+                  progress: _displayValue / 100.0,
                   trackColor: cs.surfaceContainerHighest,
                   gradientColors: gradientColors,
                   statusColor: widget.statusColor,
@@ -879,7 +881,7 @@ class _InstrumentGaugeState extends State<_InstrumentGauge>
                 AnimatedBuilder(
                   animation: _animation,
                   builder: (context, child) {
-                    final displayValue = _animation.value * _finalValue * 100;
+                    final displayValue = _displayValue;
                     return Text(
                       '${displayValue.toStringAsFixed(1)}%',
                       style: TextStyle(

@@ -12,6 +12,7 @@ import 'core/session/session_manager.dart';
 import 'core/storage/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/settings/providers/settings_providers.dart';
+import 'features/notifications/application/fcm_setup.dart';
 import 'providers/auth_provider.dart';
 import 'providers/update_provider.dart';
 import 'services/analytics_service.dart';
@@ -38,6 +39,10 @@ void main() async {
   } catch (e) {
     debugPrint('[Notifications] Init failed (non-fatal): $e');
   }
+
+  // FCM: captures the token, forwards foreground messages into the local
+  // notification pipeline. Registration with the backend happens after login.
+  await FcmController.initialize(notificationService);
 
   final secureStorage = SecureStorageService();
   final sessionManager = SessionManager(secureStorage);

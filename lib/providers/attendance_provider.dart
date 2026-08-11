@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/cache/memory_cache.dart';
@@ -35,8 +36,12 @@ final _repositoryProvider = Provider<AttendanceRepository>((ref) {
 });
 
 final _studentIdProvider = FutureProvider<String>((ref) async {
+  // Recompute whenever the session changes (login/logout/session restore)
+  // so a keepAlive cache can never leak the previous account's studentId.
+  ref.watch(authProvider);
   final sessionManager = ref.watch(sessionManagerProvider);
   final id = await sessionManager.getStudentId();
+  debugPrint('[AccountSwitch] _studentIdProvider computed -> "$id"');
   return id ?? '';
 });
 
@@ -65,6 +70,10 @@ final subjectAttendanceProvider = FutureProvider<List<CourseAttendanceModel>>((r
   try {
     final daily = await repo.fetchDailyAttendance(studentId: studentId);
     final result = repo.aggregateSubjectAttendance(daily);
+    debugPrint(
+      '[AccountSwitch] subjectAttendance for "$studentId" -> ${daily.length} daily records, '
+      '${result.length} subjects',
+    );
     return result;
   } catch (_) {
     rethrow;

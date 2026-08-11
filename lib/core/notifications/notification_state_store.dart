@@ -4,11 +4,14 @@ import 'notification_constants.dart';
 
 class NotificationStateStore {
   static const _boxName = 'notification_state';
+  static const _sentBoxName = 'notification_sent';
 
   Box<String>? _box;
+  Box<String>? _sentBox;
 
   Future<void> init() async {
     _box = await Hive.openBox<String>(_boxName);
+    _sentBox = await Hive.openBox<String>(_sentBoxName);
   }
 
   // ── First Run ──
@@ -148,5 +151,90 @@ class NotificationStateStore {
     await _box?.delete(NotificationStoreKeys.lastDailyReminder);
     await _box?.delete(NotificationStoreKeys.lastSummaryMonday);
     await _box?.delete('last_safe_leave_milestone');
+    await _box?.delete('toggle_master');
+    await _box?.delete('toggle_class_reminders');
+    await _box?.delete('toggle_milestones');
+    await _box?.delete('toggle_roasting');
+    await _box?.delete('reminder_timing');
+    await _box?.delete('scheduled_reminder_ids');
+    await _sentBox?.clear();
+  }
+
+  // ── Nullable safe-bunk read (baseline detection) ──
+
+  int? getLastSafeBunksOrNull() {
+    final raw = _box?.get(NotificationStoreKeys.lastSafeBunks);
+    if (raw == null || raw.isEmpty) return null;
+    return int.tryParse(raw);
+  }
+
+  // ── Sent-marker dedup (event → deterministic id) ──
+
+  bool hasSent(String dedupeId) {
+    return _sentBox?.get(dedupeId) == '1';
+  }
+
+  Future<void> markSent(String dedupeId) async {
+    await _sentBox?.put(dedupeId, '1');
+  }
+
+  // ── Scheduled reminder id tracking (timetable change → cancel + reschedule) ──
+
+  Future<List<String>> getScheduledReminderIds() async {
+    final raw = _box?.get('scheduled_reminder_ids');
+    if (raw == null || raw.isEmpty) return const [];
+    return raw.split(',').where((s) => s.isNotEmpty).toList();
+  }
+
+  Future<void> setScheduledReminderIds(List<String> ids) async {
+    await _box?.put('scheduled_reminder_ids', ids.join(','));
+  }
+
+  // ── New preference toggles ──
+
+  Future<void> setMasterEnabled(bool value) async {
+    await _box?.put('toggle_master', value ? '1' : '0');
+  }
+
+  bool getMasterEnabled() {
+    final val = _box?.get('toggle_master');
+    return val == null ? true : val == '1';
+  }
+
+  Future<void> setClassRemindersEnabled(bool value) async {
+    await _box?.put('toggle_class_reminders', value ? '1' : '0');
+  }
+
+  bool getClassRemindersEnabled() {
+    final val = _box?.get('toggle_class_reminders');
+    return val == null ? true : val == '1';
+  }
+
+  Future<void> setMilestonesEnabled(bool value) async {
+    await _box?.put('toggle_milestones', value ? '1' : '0');
+  }
+
+  bool getMilestonesEnabled() {
+    final val = _box?.get('toggle_milestones');
+    return val == null ? true : val == '1';
+  }
+
+  Future<void> setRoastingEnabled(bool value) async {
+    await _box?.put('toggle_roasting', value ? '1' : '0');
+  }
+
+  bool getRoastingEnabled() {
+    final val = _box?.get('toggle_roasting');
+    return val == null ? true : val == '1';
+  }
+
+  Future<void> setReminderTimingMinutes(int minutes) async {
+    await _box?.put('reminder_timing', minutes.toString());
+  }
+
+  int getReminderTimingMinutes() {
+    final raw = _box?.get('reminder_timing');
+    if (raw == null || raw.isEmpty) return 10;
+    return int.tryParse(raw) ?? 10;
   }
 }

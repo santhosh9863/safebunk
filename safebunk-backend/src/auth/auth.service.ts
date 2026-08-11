@@ -89,6 +89,20 @@ export class AuthService {
     this.sessions.delete(token);
   }
 
+  /** All non-expired sessions — used by the background notification watchers. */
+  getActiveSessions(): Session[] {
+    const now = Date.now();
+    const active: Session[] = [];
+    for (const [token, session] of this.sessions.entries()) {
+      if (now - session.createdAt > this.sessionTtlMs) {
+        this.sessions.delete(token);
+        continue;
+      }
+      active.push(session);
+    }
+    return active;
+  }
+
   async fetchAndCacheStudentInfo(username: string, cookies: string): Promise<any> {
     const cacheKey = `student_info:${username}`;
     const cached = this.cacheService.get<any>(cacheKey);

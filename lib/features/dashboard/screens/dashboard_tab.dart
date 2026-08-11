@@ -5,8 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/calculations/attendance_engine.dart';
 import '../../../core/calculations/attendance_utils.dart';
-import '../../../core/notifications/notification_providers.dart';
-import '../../../core/notifications/notification_scheduler.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../../profile/models/student_profile.dart';
 import '../../../models/api/subject_wise_attendance_model.dart';
@@ -116,39 +114,6 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
     }
   }
 
-  void _evaluateNotifications(List<AttendanceAnalysisItem> items) {
-    final scheduler = ref.read(notificationSchedulerProvider);
-    if (scheduler == null) return;
-
-    int totalPresent = 0;
-    int totalHours = 0;
-    for (final item in items) {
-      totalPresent += item.analysis.presentHours;
-      totalHours += item.analysis.totalHours;
-    }
-
-    final overallPct = _computeOverallPercentage(totalPresent, totalHours);
-    final safeBunks = AttendanceEngine.calculateSafeBunks(totalPresent, totalHours);
-    final target = ref.read(attendanceTargetProvider);
-    final alertsEnabled = ref.read(attendanceAlertsProvider);
-    final lowWarningEnabled = ref.read(lowAttendanceWarningProvider);
-    final dailyReminderEnabled = ref.read(dailyReminderProvider);
-    final weeklySummaryEnabled = ref.read(weeklySummaryProvider);
-
-    scheduler.evaluate(
-      overallPercentage: overallPct,
-      safeBunks: safeBunks,
-      attendanceTarget: target,
-      now: DateTime.now(),
-      settings: NotificationSettings(
-        notificationsEnabled: alertsEnabled,
-        lowAttendanceEnabled: lowWarningEnabled,
-        dailyReminderEnabled: dailyReminderEnabled,
-        weeklySummaryEnabled: weeklySummaryEnabled,
-      ),
-    );
-  }
-
   Future<void> _onRefresh() async {
     if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
@@ -191,7 +156,6 @@ class _DashboardTabState extends ConsumerState<DashboardTab> {
     ref.listen(attendanceAnalysisProvider, (_, next) {
       next.whenOrNull(data: (items) {
         ref.read(lastUpdatedProvider.notifier).state = DateTime.now();
-        _evaluateNotifications(items);
       });
     });
 
