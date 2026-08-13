@@ -1,17 +1,31 @@
-# safebunk_v2
+# PULSE 📊
 
-A new Flutter project.
+### Smart Attendance & Academic Companion
 
-## Getting Started
+PULSE is a Flutter-based student application designed to simplify attendance tracking and academic planning. It provides attendance insights, subject-wise analytics, timetable management, bunk planning, and smart notifications through an integrated academic data system.
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
+- Attendance & subject-wise analytics
+- Smart bunk and attendance recovery calculations
+- Timetable and upcoming class tracking
+- Smart attendance and timetable notifications
+- Linways API integration
+- Secure authentication and session management
+- Local caching for improved performance
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Tech Stack
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**Flutter · Dart · Riverpod · Dio · NestJS · TypeScript · Firebase · FCM**
+
+## Architecture
+
+Flutter App → NestJS Backend → Linways APIs
+
+The notification system uses Firebase Cloud Messaging for delivering real-time academic alerts.
+
+## Developer
+
+**Santhosh Krishna R**
+
+Built as a student-focused project to make attendance management simpler, smarter, and more practical.
