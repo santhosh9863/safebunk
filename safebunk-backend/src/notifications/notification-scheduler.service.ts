@@ -3,9 +3,10 @@ import { Cron } from '@nestjs/schedule';
 import { JsonStoreService } from '../common/store/json-store.service';
 import { NotificationsService } from './notifications.service';
 import { PlannedReminder } from './timetable-watcher.service';
-import { ttlSecondsFor } from './notification-events';
+import { ttlSecondsFor, NotificationEventPayload } from './notification-events';
 
 const STORE_REMINDERS = 'plannedReminders';
+const STORE_SNAPSHOTS = 'attendanceSnapshots';
 
 /**
  * Fires server-scheduled class reminders at their exact minute. Runs every
@@ -56,7 +57,10 @@ export class NotificationSchedulerService {
         await this.notifications.dispatchEvent(reminder.studentId, {
           type: reminder.type,
           subjectName: reminder.subjectName,
+          staffName: reminder.staffName,
           minutes: reminder.minutes,
+          totalCount: reminder.totalCount,
+          presentCount: this.todaysPresentCount(reminder.studentId),
           eventId: reminder.eventId,
         });
 
@@ -77,5 +81,25 @@ export class NotificationSchedulerService {
     } finally {
       this.running = false;
     }
+  }
+
+  /** Present records for today from the attendance snapshot (wrap-up stats). */
+  private todaysPresentCount(studentId: string): number | undefined {
+    const snapshots = this.store.getOr<Record<string, { records: Record<string, string> }>>(
+      STORE_SNAPSHOTS,
+      {},
+    );
+    const snapshot = snapshots[studentId];
+    if (!snapshot) return undefined;
+    const today = this.dateKey(new Date());
+    let present = 0;
+    for (const [key, status] of Object.entries(snapshot.records)) {
+      if (key.startsWith(`${today}|`) && status === '1') present++;
+    }
+    return present;
+  }
+
+  private dateKey(date: Date): string {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   }
 }

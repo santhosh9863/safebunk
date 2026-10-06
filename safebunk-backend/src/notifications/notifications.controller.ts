@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-user.decorator';
+import { AuthService } from '../auth/auth.service';
 import { ApiResponse } from '../common/dto/api-response.dto';
 import { NotificationsService } from './notifications.service';
 import {
@@ -15,7 +16,10 @@ import { NotificationPreferencesDto } from './dto/notification-preferences.dto';
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(
+    private readonly notificationsService: NotificationsService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('register-device')
   @ApiOperation({ summary: 'Register this device for push notifications' })
@@ -81,6 +85,11 @@ export class NotificationsController {
       })),
       preferences: this.notificationsService.getPreferences(user.studentId),
       recentEventIds: this.notificationsService.getRecentEventIds(user.studentId),
+      server: {
+        activeSessions: this.authService.getActiveSessions().length,
+        plannedReminders: this.notificationsService.getPlannedRemindersCount(),
+        devMode: this.notificationsService.isDevMode,
+      },
     });
   }
 

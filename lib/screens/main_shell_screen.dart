@@ -5,6 +5,7 @@ import '../features/dashboard/providers/dashboard_providers.dart';
 import '../features/dashboard/screens/dashboard_tab_v2.dart';
 import '../features/subjects/screens/subject_wise_tab.dart';
 import '../features/analytics/screens/analytics_tab.dart';
+import '../features/notifications/presentation/notification_nudge.dart';
 import '../features/notifications/presentation/notification_observer.dart';
 import '../features/settings/screens/settings_tab.dart';
 import '../providers/auth_provider.dart';
@@ -25,6 +26,9 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   void initState() {
     super.initState();
     Future.microtask(() => AnalyticsService.logDashboardOpen());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) showNotificationNudgeIfOff(ref, context);
+    });
   }
 
   @override

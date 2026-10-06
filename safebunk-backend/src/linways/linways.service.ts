@@ -14,7 +14,7 @@ export class LinwaysService {
     this.apiPrefix = '/academics/api/v1';
   }
 
-  private getClientConfig(cookies?: string): AxiosRequestConfig {
+  private getClientConfig(cookies?: string, authToken?: string): AxiosRequestConfig {
     return {
       baseURL: `${this.baseUrl}${this.apiPrefix}`,
       timeout: 20000,
@@ -22,7 +22,9 @@ export class LinwaysService {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         Accept: 'application/json, text/plain, */*',
         'Content-Type': 'application/json',
+        Referer: `${this.baseUrl}/academics/`,
         ...(cookies ? { Cookie: cookies } : {}),
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       },
       httpsAgent: new https.Agent({ rejectUnauthorized: false }),
       validateStatus: () => true,
@@ -34,8 +36,9 @@ export class LinwaysService {
     path: string,
     params?: Record<string, unknown>,
     cookies?: string,
+    authToken?: string,
   ): Promise<AxiosResponse> {
-    const config = this.getClientConfig(cookies);
+    const config = this.getClientConfig(cookies, authToken);
     config.params = params;
     return firstValueFrom(this.httpService.get(path, config));
   }
@@ -44,8 +47,9 @@ export class LinwaysService {
     path: string,
     data?: Record<string, unknown>,
     cookies?: string,
+    authToken?: string,
   ): Promise<AxiosResponse> {
-    const config = this.getClientConfig(cookies);
+    const config = this.getClientConfig(cookies, authToken);
     return firstValueFrom(this.httpService.post(path, data ?? {}, config));
   }
 

@@ -247,4 +247,21 @@ class NotificationStateStore {
     if (raw == null || raw.isEmpty) return 10;
     return int.tryParse(raw) ?? 10;
   }
+
+  Future<void> setGender(String gender) async {
+    await _box?.put('gender', gender);
+  }
+
+  String getGender() {
+    return _box?.get('gender') ?? '';
+  }
+
+  Future<void> setWrapUpEnabled(bool value) async {
+    await _box?.put('toggle_wrapup', value ? '1' : '0');
+  }
+
+  bool getWrapUpEnabled() {
+    final val = _box?.get('toggle_wrapup');
+    return val == null ? true : val == '1';
+  }
 }

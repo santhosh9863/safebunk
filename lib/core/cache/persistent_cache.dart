@@ -18,14 +18,18 @@ class PersistentCache {
     await Hive.openBox<String>(_timetableBox);
   }
 
+  /// Attendance is re-fetched from Linways once a persisted payload is older
+  /// than this, so Hive can never serve indefinitely stale semester totals.
+  static const attendanceMaxAge = Duration(hours: 6);
+
   static List<T>? getDailyAttendance<T>(String studentId, T Function(Map<String, dynamic>) fromJson) {
     try {
-      final box = Hive.box<String>(_dailyAttendanceBox);
-      final jsonStr = box.get(studentId);
-      if (jsonStr == null) return null;
+      final envelope = _decodeFreshEnvelope(
+        Hive.box<String>(_dailyAttendanceBox).get(studentId),
+      );
+      if (envelope == null) return null;
 
-      final decoded = jsonDecode(jsonStr) as List;
-      return decoded
+      return (envelope['items'] as List)
           .whereType<Map>()
           .map((e) => fromJson(Map<String, dynamic>.from(e)))
           .toList();
@@ -38,18 +42,18 @@ class PersistentCache {
   static Future<void> setDailyAttendance(String studentId, List<Map<String, dynamic>> items) async {
     try {
       final box = Hive.box<String>(_dailyAttendanceBox);
-      await box.put(studentId, jsonEncode(items));
+      await box.put(studentId, _encodeEnvelope(items));
     } catch (_) {}
   }
 
   static List<T>? getSubjectWiseAttendance<T>(String studentId, T Function(Map<String, dynamic>) fromJson) {
     try {
-      final box = Hive.box<String>(_subjectWiseBox);
-      final jsonStr = box.get(studentId);
-      if (jsonStr == null) return null;
+      final envelope = _decodeFreshEnvelope(
+        Hive.box<String>(_subjectWiseBox).get(studentId),
+      );
+      if (envelope == null) return null;
 
-      final decoded = jsonDecode(jsonStr) as List;
-      return decoded
+      return (envelope['items'] as List)
           .whereType<Map>()
           .map((e) => fromJson(Map<String, dynamic>.from(e)))
           .toList();
@@ -62,8 +66,35 @@ class PersistentCache {
   static Future<void> setSubjectWiseAttendance(String studentId, List<Map<String, dynamic>> items) async {
     try {
       final box = Hive.box<String>(_subjectWiseBox);
-      await box.put(studentId, jsonEncode(items));
+      await box.put(studentId, _encodeEnvelope(items));
     } catch (_) {}
+  }
+
+  static String _encodeEnvelope(List<Map<String, dynamic>> items) {
+    return jsonEncode({
+      'cachedAt': DateTime.now().millisecondsSinceEpoch,
+      'items': items,
+    });
+  }
+
+  /// Returns the envelope only when it is still within [attendanceMaxAge].
+  /// Anything else — unparseable, missing timestamp, or an expired payload
+  /// (including the legacy bare-list format) — is reported as a miss.
+  static Map<String, dynamic>? _decodeFreshEnvelope(String? jsonStr) {
+    if (jsonStr == null) return null;
+
+    final decoded = jsonDecode(jsonStr);
+    if (decoded is! Map) return null;
+
+    final envelope = Map<String, dynamic>.from(decoded);
+    final cachedAt = envelope['cachedAt'];
+    final items = envelope['items'];
+    if (cachedAt is! num || items is! List) return null;
+
+    final age = DateTime.now().millisecondsSinceEpoch - cachedAt.toInt();
+    if (age < 0 || age >= attendanceMaxAge.inMilliseconds) return null;
+
+    return envelope;
   }
 
   static T? getProfile<T>(String studentId, T Function(Map<String, dynamic>) fromJson) {

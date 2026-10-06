@@ -1,6 +1,7 @@
 import '../../../core/calculations/attendance_engine.dart';
 import '../../../core/calculations/attendance_utils.dart';
 import '../../../models/api/timetable_model.dart';
+import '../../../services/api/pulse_backend_service.dart';
 import '../data/datasources/local_notification_datasource.dart';
 import '../data/models/notification_preferences_model.dart';
 import '../data/repositories/notification_repository_impl.dart';
@@ -24,6 +25,7 @@ class NotificationManager {
   final ClassReminderScheduler _scheduler;
   final LocalNotificationDatasource _datasource;
   final NotificationRepositoryImpl _repository;
+  final PulseBackendService? _backend;
 
   NotificationManager({
     required NotificationRuleEngine engine,
@@ -31,11 +33,13 @@ class NotificationManager {
     required ClassReminderScheduler scheduler,
     required LocalNotificationDatasource datasource,
     required NotificationRepositoryImpl repository,
+    PulseBackendService? backend,
   })  : _engine = engine,
         _contentService = contentService,
         _scheduler = scheduler,
         _datasource = datasource,
-        _repository = repository;
+        _repository = repository,
+        _backend = backend;
 
   // ── Attendance ──────────────────────────────────────────────
 
@@ -90,6 +94,7 @@ class NotificationManager {
         idPrefix: 'att',
         priority: _priorityFor(event.type),
         roasting: settings.roastingEnabled,
+        gender: settings.gender,
       );
     }
 
@@ -133,6 +138,7 @@ class NotificationManager {
         idPrefix: 'bunk',
         priority: _priorityFor(event.type),
         roasting: settings.roastingEnabled,
+        gender: settings.gender,
       );
     }
 
@@ -143,9 +149,11 @@ class NotificationManager {
 
   /// Called when the timetable SOURCE changes (new fetch).
   ///
-  /// Cancels reminders that no longer exist, then pre-schedules exact-time
-  /// reminders for every upcoming class. Deterministic ids prevent
-  /// duplicates.
+  /// Weekdays: pre-schedules the day's signature moments (first class,
+  /// post-lunch, last class, wrap-up) — unless the PULSE backend is
+  /// reachable, in which case the backend owns delivery and the app stays
+  /// silent to avoid doubles.
+  /// Saturdays: nothing. Sundays: exactly one chill message at 10:00.
   Future<void> syncTimetable({
     required List<TimetableEntry> entries,
     required String studentId,
@@ -154,11 +162,22 @@ class NotificationManager {
   }) async {
     final tracked = await _repository.getScheduledReminderIds();
 
-    if (!settings.masterEnabled || !settings.classRemindersEnabled) {
+    final isSaturday = now.weekday == DateTime.saturday;
+    final isSunday = now.weekday == DateTime.sunday;
+    final backendOwns = await _backendOwnsDelivery();
+
+    if (!settings.masterEnabled ||
+        !settings.classRemindersEnabled ||
+        isSaturday ||
+        isSunday ||
+        backendOwns) {
       for (final id in tracked) {
         await _datasource.cancel(_stableHash(id));
       }
       await _repository.setScheduledReminderIds(const []);
+      if (isSunday && settings.classRemindersEnabled) {
+        await _scheduleSundayChill(studentId, now, settings);
+      }
       return;
     }
 
@@ -183,7 +202,7 @@ class NotificationManager {
       final id = _classId(plan, studentId);
       if (tracked.contains(id)) continue; // already pending
       final message = _contentService.build(plan.event,
-          roasting: settings.roastingEnabled);
+          roasting: settings.roastingEnabled, gender: settings.gender);
       await _datasource.scheduleAt(
         id: _stableHash(id),
         when: plan.deliverAt!,
@@ -196,8 +215,8 @@ class NotificationManager {
   }
 
   /// Called periodically (and after timetable changes) to deliver events
-  /// that are due right now: class starting, missed, next class and day
-  /// facts. Uses sent-markers so each is delivered at most once.
+  /// that are due right now. Signature moments are pre-scheduled, so on
+  /// weekdays there is nothing extra here; weekends stay silent.
   Future<void> checkDueNow({
     required List<TimetableEntry> entries,
     required String studentId,
@@ -205,6 +224,7 @@ class NotificationManager {
     required NotificationPreferences settings,
   }) async {
     if (!settings.masterEnabled || !settings.classRemindersEnabled) return;
+    if (now.weekday == DateTime.saturday || now.weekday == DateTime.sunday) return;
 
     final plans = _scheduler.planDueNow(
       entries: entries,
@@ -216,7 +236,7 @@ class NotificationManager {
       final id = _classId(plan, studentId);
       if (_repository.isDelivered(id)) continue;
       final message = _contentService.build(plan.event,
-          roasting: settings.roastingEnabled);
+          roasting: settings.roastingEnabled, gender: settings.gender);
       await _datasource.showImmediate(
         id: _stableHash(id),
         message: message,
@@ -236,6 +256,50 @@ class NotificationManager {
 
   // ── Internals ───────────────────────────────────────────────
 
+  /// True when the PULSE backend is configured AND reachable — in that case
+  /// the server owns the 3-4 daily messages (via FCM) and the app's local
+  /// scheduler stays quiet to avoid double notifications.
+  Future<bool> _backendOwnsDelivery() async {
+    final backend = _backend;
+    if (backend == null || !backend.isEnabled) return false;
+    return backend.isReachable();
+  }
+
+  /// The single Sunday message: scheduled at 10:00 local, deduped per week.
+  Future<void> _scheduleSundayChill(
+    String studentId,
+    DateTime now,
+    NotificationPreferences settings,
+  ) async {
+    final id = 'sunday_${studentId}_${_weekKey(now)}';
+    if (_repository.isDelivered(id)) return;
+
+    var fireAt = DateTime(now.year, now.month, now.day, 10);
+    if (!fireAt.isAfter(now)) {
+      fireAt = now.add(const Duration(minutes: 1));
+    }
+
+    final message = _contentService.build(
+      NotificationEvent(type: NotificationType.sundayChill),
+      roasting: settings.roastingEnabled,
+      gender: settings.gender,
+    );
+    await _datasource.scheduleAt(
+      id: _stableHash(id),
+      when: fireAt,
+      message: message,
+      priority: NotificationPriority.normal,
+    );
+    await _repository.markDelivered(id);
+  }
+
+  /// Monday-based ISO week key (yyyy-MM-dd of Monday).
+  static String _weekKey(DateTime date) {
+    final day = date.weekday; // 1 = Monday .. 7 = Sunday
+    final monday = date.subtract(Duration(days: day - 1));
+    return _dateKey(monday);
+  }
+
   Future<void> _deliver(
     NotificationEvent event, {
     required String studentId,
@@ -243,12 +307,13 @@ class NotificationManager {
     required String idPrefix,
     required NotificationPriority priority,
     required bool roasting,
+    String gender = '',
   }) async {
     final id = '$idPrefix${studentId}_${_dateKey(now)}_${event.type.name}';
     if (_repository.isDelivered(id)) return;
 
     final message =
-        _contentService.build(event, roasting: roasting);
+        _contentService.build(event, roasting: roasting, gender: gender);
     await _datasource.showImmediate(
       id: _stableHash(id),
       message: message,
@@ -299,6 +364,8 @@ class NotificationManager {
       case NotificationType.classReminder10Min:
       case NotificationType.classReminder5Min:
       case NotificationType.nextClass:
+      case NotificationType.dayWrapUp:
+      case NotificationType.sundayChill:
       case NotificationType.syncSuccess:
         return NotificationPriority.normal;
       case NotificationType.reached75:

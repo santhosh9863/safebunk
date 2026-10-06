@@ -5,8 +5,6 @@ import { LinwaysService } from '../linways/linways.service';
 import { LINWAYS_ENDPOINTS } from '../linways/linways.constants';
 import { JsonStoreService } from '../common/store/json-store.service';
 import { NotificationsService } from './notifications.service';
-import { NotificationRuleService } from './notification-rule.service';
-import { NotificationEventPayload } from './notification-events';
 
 interface MarkedRecord {
   date: string;
@@ -27,36 +25,40 @@ interface AttendanceSnapshot {
 const STORE_SNAPSHOTS = 'attendanceSnapshots';
 
 /**
- * Background attendance monitor.
+ * Background attendance monitor — "absent roast" only.
  *
- * Every 5 minutes, for each student with an active backend session AND at
- * least one registered device:
- *   1. Fetch the daily attendance report (bypassing the request cache) and
- *      diff it against the stored snapshot → attendanceMarkedPresent/Absent
- *      for every NEW record (deterministic eventId per record+status).
- *   2. Fetch the subject-wise report, compute the overall percentage and run
- *      the rule engine → ONE best zone/direction event per day (plus
- *      milestones). The baseline is always persisted, even when disabled.
+ * Every minute during college hours (weekdays), for each student with an
+ * active backend session AND at least one registered device:
+ *   - Fetch the daily attendance report and diff it against the stored
+ *     snapshot. Only a NEWLY-marked ABSENT record for the FIRST or LAST
+ *     class of the day dispatches the `attendanceMarkedAbsent` roast —
+ *     middle classes stay silent (no spam). Present/leave records and
+ *     middle absences just advance the silent baseline (dedupe via
+ *     deterministic eventId per record+status).
  *
- * Polling is bounded by session availability: watchers only run for students
- * whose in-memory session (max 24 h) is still valid. No password is stored,
- * so once a session expires monitoring stops until the student logs in again.
+ * Outside college hours and on weekends no polling happens at all — zero
+ * Linways load. Polling is bounded by session availability: watchers only run
+ * for students whose in-memory session (max 24 h) is still valid.
  */
 @Injectable()
 export class AttendanceWatcherService {
   private readonly logger = new Logger(AttendanceWatcherService.name);
   private readonly running = new Set<string>();
 
+  /** Poll window (college hours) — start hour/min and end hour/min, local. */
+  private static readonly WATCH_START = { hour: 7, minute: 30 };
+  private static readonly WATCH_END = { hour: 19, minute: 0 };
+
   constructor(
     private readonly authService: AuthService,
     private readonly linwaysService: LinwaysService,
     private readonly store: JsonStoreService,
     private readonly notifications: NotificationsService,
-    private readonly rules: NotificationRuleService,
   ) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async pollAttendance(): Promise<void> {
+    if (!this.inWatchWindow()) return;
     const sessions = this.authService.getActiveSessions();
     for (const session of sessions) {
       if (this.notifications.getDevices(session.studentId).some((d) => d.enabled)) {
@@ -71,7 +73,6 @@ export class AttendanceWatcherService {
     this.running.add(studentId);
     try {
       await this.checkMarkedRecords(session);
-      await this.checkPercentage(session);
     } catch (error) {
       this.logger.warn(`Attendance poll failed for ${studentId}: ${error}`);
     } finally {
@@ -87,6 +88,7 @@ export class AttendanceWatcherService {
       LINWAYS_ENDPOINTS.DAILY_ATTENDANCE,
       { studentId },
       session.cookies,
+      session.authToken,
     );
     if (response.status !== 200) return;
 
@@ -103,13 +105,18 @@ export class AttendanceWatcherService {
     };
 
     let changed = false;
+    // Only the first and last class of the day are roast targets — middle
+    // absences advance the silent baseline so a fully-absent day sends
+    // exactly two messages.
+    const firstKey = this.recordKey(records[0]);
+    const lastKey = this.recordKey(records[records.length - 1]);
     for (const record of records) {
-      const key = `${record.date}|${record.subjectName}|${record.hour}`;
+      const key = this.recordKey(record);
       if (snapshot.records[key] === record.status) continue;
 
-      const eventType = this.rules.statusToEvent(record.status);
-      if (!eventType) {
-        // Unnotifiable status (leave etc.) — record it as baseline anyway.
+      // Absent-only: present and leave records (and non-target absent
+      // classes) just advance the silent baseline — no notification.
+      if (record.status !== '0' || (key !== firstKey && key !== lastKey)) {
         snapshot.records[key] = record.status;
         changed = true;
         continue;
@@ -117,8 +124,9 @@ export class AttendanceWatcherService {
 
       const eventId = `${studentId}|att|${key}|${record.status}`;
       const delivered = await this.notifications.dispatchEvent(studentId, {
-        type: eventType,
+        type: 'attendanceMarkedAbsent',
         subjectName: record.subjectName,
+        staffName: record.staffName,
         eventId,
       });
 
@@ -139,91 +147,12 @@ export class AttendanceWatcherService {
     }
   }
 
-  // ── Percentage transitions / zones ──────────────────────────
-
-  private async checkPercentage(session: Session): Promise<void> {
-    const studentId = session.studentId;
-    const response = await this.linwaysService.get(
-      LINWAYS_ENDPOINTS.SUBJECT_WISE_ATTENDANCE,
-      { studentId },
-      session.cookies,
-    );
-    if (response.status !== 200) return;
-
-    const overall = this.parseOverallPercentage(response.data);
-    if (overall === null) return;
-
-    const snapshots = this.store.getOr<Record<string, AttendanceSnapshot>>(STORE_SNAPSHOTS, {});
-    const snapshot = snapshots[studentId] ?? {
-      records: {},
-      overallPct: null,
-      lastPct: null,
-      lastPctEventDate: null,
-      updatedAt: 0,
-    };
-
-    snapshot.overallPct = overall;
-
-    const today = new Date().toISOString().slice(0, 10);
-    const preferences = this.notifications.getPreferences(studentId);
-
-    if (snapshot.lastPct === null) {
-      // First observation — silent baseline.
-      snapshot.lastPct = overall;
-      snapshot.lastPctEventDate = today;
-      snapshots[studentId] = snapshot;
-      this.store.set(STORE_SNAPSHOTS, snapshots);
-      return;
-    }
-
-    const { event, milestones } = this.rules.evaluateAttendanceTransition(
-      snapshot.lastPct,
-      overall,
-    );
-    const isNewDay = snapshot.lastPctEventDate !== today;
-
-    // One best event per day (plus milestones on that same transition). The
-    // baseline only advances once the events were actually delivered, so a
-    // transient FCM failure is re-attempted on the next poll instead of being
-    // silently lost.
-    if (event && isNewDay) {
-      const percentEvent: NotificationEventPayload = {
-        type: event,
-        percentage: overall,
-        eventId: `${studentId}|pct|${today}|${event}`,
-      };
-      let allDelivered =
-        (await this.notifications.dispatchEvent(studentId, percentEvent)) ||
-        this.notifications.isProcessed(percentEvent.eventId as string);
-
-      for (const milestone of milestones) {
-        if (preferences.milestonesEnabled === false) continue;
-        const milestoneEvent: NotificationEventPayload = {
-          type: milestone,
-          percentage: overall,
-          eventId: `${studentId}|pct|${today}|${milestone}`,
-        };
-        const ok =
-          (await this.notifications.dispatchEvent(studentId, milestoneEvent)) ||
-          this.notifications.isProcessed(milestoneEvent.eventId as string);
-        if (!ok) allDelivered = false;
-      }
-
-      if (!allDelivered) {
-        // Keep the previous baseline so the transition is retried next poll.
-        snapshots[studentId] = snapshot;
-        this.store.set(STORE_SNAPSHOTS, snapshots);
-        return;
-      }
-      snapshot.lastPctEventDate = today;
-    }
-
-    snapshot.lastPct = overall;
-    snapshots[studentId] = snapshot;
-    this.store.set(STORE_SNAPSHOTS, snapshots);
-  }
-
   // ── Linways response parsing (mirrors the Flutter models) ───
+
+  /** Deterministic per-record key used for snapshot dedupe + eventIds. */
+  private recordKey(record: MarkedRecord): string {
+    return `${record.date}|${record.subjectName}|${record.hour}`;
+  }
 
   private parseDailyReport(data: unknown): MarkedRecord[] {
     const inner = this.pluck(data, ['data', 'Data']) as Record<string, unknown> | null;
@@ -233,7 +162,9 @@ export class AttendanceWatcherService {
     const records: MarkedRecord[] = [];
     for (const reportEntry of report) {
       if (!this.isRecord(reportEntry)) continue;
-      const date = this.str(reportEntry['attendance_date']);
+      // Linways reports DD-MM-YYYY — normalize to YYYY-MM-DD so keys match
+      // the schedule/dateKey format used elsewhere.
+      const date = this.normalizeDate(this.str(reportEntry['attendance_date']));
       const hourDetails = reportEntry['hourDetails'];
       if (!Array.isArray(hourDetails)) continue;
 
@@ -257,47 +188,18 @@ export class AttendanceWatcherService {
     return records;
   }
 
-  /** Overall percentage from the subject-wise report (present/total weighted). */
-  private parseOverallPercentage(data: unknown): number | null {
-    const inner = this.pluck(data, ['data', 'Data']) as Record<string, unknown> | null;
-    const report = inner ? (inner['report'] ?? inner['subjects']) : null;
-    if (!Array.isArray(report) || report.length === 0) return null;
-
-    let present = 0;
-    let total = 0;
-    for (const subject of report) {
-      if (!this.isRecord(subject)) continue;
-      // Field names vary across Linways versions — try several spellings.
-      const p = this.num(
-        this.first(
-          subject,
-          ['presentHours', 'present_hours', 'presentCount', 'present', 'attendedHours', 'attended_hours'],
-        ),
-      );
-      const t = this.num(
-        this.first(
-          subject,
-          ['totalHours', 'total_hours', 'totalCount', 'total', 'scheduledHours'],
-        ),
-      );
-      if (p !== null && t !== null) {
-        present += p;
-        total += t;
-      } else if (this.str(subject['percentage']).length > 0) {
-        // Fallback: weighted by hours is unavailable, accumulate percentages.
-        const pct = this.num(subject['percentage']);
-        if (pct !== null) {
-          present += pct;
-          total += 1;
-        }
-      }
-    }
-
-    if (total <= 0) return null;
-    return Math.round((present / total) * 1000) / 10;
-  }
-
   // ── helpers ─────────────────────────────────────────────────
+
+  /** True between 7:30–19:00 local on a weekday (Sat/Sun are skipped). */
+  private inWatchWindow(): boolean {
+    const now = new Date();
+    const day = now.getDay();
+    if (day === 0 || day === 6) return false;
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    const start = AttendanceWatcherService.WATCH_START.hour * 60 + AttendanceWatcherService.WATCH_START.minute;
+    const end = AttendanceWatcherService.WATCH_END.hour * 60 + AttendanceWatcherService.WATCH_END.minute;
+    return minutes >= start && minutes < end;
+  }
 
   private pluck(value: unknown, keys: string[]): unknown {
     if (!this.isRecord(value)) return value;
@@ -307,21 +209,14 @@ export class AttendanceWatcherService {
     return value;
   }
 
-  private first(record: Record<string, unknown>, keys: string[]): unknown {
-    for (const key of keys) {
-      if (record[key] !== undefined) return record[key];
-    }
-    return undefined;
-  }
-
   private str(value: unknown): string {
     return value === null || value === undefined ? '' : String(value);
   }
 
-  private num(value: unknown): number | null {
-    if (value === null || value === undefined || value === '') return null;
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
+  /** Converts DD-MM-YYYY → YYYY-MM-DD; leaves other formats untouched. */
+  private normalizeDate(value: string): string {
+    const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(value);
+    return match ? `${match[3]}-${match[2]}-${match[1]}` : value;
   }
 
   private isRecord(value: unknown): value is Record<string, unknown> {

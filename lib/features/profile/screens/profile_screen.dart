@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../controllers/profile_controller.dart';
 import '../models/student_profile.dart';
+import '../../notifications/presentation/providers/notification_settings_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final String studentId;
@@ -46,13 +47,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 }
 
-class _ProfileView extends StatelessWidget {
+class _ProfileView extends ConsumerWidget {
   final StudentProfile profile;
 
   const _ProfileView({required this.profile});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final gender = ref.watch(
+      notificationSettingsProvider.select((s) => s.gender),
+    );
+    final detected = profile.gender;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -75,8 +81,90 @@ class _ProfileView extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+          _buildVibeCard(context, ref, gender, detected),
         ],
       ),
+    );
+  }
+
+  /// "Vibe" picker — picks how messages talk to you. No gender words here;
+  /// each option simply sets the wording flavor used in notifications.
+  Widget _buildVibeCard(
+    BuildContext context,
+    WidgetRef ref,
+    String gender,
+    String detected,
+  ) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.auto_awesome, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Message vibe',
+                  style: theme.textTheme.titleMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'How your reminders talk to you.',
+              style: TextStyle(fontSize: 13, color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _vibeChip(context, '👑', 'King', 'male', gender, ref),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _vibeChip(context, '👑', 'Queen', 'female', gender, ref),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _vibeChip(context, '🤖', 'Auto', '', gender, ref),
+                ),
+              ],
+            ),
+            if (gender.isEmpty && detected.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Auto-detected from your college profile. You can switch anytime.',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _vibeChip(
+    BuildContext context,
+    String emoji,
+    String label,
+    String value,
+    String current,
+    WidgetRef ref,
+  ) {
+    final selected = current == value;
+    return ChoiceChip(
+      selected: selected,
+      showCheckmark: false,
+      avatar: Text(emoji, style: const TextStyle(fontSize: 16)),
+      label: Text(label),
+      onSelected: (_) => ref
+          .read(notificationSettingsProvider.notifier)
+          .setGender(value),
+      selectedColor: Theme.of(context).colorScheme.primaryContainer,
     );
   }
 

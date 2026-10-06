@@ -15,6 +15,7 @@ class PulseBackendService {
 
   static const _tokenKey = 'backend_access_token';
   static const _studentIdKey = 'backend_student_id';
+  static const _genderKey = 'backend_student_gender';
 
   final Dio _dio;
   final FlutterSecureStorage _storage;
@@ -54,10 +55,14 @@ class PulseBackendService {
         if (data is Map) {
           final token = data['accessToken']?.toString();
           final studentId = (data['student'] as Map?)?['studentId']?.toString();
+          final gender = (data['student'] as Map?)?['gender']?.toString() ?? '';
           if (token != null && token.isNotEmpty) {
             await _storage.write(key: _tokenKey, value: token);
             if (studentId != null) {
               await _storage.write(key: _studentIdKey, value: studentId);
+            }
+            if (gender.isNotEmpty) {
+              await _storage.write(key: _genderKey, value: gender);
             }
             return true;
           }
@@ -127,6 +132,8 @@ class PulseBackendService {
     required bool timetableEnabled,
     required bool roastingEnabled,
     required int reminderTimingMinutes,
+    String gender = '',
+    bool wrapUpEnabled = true,
   }) async {
     final token = await _storage.read(key: _tokenKey);
     if (!_enabled || token == null || token.isEmpty) return;
@@ -142,11 +149,39 @@ class PulseBackendService {
           'timetableEnabled': timetableEnabled,
           'roastingEnabled': roastingEnabled,
           'reminderTiming': '$reminderTimingMinutes',
+          if (gender.isNotEmpty) 'gender': gender,
+          'wrapUpEnabled': wrapUpEnabled,
         },
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
     } catch (_) {
       // Best-effort.
+    }
+  }
+
+  /// Gender detected from Linways at the last backend login ('' if unknown).
+  Future<String> getDetectedGender() async {
+    if (!_enabled) return '';
+    return (await _storage.read(key: _genderKey)) ?? '';
+  }
+
+  /// Quick reachability probe — true when the backend answers. Used by the
+  /// app to decide whether the server owns the daily messages (FCM) or the
+  /// local scheduler must step in as fallback.
+  Future<bool> isReachable() async {
+    if (!_enabled) return false;
+    try {
+      final response = await _dio.get<dynamic>(
+        '/',
+        options: Options(
+          sendTimeout: const Duration(seconds: 4),
+          receiveTimeout: const Duration(seconds: 4),
+          validateStatus: (_) => true,
+        ),
+      );
+      return response.statusCode != null && response.statusCode! < 500;
+    } catch (_) {
+      return false;
     }
   }
 }

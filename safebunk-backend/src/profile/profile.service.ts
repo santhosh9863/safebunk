@@ -32,6 +32,7 @@ export class ProfileService {
     const profile = {
       studentId: String(raw.studentId || raw.id || ''),
       name: raw.name || raw.studentName || '',
+      gender: normalizeGender(raw.gender || raw.genderName || raw.sex),
       batch: raw.batch || raw.batchName || '',
       batchId: raw.batchId || '',
       course: raw.course || raw.courseName || '',
@@ -45,4 +46,12 @@ export class ProfileService {
     this.cacheService.set(cacheKey, profile, 10 * 60 * 1000);
     return profile;
   }
+}
+
+/** Normalize raw gender values to 'male' | 'female' | ''. */
+export function normalizeGender(value: unknown): 'male' | 'female' | '' {
+  const raw = String(value ?? '').trim().toLowerCase();
+  if (raw.startsWith('m') || raw.includes('male')) return 'male';
+  if (raw.startsWith('f') || raw.includes('female')) return 'female';
+  return '';
 }

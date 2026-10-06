@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/notifications/notification_providers.dart';
-import '../../notifications/data/models/notification_preferences_model.dart';
 import '../../notifications/presentation/providers/notification_settings_provider.dart';
 import '../../profile/controllers/profile_controller.dart';
 import '../../../providers/auth_provider.dart';
@@ -17,10 +15,6 @@ class SettingsTab extends ConsumerWidget {
     final profileState = ref.watch(profileControllerProvider);
     final authState = ref.watch(authProvider);
     final darkMode = ref.watch(darkModeProvider);
-    final attendanceAlerts = ref.watch(attendanceAlertsProvider);
-    final lowWarning = ref.watch(lowAttendanceWarningProvider);
-    final dailyReminder = ref.watch(dailyReminderProvider);
-    final weeklySummary = ref.watch(weeklySummaryProvider);
     final notificationPrefs = ref.watch(notificationSettingsProvider);
 
     final profile = profileState.profile;
@@ -126,170 +120,16 @@ class SettingsTab extends ConsumerWidget {
             title: 'Notifications',
             children: [
               _SettingsRow(
-                label: 'Attendance Alerts',
-                subtitle: 'Get notified about daily attendance updates.',
-                trailing: Switch.adaptive(
-                  value: attendanceAlerts,
-                  activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) {
-                    ref.read(attendanceAlertsProvider.notifier).state = v;
-                    ref.read(notificationStateStoreProvider).setToggleAttendanceAlerts(v);
-                  },
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Divider(height: 1),
-              ),
-              _SettingsRow(
-                label: 'Low Attendance Warning',
-                subtitle: 'Alert when attendance drops below target.',
-                trailing: Switch.adaptive(
-                  value: lowWarning,
-                  activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) {
-                    ref.read(lowAttendanceWarningProvider.notifier).state = v;
-                    ref.read(notificationStateStoreProvider).setToggleLowAttendanceWarning(v);
-                  },
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Divider(height: 1),
-              ),
-              _SettingsRow(
-                label: 'Daily Reminder',
-                subtitle: 'Gentle daily check-in reminder.',
-                trailing: Switch.adaptive(
-                  value: dailyReminder,
-                  activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) {
-                    ref.read(dailyReminderProvider.notifier).state = v;
-                    ref.read(notificationStateStoreProvider).setToggleDailyReminder(v);
-                  },
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Divider(height: 1),
-              ),
-              _SettingsRow(
-                label: 'Weekly Summary',
-                subtitle: 'Weekly attendance summary notification.',
-                trailing: Switch.adaptive(
-                  value: weeklySummary,
-                  activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) {
-                    ref.read(weeklySummaryProvider.notifier).state = v;
-                    ref.read(notificationStateStoreProvider).setToggleWeeklySummary(v);
-                  },
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Divider(height: 1),
-              ),
-              _SettingsRow(
-                label: 'All PULSE Notifications',
-                subtitle: 'Master switch for every PULSE notification.',
+                label: 'PULSE Notifications',
+                subtitle: notificationPrefs.masterEnabled
+                    ? 'Everything ON — reminders, roasts, the whole deal 🔥'
+                    : 'Every PULSE notification is OFF',
                 trailing: Switch.adaptive(
                   value: notificationPrefs.masterEnabled,
                   activeTrackColor: theme.colorScheme.primary,
                   onChanged: (v) => ref
                       .read(notificationSettingsProvider.notifier)
                       .setMasterEnabled(v),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Divider(height: 1),
-              ),
-              _SettingsRow(
-                label: 'Class Reminders',
-                subtitle: 'Reminders before every class, straight from your timetable.',
-                trailing: Switch.adaptive(
-                  value: notificationPrefs.classRemindersEnabled,
-                  activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) => ref
-                      .read(notificationSettingsProvider.notifier)
-                      .setClassRemindersEnabled(v),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Divider(height: 1),
-              ),
-              _SettingsRow(
-                label: 'Milestones',
-                subtitle: 'Celebrate crossing 80%, 90% and 95% attendance.',
-                trailing: Switch.adaptive(
-                  value: notificationPrefs.milestonesEnabled,
-                  activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) => ref
-                      .read(notificationSettingsProvider.notifier)
-                      .setMilestonesEnabled(v),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Divider(height: 1),
-              ),
-              _SettingsRow(
-                label: 'Timetable Changes',
-                subtitle: 'Get notified when your timetable is updated.',
-                trailing: Switch.adaptive(
-                  value: notificationPrefs.timetableEnabled,
-                  activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) => ref
-                      .read(notificationSettingsProvider.notifier)
-                      .setTimetableEnabled(v),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Divider(height: 1),
-              ),
-              _SettingsRow(
-                label: 'Roast Mode',
-                subtitle: 'Gen-Z energy, or straight facts.',
-                trailing: Switch.adaptive(
-                  value: notificationPrefs.roastingEnabled,
-                  activeTrackColor: theme.colorScheme.primary,
-                  onChanged: (v) => ref
-                      .read(notificationSettingsProvider.notifier)
-                      .setRoastingEnabled(v),
-                ),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 4),
-                child: Divider(height: 1),
-              ),
-              _SettingsRow(
-                label: 'Reminder Timing',
-                subtitle: 'How early before each class reminders fire.',
-                trailing: SegmentedButton<ClassReminderTiming>(
-                  segments: const [
-                    ButtonSegment(
-                      value: ClassReminderTiming.minutes30,
-                      label: Text('30m'),
-                    ),
-                    ButtonSegment(
-                      value: ClassReminderTiming.minutes10,
-                      label: Text('10m'),
-                    ),
-                    ButtonSegment(
-                      value: ClassReminderTiming.minutes5,
-                      label: Text('5m'),
-                    ),
-                  ],
-                  selected: {notificationPrefs.reminderTiming},
-                  showSelectedIcon: false,
-                  style: const ButtonStyle(
-                    visualDensity: VisualDensity.compact,
-                  ),
-                  onSelectionChanged: (selection) => ref
-                      .read(notificationSettingsProvider.notifier)
-                      .setReminderTiming(selection.first),
                 ),
               ),
             ],

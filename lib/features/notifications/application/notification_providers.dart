@@ -50,5 +50,6 @@ final notificationManagerProvider = Provider<NotificationManager>((ref) {
     scheduler: ref.watch(notificationSchedulerProvider),
     datasource: ref.watch(localNotificationDatasourceProvider),
     repository: ref.watch(notificationRepositoryProvider),
+    backend: ref.watch(pulseBackendServiceProvider),
   );
 });

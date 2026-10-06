@@ -27,6 +27,8 @@ enum NotificationType {
   classStarting,
   classMissed,
   nextClass,
+  dayWrapUp,
+  sundayChill,
   heavyClassDay,
   lightClassDay,
   earlyClass,

@@ -17,7 +17,9 @@ class AnalyticsTab extends ConsumerStatefulWidget {
 
 class _AnalyticsTabState extends ConsumerState<AnalyticsTab> {
   Future<void> _onRefresh() async {
-    ref.read(cacheManagerProvider).clearAll();
+    // Must complete before invalidating, otherwise the on-disk cache can
+    // be repopulated by the refetch and then wiped by the pending purge.
+    await ref.read(cacheManagerProvider).clearAll();
     ref.invalidate(subjectWiseAttendanceProvider);
   }
 

@@ -12,6 +12,7 @@ import '../core/session/session_manager.dart';
 import '../core/storage/secure_storage_service.dart';
 import '../features/notifications/application/fcm_setup.dart';
 import '../features/notifications/application/notification_providers.dart';
+import '../features/notifications/presentation/providers/notification_settings_provider.dart';
 import '../services/api/auth_api_service.dart';
 import '../services/repositories/auth_repository.dart';
 
@@ -91,6 +92,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   final SessionManager _sessionManager;
   final CacheManager _cacheManager;
   final Ref _ref;
+  bool _handlingSessionExpiry = false;
 
   AuthNotifier(
     this._authRepository,
@@ -149,6 +151,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (!backend.isEnabled) return;
     await backend.login(username, password);
     await _syncPushRegistration();
+
+    // Auto-fill the message vibe from the gender Linways provides — but
+    // never override a choice the user already made in the profile.
+    final detected = await backend.getDetectedGender();
+    if (detected.isNotEmpty) {
+      final settings = _ref.read(notificationSettingsProvider);
+      if (settings.gender.isEmpty) {
+        await _ref
+            .read(notificationSettingsProvider.notifier)
+            .setGender(detected);
+      }
+    }
   }
 
   /// Unregister the device token and invalidate the backend session.
@@ -199,13 +213,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> handleSessionExpired() async {
-    await _clearPushRegistration();
-    await _authRepository.logout();
-    await _cacheManager.clearAll();
-    final store = _ref.read(notificationStateStoreProvider);
-    await store.clearOperationalState();
-    final service = _ref.read(notificationServiceProvider);
-    await service?.cancelAll();
-    state = const AuthState(status: AuthStatus.unauthenticated);
+    // One expired session makes every in-flight request answer 401, so this
+    // can be re-entered several times in a row (e.g. the three term-resolution
+    // calls in a row). A single logout is enough.
+    if (_handlingSessionExpiry) return;
+    _handlingSessionExpiry = true;
+    try {
+      await _clearPushRegistration();
+      await _authRepository.logout();
+      await _cacheManager.clearAll();
+      final store = _ref.read(notificationStateStoreProvider);
+      await store.clearOperationalState();
+      final service = _ref.read(notificationServiceProvider);
+      await service?.cancelAll();
+      state = const AuthState(status: AuthStatus.unauthenticated);
+    } finally {
+      _handlingSessionExpiry = false;
+    }
   }
 }

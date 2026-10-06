@@ -10,19 +10,60 @@ import '../enums/notification_type.dart';
 /// data; nothing is invented.
 ///
 /// When [roasting] is disabled the same information is delivered with neutral
-/// wording.
+/// wording. Direct-address lines adapt to [gender] ('male'/'female'/unknown)
+/// — personification roasts ("She's waiting") are identical for everyone.
 class NotificationContentService {
   const NotificationContentService();
 
   NotificationMessage build(
     NotificationEvent event, {
     required bool roasting,
+    String gender = '',
   }) {
     final template = roasting ? _roast(event.type) : _neutral(event.type);
+    final dude = _dudeFor(gender);
+    final address = _addressFor(gender);
+    final attender = _attenderFor(gender);
     return NotificationMessage(
-      title: _fill(template.title, event),
-      body: _fill(template.body, event),
+      title: _fill(template.title, event).replaceAll('{dude}', dude).replaceAll('{address}', address),
+      body: _fill(template.body, event)
+          .replaceAll('{dude}', dude)
+          .replaceAll('{address}', address)
+          .replaceAll('{attender}', attender),
     );
+  }
+
+  static String _dudeFor(String gender) {
+    switch (gender) {
+      case 'male':
+        return 'bro';
+      case 'female':
+        return 'sis';
+      default:
+        return 'bestie';
+    }
+  }
+
+  static String _addressFor(String gender) {
+    switch (gender) {
+      case 'male':
+        return 'king';
+      case 'female':
+        return 'queen';
+      default:
+        return 'legend';
+    }
+  }
+
+  static String _attenderFor(String gender) {
+    switch (gender) {
+      case 'male':
+        return 'Bro practically lives on campus';
+      case 'female':
+        return 'She practically lives on campus';
+      default:
+        return 'Certified campus dweller';
+    }
   }
 
   String _fill(String template, NotificationEvent event) {
@@ -41,7 +82,9 @@ class NotificationContentService {
         result = result.replaceAll('{${entry.key}}', entry.value.toString());
       }
     }
-    return result;
+    // Any placeholder still missing (e.g. a wrap-up with no attendance data
+    // yet) collapses to '?' instead of leaking raw braces.
+    return result.replaceAll(RegExp(r'\{[a-zA-Z]+\}'), '?');
   }
 
   String _subjectName(NotificationEvent event) {
@@ -58,7 +101,7 @@ class NotificationContentService {
     switch (type) {
       // ── Attendance ──
       case NotificationType.attendanceDropped:
-        return const _Template("She's losing interest. 👀", 'Your attendance dropped to {percentage}%.');
+        return const _Template("Attendance's losing interest. 👀", 'Your attendance dropped to {percentage}%.');
       case NotificationType.enteredWarningZone:
         return const _Template('We need to talk. 👀', '{subjectName} is now at {percentage}%.');
       case NotificationType.enteredDangerZone:
@@ -66,13 +109,13 @@ class NotificationContentService {
       case NotificationType.leftSafeZone:
         return const _Template('That hurt. 📉', 'You dropped below 75% attendance.');
       case NotificationType.attendanceImproved:
-        return const _Template('She noticed. 👀', 'Your attendance improved to {percentage}%.');
+        return const _Template('Attendance noticed. 👀', 'Your attendance improved to {percentage}%.');
       case NotificationType.enteredSafeZone:
         return const _Template('Back together. 🫶', "You're back above the 75% safe zone.");
       case NotificationType.recoveredFromDanger:
         return const _Template('Character development. 🔥', 'You recovered from the danger zone.');
       case NotificationType.perfectAttendance:
-        return const _Template('Too available. 🗿', '100% attendance. Bro practically lives on campus.');
+        return const _Template('Too available. 🗿', '100% attendance. {attender}.');
 
       // ── Bunking ──
       case NotificationType.safeToBunk:
@@ -90,15 +133,19 @@ class NotificationContentService {
       case NotificationType.classReminder30Min:
         return const _Template('Time to move. ⏰', '{subjectName} starts in 30 minutes.');
       case NotificationType.classReminder10Min:
-        return const _Template("She's waiting. 👀", '{subjectName} starts in 10 minutes.');
+        return const _Template('Class is waiting. 👀', '{subjectName} starts in 10 minutes.');
       case NotificationType.classReminder5Min:
-        return const _Template("Don't ghost her. 💀", '{subjectName} starts in 5 minutes.');
+        return const _Template("Don't ghost the class. 💀", '{subjectName} starts in 5 minutes.');
       case NotificationType.classStarting:
-        return const _Template('Move, bro. 😭', '{subjectName} is starting now.');
+        return const _Template('Move it, {dude}. 😭', '{subjectName} is starting now.');
       case NotificationType.classMissed:
-        return const _Template('Left her waiting. 💀', 'You missed {subjectName}.');
+        return const _Template('Left the class waiting. 💀', 'You missed {subjectName}.');
       case NotificationType.nextClass:
         return const _Template('Round two. 😏', '{subjectName} starts in {minutes} minutes.');
+      case NotificationType.dayWrapUp:
+        return const _Template("Day's a W — {presentCount}/{totalCount}. 💅", "College's done for today.");
+      case NotificationType.sundayChill:
+        return const _Template("It's Sunday. Rest, {address}. 👑", 'No classes. No alarms. No problems.');
       case NotificationType.heavyClassDay:
         return const _Template('No escape today. 💀', 'You have {classCount} classes scheduled today.');
       case NotificationType.lightClassDay:
@@ -176,6 +223,10 @@ class NotificationContentService {
         return const _Template('Class missed', 'You missed {subjectName}.');
       case NotificationType.nextClass:
         return const _Template('Next class', '{subjectName} starts in {minutes} minutes.');
+      case NotificationType.dayWrapUp:
+        return const _Template('Day complete', "College's done for today.");
+      case NotificationType.sundayChill:
+        return const _Template('Sunday', 'No classes. No alarms. No problems.');
       case NotificationType.heavyClassDay:
         return const _Template('Full day', 'You have {classCount} classes scheduled today.');
       case NotificationType.lightClassDay:

@@ -140,6 +140,16 @@ export class NotificationsService {
       .map(([id]) => id);
   }
 
+  /** Count of pending scheduled reminders across all students (diagnostics). */
+  getPlannedRemindersCount(): number {
+    return this.store.getOr<unknown[]>('plannedReminders', []).length;
+  }
+
+  /** True when FCM runs in dev mode (no real credentials). */
+  get isDevMode(): boolean {
+    return this.fcmService.isDevMode;
+  }
+
   // ── Dispatch ────────────────────────────────────────────────
 
   /**
@@ -243,6 +253,13 @@ export class NotificationsService {
       case 'classStarting':
       case 'classMissed':
       case 'nextClass':
+        return preferences.classRemindersEnabled !== false;
+      case 'dayWrapUp':
+        return (
+          preferences.classRemindersEnabled !== false &&
+          preferences.wrapUpEnabled !== false
+        );
+      case 'sundayChill':
         return preferences.classRemindersEnabled !== false;
       case 'timetableUpdated':
         return preferences.timetableEnabled !== false;

@@ -26,6 +26,9 @@ export type NotificationEventType =
   | 'classStarting'
   | 'classMissed'
   | 'nextClass'
+  // Day-level facts
+  | 'dayWrapUp'
+  | 'sundayChill'
   // Timetable
   | 'timetableUpdated'
   // System
@@ -34,6 +37,8 @@ export type NotificationEventType =
 export interface NotificationEventPayload {
   type: NotificationEventType;
   subjectName?: string;
+  /** Faculty name for the class (used for respectful, gender-safe wording). */
+  staffName?: string;
   percentage?: number;
   target?: number;
   minutes?: number;
@@ -52,6 +57,8 @@ export function ttlSecondsFor(type: NotificationEventType): number {
     case 'nextClass':
       return 10 * 60; // 10 minutes
     case 'timetableUpdated':
+    case 'dayWrapUp':
+    case 'sundayChill':
       return 60 * 60; // 1 hour
     default:
       // State notifications (attendance marked / zones / milestones).

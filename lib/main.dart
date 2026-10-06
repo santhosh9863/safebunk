@@ -62,18 +62,6 @@ void main() async {
     ProviderScope(
       overrides: [
         ...toggles,
-        attendanceAlertsProvider.overrideWith(
-          (ref) => notificationStore.getToggleAttendanceAlerts(),
-        ),
-        lowAttendanceWarningProvider.overrideWith(
-          (ref) => notificationStore.getToggleLowAttendanceWarning(),
-        ),
-        dailyReminderProvider.overrideWith(
-          (ref) => notificationStore.getToggleDailyReminder(),
-        ),
-        weeklySummaryProvider.overrideWith(
-          (ref) => notificationStore.getToggleWeeklySummary(),
-        ),
       ],
       child: const SafeBunkApp(),
     ),

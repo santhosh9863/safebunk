@@ -40,15 +40,18 @@ class AttendanceRepository {
 
     final cacheKey = '$studentId:$termId';
     final cached = _cache.get(cacheKey);
-    if (cached != null) {
+    if (cached != null && cached.isNotEmpty) {
       return cached;
     }
 
+    // An empty persisted list means the previous fetch failed or came back
+    // blank. Treat it as a miss so the poisoned entry heals on the next
+    // successful fetch instead of suppressing network calls forever.
     final persisted = PersistentCache.getDailyAttendance(
       cacheKey,
       DailyAttendanceModel.fromJson,
     );
-    if (persisted != null) {
+    if (persisted != null && persisted.isNotEmpty) {
       _cache.set(cacheKey, persisted);
       return persisted;
     }
@@ -58,6 +61,12 @@ class AttendanceRepository {
       fromDate: resolvedFromDate,
       toDate: resolvedToDate,
     );
+
+    if (result.isEmpty) {
+      // Never let an empty result outlive the request that produced it.
+      _cache.invalidate(cacheKey);
+      return result;
+    }
 
     _cache.set(cacheKey, result);
     await _persistDailyAttendance(cacheKey, result);

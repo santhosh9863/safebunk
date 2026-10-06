@@ -34,64 +34,27 @@ class ClassReminderScheduler {
   /// Events that are due at THIS moment: a reminder whose lead time has
   /// arrived, a class starting/missed, the next class and day-level facts.
   /// All plans here have a null [deliverAt] (show immediately).
+  ///
+  /// Signature moments are all pre-scheduled via [planFutureReminders], so
+  /// there is nothing extra to fire right now — this stays empty to avoid
+  /// duplicate/spammy pushes on app open.
   List<ClassNotificationPlan> planDueNow({
     required List<TimetableEntry> entries,
     required DateTime now,
     required ClassReminderTiming timing,
   }) {
-    if (entries.isEmpty) return const [];
-
-    final parsed = _parse(entries, now);
-    if (parsed.isEmpty) return const [];
-
-    final plans = <ClassNotificationPlan>[];
-
-    for (final (entry, start, end) in parsed) {
-      final minutes = start.difference(now).inMinutes;
-
-      if (minutes == timing.minutes) {
-        plans.add(_plan(entry, _reminderTypeFor(timing), null,
-            priority: NotificationPriority.normal));
-      }
-      if (timing != ClassReminderTiming.minutes5 && minutes == 5) {
-        plans.add(_plan(entry, NotificationType.classReminder5Min, null,
-            priority: NotificationPriority.normal));
-      }
-      if (minutes <= 2 && minutes >= -3) {
-        plans.add(_plan(entry, NotificationType.classStarting, null,
-            priority: NotificationPriority.high));
-      }
-      // A class counts as missed once it has ENDED (within the last 45 min)
-      // and no attendance was marked for it.
-      {
-        final endedAgo = now.difference(end).inMinutes;
-        if (endedAgo >= 0 && endedAgo <= 45 && !_isMarked(entry)) {
-          plans.add(_plan(entry, NotificationType.classMissed, null,
-              priority: NotificationPriority.high));
-        }
-      }
-    }
-
-    final upcoming = parsed.where((t) => t.$2.isAfter(now)).toList();
-    if (upcoming.isNotEmpty) {
-      final (nextEntry, nextStart, _) = upcoming.first;
-      final minutes = nextStart.difference(now).inMinutes;
-      if (minutes > 30) {
-        plans.add(_plan(nextEntry, NotificationType.nextClass, null,
-            metadata: {'minutes': minutes}));
-      }
-    }
-
-    plans.addAll(_dayFacts(parsed));
-
-    return plans;
+    return const [];
   }
 
-  /// Reminders to PRE-SCHEDULE for every upcoming class, so they fire at the
-  /// exact lead-time instant even when the app is backgrounded.
+  /// Reminders to PRE-SCHEDULE for the day's signature moments, so they fire
+  /// at the exact instant even when the app is backgrounded.
   ///
-  /// deliverAt = class start − lead time (and start − 5 min as a second
-  /// stage when a different lead time is configured).
+  /// Exactly four plans per day (derived from the real timetable, never
+  /// hardcoded times):
+  ///   1. First class of the day  → lead reminder
+  ///   2. First class after the longest break (lunch) → `nextClass`
+  ///   3. Last class of the day   → lead reminder
+  ///   4. ~15 min after the last class ends → `dayWrapUp`
   List<ClassNotificationPlan> planFutureReminders({
     required List<TimetableEntry> entries,
     required DateTime now,
@@ -99,101 +62,82 @@ class ClassReminderScheduler {
   }) {
     if (entries.isEmpty) return const [];
 
-    final parsed = _parse(entries, now);
+    final parsed = _parse(entries, now)
+        .where((p) => p.$2.isAfter(now))
+        .toList();
+    if (parsed.isEmpty) return const [];
+
     final plans = <ClassNotificationPlan>[];
+    final leadMinutes = timing.minutes;
 
-    for (final (entry, start, _) in parsed) {
-      if (!start.isAfter(now)) continue;
+    // 1. First class of the day → lead reminder.
+    final first = parsed.first;
+    final firstLeadAt = first.$2.subtract(Duration(minutes: leadMinutes));
+    if (firstLeadAt.isAfter(now)) {
+      plans.add(_plan(first.$1, _reminderTypeFor(timing), firstLeadAt,
+          priority: NotificationPriority.normal));
+    }
 
-      final leadAt = start.subtract(Duration(minutes: timing.minutes));
-      if (leadAt.isAfter(now)) {
-        plans.add(_plan(entry, _reminderTypeFor(timing), leadAt,
+    // 2. First class after the longest break ≥ 30 min (lunch) → nextClass.
+    final postLunch = _postLunchClass(parsed);
+    if (postLunch != null) {
+      final nextAt = postLunch.$2.subtract(const Duration(minutes: 10));
+      if (nextAt.isAfter(now)) {
+        plans.add(_plan(postLunch.$1, NotificationType.nextClass, nextAt,
+            priority: NotificationPriority.normal,
+            metadata: const {'minutes': 10}));
+      }
+    }
+
+    // 3. Last class of the day → lead reminder (skip if it IS the first class
+    //    of a single-class day, or the lunch class).
+    final last = parsed.last;
+    final isFirstAndOnly = last.$1.id == first.$1.id;
+    if (!isFirstAndOnly &&
+        (postLunch == null || last.$1.id != postLunch.$1.id)) {
+      final lastLeadAt = last.$2.subtract(Duration(minutes: leadMinutes));
+      if (lastLeadAt.isAfter(now)) {
+        plans.add(_plan(last.$1, _reminderTypeFor(timing), lastLeadAt,
             priority: NotificationPriority.normal));
       }
+    }
 
-      if (timing != ClassReminderTiming.minutes5) {
-        final fiveAt = start.subtract(const Duration(minutes: 5));
-        if (fiveAt.isAfter(now)) {
-          plans.add(_plan(entry, NotificationType.classReminder5Min, fiveAt,
-              priority: NotificationPriority.normal));
-        }
-      }
+    // 4. Wrap-up ~15 min after the last class ends.
+    final wrapAt = last.$3.add(const Duration(minutes: 15));
+    if (wrapAt.isAfter(now)) {
+      plans.add(ClassNotificationPlan(
+        event: NotificationEvent(
+          type: NotificationType.dayWrapUp,
+          metadata: {'totalCount': parsed.length},
+        ),
+        deliverAt: wrapAt,
+        date: _dateKey(last.$1, wrapAt),
+        priority: NotificationPriority.normal,
+      ));
     }
 
     return plans;
   }
 
-  // ─────────────────────────────────────────────────────────────
-
-  /// Exactly ONE day-level fact per day (heavy > light > early > gap).
-  List<ClassNotificationPlan> _dayFacts(
+  /// Class right after the longest gap ≥ 30 minutes (the lunch break).
+  static (TimetableEntry, DateTime, DateTime)? _postLunchClass(
     List<(TimetableEntry, DateTime, DateTime)> parsed,
   ) {
-    final count = parsed.length;
-    final dateKey = _dateKey(parsed.first.$1, parsed.first.$2);
-
-    if (count >= 5) {
-      return [
-        ClassNotificationPlan(
-          event: NotificationEvent(
-            type: NotificationType.heavyClassDay,
-            metadata: {'classCount': count},
-          ),
-          date: dateKey,
-          priority: NotificationPriority.low,
-        ),
-      ];
-    }
-    if (count <= 3) {
-      return [
-        ClassNotificationPlan(
-          event: NotificationEvent(
-            type: NotificationType.lightClassDay,
-            metadata: {'classCount': count},
-          ),
-          date: dateKey,
-          priority: NotificationPriority.low,
-        ),
-      ];
-    }
-
-    final first = parsed.reduce((a, b) => a.$2.isBefore(b.$2) ? a : b);
-    if (first.$2.hour < 9) {
-      return [
-        ClassNotificationPlan(
-          event: NotificationEvent(
-            type: NotificationType.earlyClass,
-            subjectName: first.$1.subjectName,
-            metadata: {'time': _formatClock(first.$2)},
-          ),
-          date: dateKey,
-          priority: NotificationPriority.low,
-        ),
-      ];
-    }
-
-    if (parsed.length > 1) {
-      var maxGap = Duration.zero;
-      for (var i = 1; i < parsed.length; i++) {
-        final gap = parsed[i].$2.difference(parsed[i - 1].$3);
-        if (gap > maxGap) maxGap = gap;
-      }
-      if (maxGap.inMinutes >= 180) {
-        return [
-          ClassNotificationPlan(
-            event: NotificationEvent(
-              type: NotificationType.longClassGap,
-              metadata: {'duration': _formatDuration(maxGap)},
-            ),
-            date: dateKey,
-            priority: NotificationPriority.low,
-          ),
-        ];
+    if (parsed.length < 2) return null;
+    var largestGap = Duration.zero;
+    var gapIndex = -1;
+    for (var i = 1; i < parsed.length; i++) {
+      final gap = parsed[i].$2.difference(parsed[i - 1].$3);
+      if (gap > largestGap) {
+        largestGap = gap;
+        gapIndex = i;
       }
     }
-
-    return const [];
+    if (largestGap < const Duration(minutes: 30)) return null;
+    return parsed[gapIndex];
   }
+
+  // ─────────────────────────────────────────────────────────────
 
   ClassNotificationPlan _plan(
     TimetableEntry entry,
@@ -220,11 +164,6 @@ class ClassReminderScheduler {
       case ClassReminderTiming.minutes5:
         return NotificationType.classReminder5Min;
     }
-  }
-
-  static bool _isMarked(TimetableEntry entry) {
-    final marked = entry.attendanceMarked;
-    return marked != null && marked.isNotEmpty && marked != '0';
   }
 
   static List<(TimetableEntry, DateTime, DateTime)> _parse(
@@ -291,21 +230,5 @@ class ClassReminderScheduler {
       }
     }
     return null;
-  }
-
-  static String _formatClock(DateTime time) {
-    final hour = time.hour;
-    final minute = time.minute.toString().padLeft(2, '0');
-    final period = hour >= 12 ? 'PM' : 'AM';
-    final displayHour = hour % 12 == 0 ? 12 : hour % 12;
-    return '$displayHour:$minute $period';
-  }
-
-  static String _formatDuration(Duration d) {
-    final h = d.inHours;
-    final m = d.inMinutes % 60;
-    if (h == 0) return '${m}m';
-    if (m == 0) return '${h}h';
-    return '${h}h ${m}m';
   }
 }

@@ -24,6 +24,10 @@ class NotificationPreferences {
   final bool roastingEnabled;
   final ClassReminderTiming reminderTiming;
 
+  /// Direct-address gender for message wording: 'male' | 'female' | '' (auto).
+  final String gender;
+  final bool wrapUpEnabled;
+
   const NotificationPreferences({
     this.masterEnabled = true,
     this.attendanceEnabled = true,
@@ -33,6 +37,8 @@ class NotificationPreferences {
     this.timetableEnabled = true,
     this.roastingEnabled = true,
     this.reminderTiming = ClassReminderTiming.minutes10,
+    this.gender = '',
+    this.wrapUpEnabled = true,
   });
 
   NotificationPreferences copyWith({
@@ -44,6 +50,8 @@ class NotificationPreferences {
     bool? timetableEnabled,
     bool? roastingEnabled,
     ClassReminderTiming? reminderTiming,
+    String? gender,
+    bool? wrapUpEnabled,
   }) {
     return NotificationPreferences(
       masterEnabled: masterEnabled ?? this.masterEnabled,
@@ -54,6 +62,8 @@ class NotificationPreferences {
       timetableEnabled: timetableEnabled ?? this.timetableEnabled,
       roastingEnabled: roastingEnabled ?? this.roastingEnabled,
       reminderTiming: reminderTiming ?? this.reminderTiming,
+      gender: gender ?? this.gender,
+      wrapUpEnabled: wrapUpEnabled ?? this.wrapUpEnabled,
     );
   }
 
@@ -71,7 +81,9 @@ class NotificationPreferences {
           milestonesEnabled == other.milestonesEnabled &&
           timetableEnabled == other.timetableEnabled &&
           roastingEnabled == other.roastingEnabled &&
-          reminderTiming == other.reminderTiming;
+          reminderTiming == other.reminderTiming &&
+          gender == other.gender &&
+          wrapUpEnabled == other.wrapUpEnabled;
 
   @override
   int get hashCode => Object.hash(
@@ -83,5 +95,7 @@ class NotificationPreferences {
         timetableEnabled,
         roastingEnabled,
         reminderTiming,
+        gender,
+        wrapUpEnabled,
       );
 }

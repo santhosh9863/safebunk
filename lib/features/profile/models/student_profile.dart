@@ -12,6 +12,9 @@ class StudentProfile {
   final String academicTerm;
   final String studentId;
 
+  /// Gender detected from the college portal: 'male' | 'female' | ''.
+  final String gender;
+
   const StudentProfile({
     required this.name,
     required this.rollNo,
@@ -24,6 +27,7 @@ class StudentProfile {
     this.department = '',
     this.academicTerm = '',
     this.studentId = '',
+    this.gender = '',
   });
 
   factory StudentProfile.fromJson(Map<String, dynamic> json) {
@@ -52,6 +56,7 @@ class StudentProfile {
     final department = _safeString(src['department']);
     final academicTerm = _safeString(src['academicTermName']);
     final studentId = _safeString(src['studentId'] ?? src['id']);
+    final gender = _normalizeGender(_safeString(src['gender']));
 
     return StudentProfile(
       name: name,
@@ -65,7 +70,19 @@ class StudentProfile {
       department: department,
       academicTerm: academicTerm,
       studentId: studentId,
+      gender: gender,
     );
+  }
+
+  static String _normalizeGender(String raw) {
+    final value = raw.trim().toLowerCase();
+    if (value == 'male' || value == 'm' || value == 'boy' || value == 'king') {
+      return 'male';
+    }
+    if (value == 'female' || value == 'f' || value == 'girl' || value == 'queen') {
+      return 'female';
+    }
+    return '';
   }
 
   Map<String, dynamic> toJson() => {
@@ -80,6 +97,7 @@ class StudentProfile {
     'department': department,
     'academicTerm': academicTerm,
     'studentId': studentId,
+    'gender': gender,
   };
 
   static String _safeString(dynamic value) {

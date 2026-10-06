@@ -100,7 +100,11 @@ class AttendanceTermsService {
     _inFlight[studentId] = future;
     try {
       final resolved = await future;
-      if (resolved != null) {
+      // A pass that resolved neither a term nor a date range is a failure
+      // (expired session, offline, portal error) — never cache it, or the
+      // failure would persist for the full TTL and attendance would stay
+      // blank even after the user logs back in.
+      if (resolved != null && (resolved.term != null || resolved.dateRange != null)) {
         _resolutionCache.set(studentId, resolved);
       }
       return resolved;
