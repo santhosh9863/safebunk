@@ -3,3 +3,9 @@ dist/
 .env
 logs/
 *.log
+
+# Prisma / SQLite local dev database
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.db-journal

@@ -1,0 +1,80 @@
+// PULSE Reports — Prisma schema (Phase 1).
+// Dev: SQLite. Target: PostgreSQL — see docs/REPORTS_SCHEMA.md.
+// String cuid IDs, DateTime and enum types are chosen so the provider can be
+// swapped to postgresql with no column rework.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Report {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  studentId String
+  title     String
+  description String
+  category  String?
+  location  String?
+  imageUrl  String?
+  priority  String    @default("MEDIUM")
+  status    String    @default("SUBMITTED")
+  assignedDepartment String?
+
+  // AI predictions — nullable, never trusted for authorization.
+  aiCategory   String?
+  aiPriority   String?
+  aiConfidence Float?
+  aiDepartment String?
+  aiReasons    String?
+  aiOverrideBy String?
+  aiOverrideAt DateTime?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  resolvedAt DateTime?
+
+  events ReportEvent[]
+
+  @@index([studentId, createdAt])
+}
+
+model ReportEvent {
+  id       String @id @default(cuid())
+  reportId String
+  type     String
+  actorId  String?
+  actorRole String  @default("SYSTEM")
+  remark   String?
+  aiPayload String?
+  createdAt DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, createdAt])
+}
+
+// Lookup tables — created empty in Phase 1, populated in later phases.
+model Category {
+  id     String @id @default(cuid())
+  name   String @unique
+  active Boolean @default(true)
+}
+
+model Location {
+  id     String @id @default(cuid())
+  block  String
+  floor  String?
+  room   String?
+  label  String
+}
+
+model Department {
+  id     String @id @default(cuid())
+  name   String @unique
+  active Boolean @default(true)
+}

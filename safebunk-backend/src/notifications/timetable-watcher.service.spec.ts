@@ -245,8 +245,9 @@ describe('TimetableWatcherService — signature-moment planning', () => {
       },
     };
     const get = jest.spyOn(linways, 'get');
-    const originalNow = Date.now;
-    Date.now = () => new Date('2026-08-13T08:00:00').getTime();
+    // Fake the whole Date constructor (not just Date.now): parseClock falls
+    // back to `new Date()` when the payload carries no date field.
+    jest.useFakeTimers({ now: new Date('2026-08-13T08:00:00').getTime() });
     try {
       await notifications.registerDevice('4301', { fcmToken: 't1' });
       await watcher.watchTimetables();
@@ -278,7 +279,7 @@ describe('TimetableWatcherService — signature-moment planning', () => {
       expect(next?.staffName).toBe('Priya M');
       expect(next?.fireAt).toBe(new Date('2026-08-13T13:20:00').getTime());
     } finally {
-      Date.now = originalNow;
+      jest.useRealTimers();
     }
   });
 });

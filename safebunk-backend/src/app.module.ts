@@ -10,6 +10,8 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { TimetableModule } from './timetable/timetable.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ReportsModule } from './reports/reports.module';
 import { HealthController } from './health.controller';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -26,6 +28,8 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     TimetableModule,
     AnalyticsModule,
     NotificationsModule,
+    PrismaModule,
+    ReportsModule,
   ],
   controllers: [HealthController],
   providers: [
