@@ -58,7 +58,9 @@ describe('ReportsService', () => {
 
   beforeEach(() => {
     prisma = new FakePrisma();
-    service = new ReportsService(prisma as any);
+    service = new ReportsService(prisma as any, {
+      claimForReport: jest.fn(async () => true),
+    } as any);
   });
 
   describe('createReport', () => {

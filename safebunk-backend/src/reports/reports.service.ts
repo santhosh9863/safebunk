@@ -1,15 +1,18 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { Report } from '@prisma/client';
 import { isReportPriority } from './report-status';
+import { AttachmentsService } from './attachments/attachments.service';
 
 export interface ReportSummary {
   id: string;
   code: string;
   title: string;
+  description: string;
   category: string | null;
   location: string | null;
+  imageUrl: string | null;
   priority: string;
   status: string;
   assignedDepartment: string | null;
@@ -25,7 +28,10 @@ export interface ReportSummary {
 export class ReportsService {
   private readonly logger = new Logger(ReportsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly attachments: AttachmentsService,
+  ) {}
 
   /**
    * Rules-based routing stub. NOT machine learning: no model, no training,
@@ -53,11 +59,22 @@ export class ReportsService {
    * rejects it if a client tries to send one).
    */
   async createReport(studentId: string, dto: CreateReportDto): Promise<Report> {
+    // Reject an attachment that does not exist, belongs to another student, or
+    // is already claimed — before creating anything.
+    if (dto.attachmentId) {
+      const attachment = await this.prisma.attachment.findFirst({
+        where: { id: dto.attachmentId, studentId },
+      });
+      if (!attachment || attachment.reportId) {
+        throw new BadRequestException('Invalid or already-used attachment.');
+      }
+    }
+
     const routing = this.recommendDepartment(dto);
     const priority = dto.priority && isReportPriority(dto.priority) ? dto.priority : 'MEDIUM';
     const code = await this.nextCode();
 
-    return this.prisma.report.create({
+    const report = await this.prisma.report.create({
       data: {
         code,
         studentId,
@@ -65,7 +82,8 @@ export class ReportsService {
         description: dto.description.trim(),
         category: dto.category?.trim() || null,
         location: dto.location?.trim() || null,
-        imageUrl: dto.imageUrl ?? null,
+        // imageUrl is derived server-side below, never taken from the client.
+        imageUrl: null,
         priority,
         status: 'SUBMITTED',
         assignedDepartment: routing.assignedDepartment,
@@ -81,6 +99,27 @@ export class ReportsService {
         },
       },
     });
+
+    if (dto.attachmentId) {
+      const claimed = await this.attachments.claimForReport(
+        studentId,
+        dto.attachmentId,
+        report.id,
+      );
+      if (!claimed) {
+        // Lost a race / stale attachment: roll back the just-created report so
+        // it never references a photo it does not own.
+        await this.prisma.report.delete({ where: { id: report.id } }).catch(() => undefined);
+        throw new BadRequestException('Invalid or already-used attachment.');
+      }
+      report.imageUrl = AttachmentsService.urlFor(dto.attachmentId);
+      await this.prisma.report.update({
+        where: { id: report.id },
+        data: { imageUrl: report.imageUrl },
+      });
+    }
+
+    return report;
   }
 
   /** Own reports only, newest first. */
@@ -118,8 +157,10 @@ export class ReportsService {
       id: r.id,
       code: r.code,
       title: r.title,
+      description: r.description,
       category: r.category,
       location: r.location,
+      imageUrl: r.imageUrl,
       priority: r.priority,
       status: r.status,
       assignedDepartment: r.assignedDepartment,

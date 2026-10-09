@@ -2,6 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import '../../core/errors/app_exceptions.dart';
+import '../../features/reports/data/models/report_attachment.dart';
+import '../../features/reports/data/models/report_model.dart';
+
 /// Client for the PULSE NestJS backend (device registration, preferences,
 /// FCM-backed events).
 ///
@@ -182,6 +186,180 @@ class PulseBackendService {
       return response.statusCode != null && response.statusCode! < 500;
     } catch (_) {
       return false;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Reports (PULSE backend, AuthGuard-protected)
+  //
+  // Ownership is enforced server-side from the Bearer session; the client never
+  // sends a studentId. These methods reuse the same secure-stored backend token
+  // and Dio instance as the notification methods above.
+  // ---------------------------------------------------------------------------
+
+  /// `GET /api/reports/my` — the authenticated student's reports (newest first).
+  Future<List<ReportModel>> fetchMyReports() {
+    return _authed<List<ReportModel>>((token) async {
+      final response = await _dio.get<dynamic>(
+        '/api/reports/my',
+        options: _authOptions(token),
+      );
+      final data = _unwrap(response.data);
+      if (data is! List) {
+        throw const BadResponseException('Unexpected reports response');
+      }
+      return data
+          .whereType<Map>()
+          .map((e) => ReportModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList(growable: false);
+    });
+  }
+
+  /// `GET /api/reports/:id` — a single report owned by the authenticated student.
+  /// A report owned by another student returns HTTP 404 (no existence oracle).
+  Future<ReportModel> fetchReport(String id) {
+    return _authed<ReportModel>((token) async {
+      final response = await _dio.get<dynamic>(
+        '/api/reports/$id',
+        options: _authOptions(token),
+      );
+      final data = _unwrap(response.data);
+      if (data is! Map) {
+        throw const BadResponseException('Unexpected report response');
+      }
+      return ReportModel.fromJson(Map<String, dynamic>.from(data));
+    });
+  }
+
+  /// `POST /api/reports` — create a report for the authenticated student.
+  /// The body deliberately omits studentId (rejected by the backend whitelist).
+  /// A photo is referenced by [attachmentId], never by a client-supplied URL.
+  Future<ReportModel> createReport({
+    required String title,
+    required String description,
+    String? category,
+    String? location,
+    String? priority,
+    String? attachmentId,
+  }) {
+    return _authed<ReportModel>((token) async {
+      final response = await _dio.post<dynamic>(
+        '/api/reports',
+        data: {
+          'title': title,
+          'description': description,
+          if (category != null && category.trim().isNotEmpty) 'category': category.trim(),
+          if (location != null && location.trim().isNotEmpty) 'location': location.trim(),
+          if (priority != null && priority.trim().isNotEmpty) 'priority': priority.trim(),
+          if (attachmentId != null && attachmentId.trim().isNotEmpty)
+            'attachmentId': attachmentId.trim(),
+        },
+        options: _authOptions(token),
+      );
+      final data = _unwrap(response.data);
+      if (data is! Map) {
+        throw const BadResponseException('Unexpected report response');
+      }
+      return ReportModel.fromJson(Map<String, dynamic>.from(data));
+    });
+  }
+
+  /// `POST /api/reports/attachments` — upload a photo (multipart) for the
+  /// authenticated student. [onProgress] reports bytes sent / total.
+  Future<ReportAttachment> uploadReportImage({
+    required List<int> bytes,
+    required String fileName,
+    required String contentType,
+    void Function(int sent, int total)? onProgress,
+  }) {
+    return _authed<ReportAttachment>((token) async {
+      final form = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
+          bytes,
+          filename: fileName,
+          contentType: DioMediaType.parse(contentType),
+        ),
+      });
+      final response = await _dio.post<dynamic>(
+        '/api/reports/attachments',
+        data: form,
+        options: _authOptions(token),
+        onSendProgress: onProgress,
+      );
+      final data = _unwrap(response.data);
+      if (data is! Map) {
+        throw const BadResponseException('Unexpected attachment response');
+      }
+      return ReportAttachment.fromJson(Map<String, dynamic>.from(data));
+    });
+  }
+
+  /// `DELETE /api/reports/attachments/:id` — remove a not-yet-attached photo.
+  Future<void> deleteAttachment(String id) {
+    return _authed<void>((token) async {
+      final response = await _dio.delete<dynamic>(
+        '/api/reports/attachments/$id',
+        options: _authOptions(token),
+      );
+      _unwrap(response.data);
+    });
+  }
+
+  /// Resolves a backend-relative path (e.g. a report's `imageUrl`) to an
+  /// absolute URL. Returns null when the backend is not configured or the
+  /// value is already absolute.
+  String? absoluteUrl(String? path) {
+    if (path == null || path.trim().isEmpty) return null;
+    final value = path.trim();
+    if (value.startsWith('http://') || value.startsWith('https://')) return value;
+    if (!_enabled) return null;
+    final base =
+        _baseUrl.endsWith('/') ? _baseUrl.substring(0, _baseUrl.length - 1) : _baseUrl;
+    return value.startsWith('/') ? '$base$value' : '$base/$value';
+  }
+
+  /// Bearer headers needed to fetch an authenticated attachment image.
+  Future<Map<String, String>?> imageAuthHeaders() async {
+    if (!_enabled) return null;
+    final token = await _storage.read(key: _tokenKey);
+    if (token == null || token.isEmpty) return null;
+    return {'Authorization': 'Bearer $token'};
+  }
+
+  Options _authOptions(String token) =>
+      Options(headers: {'Authorization': 'Bearer $token'});
+
+  /// Extract the `data` field from a `{success, data, message, statusCode}`
+  /// envelope, surfacing backend error messages as typed exceptions.
+  dynamic _unwrap(dynamic body) {
+    if (body is Map && body['success'] == true) {
+      return body['data'];
+    }
+    if (body is Map && body['message'] != null) {
+      throw ServerException(body['message'].toString());
+    }
+    throw const BadResponseException();
+  }
+
+  /// Runs an authenticated backend call, mapping transport failures to the
+  /// app's typed [ApiException] hierarchy.
+  Future<T> _authed<T>(Future<T> Function(String token) run) async {
+    if (!_enabled) {
+      throw const NetworkException(
+        'Reports need the PULSE backend. Build with '
+        '--dart-define=PULSE_BACKEND_URL=https://<host:port>.',
+      );
+    }
+    final token = await _storage.read(key: _tokenKey);
+    if (token == null || token.isEmpty) {
+      throw const UnauthorizedException(
+        'Your PULSE backend session is missing. Please login again.',
+      );
+    }
+    try {
+      return await run(token);
+    } on DioException catch (e) {
+      throw mapDioException(e);
     }
   }
 }

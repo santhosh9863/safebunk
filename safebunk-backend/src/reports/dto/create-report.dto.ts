@@ -38,13 +38,20 @@ export class CreateReportDto {
   @IsIn([...ALL_REPORT_PRIORITIES])
   priority?: string;
 
-  @ApiPropertyOptional({ description: 'URL of an uploaded photo (Phase 3)' })
+  @ApiPropertyOptional({
+    description:
+      'Id of a photo previously uploaded via POST /api/reports/attachments. ' +
+      'The server derives the image reference from this — clients cannot set ' +
+      'an arbitrary image URL.',
+  })
   @IsOptional()
   @IsString()
-  @MaxLength(512)
-  imageUrl?: string;
+  @MaxLength(64)
+  attachmentId?: string;
 
   // NOTE: no studentId field. Global ValidationPipe runs with
   // whitelist + forbidNonWhitelisted, so a client-supplied studentId is
   // rejected outright. Ownership comes only from the AuthGuard session.
+  // The old client-supplied `imageUrl` was removed for the same reason: the
+  // stored value must never be attacker-controlled.
 }

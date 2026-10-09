@@ -39,8 +39,27 @@ model Report {
   resolvedAt DateTime?
 
   events ReportEvent[]
+  attachments Attachment[]
 
   @@index([studentId, createdAt])
+}
+
+// Uploaded report photos. Image BYTES live in object storage (Firebase
+// Storage); only ownership + object metadata are kept here. `reportId` is null
+// until the attachment is claimed by a report the same student owns.
+model Attachment {
+  id          String   @id @default(cuid())
+  studentId   String
+  reportId    String?
+  storagePath String   @unique
+  contentType String
+  size        Int
+  createdAt   DateTime @default(now())
+
+  report Report? @relation(fields: [reportId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, createdAt])
+  @@index([reportId])
 }
 
 model ReportEvent {

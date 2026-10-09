@@ -50,7 +50,7 @@ run `prisma migrate deploy`. Column types map 1:1 for the types used here.
 | description | String | no | max 4000 |
 | category | String? | yes | free-form/normalized label (Phase 2 adds a dictionary) |
 | location | String? | yes | free text: `Block B · 2nd Floor` |
-| imageUrl | String? | yes | Phase 3 photo storage |
+| imageUrl | String? | yes | server-derived reference `/api/reports/attachments/<id>` (Phase 3); never client-supplied |
 | priority | String | no | `LOW \| MEDIUM \| HIGH \| CRITICAL`, default `MEDIUM` (human-confirmed) |
 | status | String | no | see state machine; initial `SUBMITTED` |
 | assignedDepartment | String? | yes | rules-based routing may fill later |
@@ -81,6 +81,33 @@ Indexes: `@@index([studentId, createdAt])`, `@@unique([code])`.
 | createdAt | DateTime | no | `@default(now())` |
 
 Index: `@@index([reportId, createdAt])`.
+
+### Attachment (added in Phase 3)
+
+Image **bytes live in object storage** (Firebase Storage); this table stores only
+ownership + object metadata. There is deliberately no local-disk storage path.
+
+| Field | Type | Nullable | Notes |
+|---|---|---|---|
+| id | String (cuid) | no | PK; also used to derive the object path |
+| studentId | String | no | uploader identity, from **AuthGuard session only** |
+| reportId | String? | yes | FK → Report, `onDelete: SetNull`; null until linked |
+| storagePath | String | no | unique object key `reports/<studentId>/<id>.<ext>` |
+| contentType | String | no | sniffed `image/jpeg \| image/png \| image/webp` |
+| size | Int | no | bytes |
+| createdAt | DateTime | no | `@default(now())` |
+
+Indexes: `@@index([studentId, createdAt])`, `@@index([reportId])`, unique `storagePath`.
+
+Lifecycle / orphan control:
+
+- Upload creates an unlinked row (`reportId = null`) after the object is written;
+  if the DB write fails the object is deleted.
+- Creating a report with `attachmentId` atomically claims the row
+  (`updateMany` where `reportId = null`); the report stores the derived
+  `imageUrl`. A lost race rolls the report back.
+- A student may delete their own unlinked attachment; once linked it is immutable here.
+- Foreign or unknown attachment ids are indistinguishable from missing (404 / bad request).
 
 ### Lookup tables (Phase 1 creates empty tables; populated later)
 
@@ -115,12 +142,15 @@ IN_PROGRESS→ RESOLVED     (staff only, Phase 6)
   columns implicitly; staff overrides record `aiOverrideBy`/`aiOverrideAt`.
 - Routing in Phase 1 is a documented **rules-based stub** returning `assignedDepartment = null`.
 
-## 7. API contract (Phase 1)
+## 7. API contract
 
 ```
-POST /api/reports          create (AuthGuard)
-GET  /api/reports/my       list own reports (AuthGuard)
-GET  /api/reports/:id      get one owned report (AuthGuard)
+POST   /api/reports                     create (AuthGuard)
+GET    /api/reports/my                  list own reports (AuthGuard)
+GET    /api/reports/:id                 get one owned report (AuthGuard)
+POST   /api/reports/attachments         upload a photo, multipart "file" (AuthGuard)
+GET    /api/reports/attachments/:id     download own photo, bytes (AuthGuard)
+DELETE /api/reports/attachments/:id     remove own not-yet-linked photo (AuthGuard)
 ```
 
 Authorization rule: `studentId` always comes from the authenticated session
@@ -128,7 +158,26 @@ Authorization rule: `studentId` always comes from the authenticated session
 ignored. `GET /api/reports/:id` returns 404 when the report belongs to another student
 (no existence leak differences beyond 404, no cross-student reads).
 
+Upload validation: multipart field `file` only; max 5 MB; the true type is sniffed
+from magic bytes (JPEG/PNG/WebP) — a spoofed `Content-Type` is rejected. Reports
+reference a photo via `attachmentId` (in `POST /api/reports`), never a client URL;
+the stored `imageUrl` is derived server-side.
+
 Response envelope: existing `ApiResponse<T>` (`{ success, data, message, statusCode }`).
+
+### Storage prerequisite (Phase 3)
+
+Object storage uses **Supabase Storage** (private bucket) via the server-side
+service-role key. Configuration comes from the backend environment:
+
+- `SUPABASE_URL` — project URL.
+- `SUPABASE_SERVICE_ROLE_KEY` — backend only; never exposed to Flutter or committed.
+- `SUPABASE_STORAGE_BUCKET` — defaults to `report-attachments`.
+
+The bucket is **private** and accessed only by the NestJS backend (which mediates
+upload/download/delete behind `AuthGuard` + ownership). Flutter never talks to Supabase
+directly. When any of these vars is missing the upload/download endpoints return **503** —
+there is no insecure or local-disk fallback.
 
 ## 8. Future phases (not in schema yet)
 

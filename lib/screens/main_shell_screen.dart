@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/dashboard/providers/dashboard_providers.dart';
 import '../features/dashboard/screens/dashboard_tab_v2.dart';
-import '../features/subjects/screens/subject_wise_tab.dart';
+import '../features/reports/presentation/screens/reports_tab.dart';
 import '../features/analytics/screens/analytics_tab.dart';
 import '../features/notifications/presentation/notification_nudge.dart';
 import '../features/notifications/presentation/notification_observer.dart';
@@ -52,7 +52,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
             index: _currentIndex,
             children: const [
               DashboardTabV2(),
-              SubjectWiseTab(),
+              ReportsTab(),
               AnalyticsTab(),
               SettingsTab(),
             ],
@@ -75,9 +75,9 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
             label: 'Dashboard',
           ),
           NavigationDestination(
-            icon: Icon(Icons.book_outlined),
-            selectedIcon: Icon(Icons.book),
-            label: 'Subjects',
+            icon: Icon(Icons.report_gmailerrorred_outlined),
+            selectedIcon: Icon(Icons.report_gmailerrorred),
+            label: 'Reports',
           ),
           NavigationDestination(
             icon: Icon(Icons.analytics_outlined),

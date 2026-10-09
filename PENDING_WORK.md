@@ -1,59 +1,106 @@
-# PULSE — Push Notification Architecture: Work Status & Pending Items
+# PULSE — Current Work Status & Pending Items
 
-Last updated: 2026-08-11
+Last updated: 2026-10-06
+
+Project direction: **AI/ML Powered Smart Campus Issue Reporting System** on top of the
+existing attendance app. Approved plan lives in the session record; schema design is in
+`docs/REPORTS_SCHEMA.md`. Attendance/Subjects functionality is untouched and stays until
+Reports is fully functional.
 
 ## What is DONE
 
-### Backend (`safebunk-backend/`) — NestJS + Firebase Admin
-- **JSON persistence layer**: `src/common/store/` — `JsonStoreService` (file-based store for dedup markers, notification log, devices, sessions, watcher snapshots, planned reminders) + `StoreModule`.
-- **Notifications module** (`src/notifications/`):
-  - `register-device` / `unregister-device` / `preferences` (GET+PUT) / `status` / `test` endpoints in `notifications.controller.ts`, all behind `AuthGuard`.
-  - `FcmService` — sends pushes via `firebase-admin` (v14 modular API), data + notification payloads (`type`, `eventId`, `studentId`, `subjectName`), `priority: high`, **per-type TTL** and correct Android channel. Invalid tokens are deactivated.
-  - `NotificationRuleService` — TS port of the Flutter rule engine (marked/drop/zone/milestone events), pure + unit tested.
-  - `NotificationContentService` — roast/neutral content templates (same copy as Flutter).
-  - `NotificationSchedulerService` — 1-minute cron that fires due reminders, **drops reminders whose TTL window has passed** (a "starts in 5 minutes" never arrives late), keeps undelivered ones pending for retry.
-  - `AttendanceWatcherService` — 5-minute cron polling Linways; **baselines only advance when the event is actually delivered**, so transient FCM failures / phone-off are retried instead of lost.
-  - `TimetableWatcherService` — 5-minute cron fingerprint-diff + replan reminders; `timetableUpdated` fires once per day.
-  - Dedup + TTL logic; per-user preference filtering (master/attendance/bunk/class reminders/milestones/**timetable changes**/roasting + reminder timing).
-- **Auth**: sessions now **persist to the JSON store and survive restarts** (watchers keep running across redeploys); `POST /api/auth/logout` invalidates the session.
-- **Delivery guarantees**: events are only marked processed once FCM accepted them (or all tokens invalid); zero-device and transient failures stay pending and are retried on the next watcher/scheduler tick. Phone-off delivery is handled by FCM's own queueing within the per-type TTL.
-- Compiles clean: `npx tsc --noEmit` passes. **31 jest tests pass** (rule engine, TTL/channel mapping, dispatch/dedup/retry/preferences).
+### Phase 0 — safety prep (complete)
+- **`.env` untracked**: `safebunk-backend/.env` removed from git with `git rm --cached`
+  (local file intact). **Secrets are still exposed in git history** — rotation of
+  `BACKEND_JWT_SECRET`, `SESSION_ENCRYPTION_KEY`, `GOOGLE_CLIENT_ID` is a **separate,
+  not-yet-performed security task**. History was NOT rewritten (per approval).
+- **Baseline test fix**: date-dependent `timetable-watcher.service.spec.ts` now uses
+  Jest fake timers (the service falls back to `new Date()`, so mocking only `Date.now`
+  broke it on any day other than the fixture date).
+- **`docs/REPORTS_SCHEMA.md`** — full schema design: entities, status state machine,
+  AI-column rules, Postgres migration notes, API/ownership contract.
 
-### Flutter (`lib/`)
-- **`services/api/pulse_backend_service.dart`** — backend client: login/logout, register/unregister device, full preference sync (now sends real `bunkEnabled` + `timetableEnabled`). Disabled (all no-ops) when `PULSE_BACKEND_URL` dart-define is absent.
-- **`features/notifications/application/fcm_setup.dart`** — `FcmController`: permission request, token capture, token-rotation re-registration, **foreground messages rendered through the local pipeline using the server data payload** (`type` → channel, `eventId` → stable id), background/terminated taps forwarded to `FcmController.onMessageOpened`.
-- **Tap handling (new)**: local + FCM taps navigate back to the dashboard when a session is active (`main.dart` → `rootNavigatorKey`).
-- **Preferences**: new **Timetable Changes** toggle; legacy Attendance/Low-warning toggles now mirror to the backend automatically; `bunkEnabled` synced from the real setting.
-- **Tests**: **41 pass** (`flutter test`) — rule engine, content, scheduler, FCM channel mapping.
-- **Build blockers fixed**: `package_info_plus` added, missing `ApiConstants` getters + `PersistentCache.getTimetable/setTimetable` restored, dead `auth_capture_webview_screen.dart` (broken webview SSO file) removed. `flutter analyze` is error-free.
+### Phase 1 — Reports backend foundation (code complete, pushed at `e6b4ef2`)
+- **Prisma 6.19.3 + SQLite** added (`prisma/schema.prisma`), migration
+  `20261006134749_init_reports` applied. Models: `Report`, `ReportEvent` (append-only,
+  API deferred to Phase 5), `Category`, `Location`, `Department` (lookup tables created
+  empty). `dev.db` is gitignored.
+- **`src/prisma/`** — global `PrismaModule` + `PrismaService` (connect/disconnect lifecycle).
+- **`src/reports/`** — new module, registered in `app.module.ts` (the only existing file
+  with logic-adjacent change: 2 import lines + 2 array entries):
+  - `POST /api/reports` — create; `GET /api/reports/my`; `GET /api/reports/:id`.
+  - Ownership **exclusively** from `AuthGuard` session (`user.studentId`); `CreateReportDto`
+    has no `studentId` field, so the global whitelist/`forbidNonWhitelisted` pipe rejects it.
+    Cross-student `GET /:id` → 404 (same as missing — no existence oracle).
+  - Initial status `SUBMITTED`, `createdAt/updatedAt/resolvedAt`, all `ai*` fields `null`,
+    `assignedDepartment` null.
+  - `report-status.ts` — explicit, unit-tested state machine:
+    `SUBMITTED→ASSIGNED|REJECTED`, `ASSIGNED→IN_PROGRESS`, `IN_PROGRESS→RESOLVED`.
+    **No status mutation endpoints exist yet** (Phase 6).
+  - Routing = documented **rules-based stub returning null**. No ML, no model, no AI claimed.
+- **Verification**: `npm test` **68/68 pass** (8 suites), `npx tsc --noEmit` clean,
+  `nest build` OK, `prisma migrate dev` OK. Swagger at `/docs`.
+- **Not yet done for Phase 1**: live HTTP smoke test of the 3 routes (server boot hung
+  under the tool shell — needs a manual `npm run start:prod` + curl, incl. IDOR check).
+
+### Backend (earlier — notifications) — NestJS + Firebase Admin
+- **JSON persistence**: `src/common/store/` — `JsonStoreService` + `StoreModule`
+  (sessions, devices, preferences, dedup events, watcher snapshots, planned reminders).
+  Still owns all non-report data; Reports uses its own DB, untouched.
+- **Notifications module**: register/unregister device, preferences GET+PUT, status, test
+  (all behind `AuthGuard`); `FcmService` (firebase-admin v14, per-type TTL, channels,
+  invalid-token deactivation); `NotificationRuleService` (pure, tested);
+  `NotificationContentService` (roast/neutral copy); `NotificationSchedulerService`
+  (1-min cron, TTL drop + retry); `AttendanceWatcherService`; `TimetableWatcherService`.
+- Auth sessions persist to the store and survive restarts; `POST /api/auth/logout` works.
+- Delivery: events marked processed only after FCM accepts them.
+
+### Flutter (`lib/`) — unchanged in Phases 0/1
+- **`pulse_backend_service.dart`** — backend client (login/logout, device registration,
+  preference sync), no-op without `PULSE_BACKEND_URL` dart-define.
+- **`fcm_setup.dart`** — `FcmController`: permission, token capture, rotation
+  re-registration, foreground rendering from server payload, tap-through navigation.
+- **41 `flutter test` pass**; `flutter analyze` clean.
+- Navigation is still Dashboard / **Subjects** / Analytics / Settings — Reports tab not
+  started (Phase 2+), Subjects intentionally kept.
 
 ## PENDING / TO-DO
 
-### 1. Firebase credentials (blocking for REAL pushes — env/config, not code)
-- [ ] Download the server service-account JSON for project `pulse-5b489` and set `FCM_SERVICE_ACCOUNT_PATH` (or `GOOGLE_APPLICATION_CREDENTIALS`) in `safebunk-backend/.env`. Without it the backend runs in dev mode (logs would-be notifications — pipeline fully exercised, nothing delivered).
-- [ ] (Optional) Set `PULSE_STORE_PATH` to a persistent volume in production so the store survives filesystem resets.
+### Immediate — finish Phase 1 verification
+- [ ] Boot backend (`npm run start:prod`) and smoke test:
+      `POST /api/reports`, `GET /api/reports/my`, `GET /api/reports/:id`,
+      cross-student IDOR → 404, Swagger shows the 3 routes, existing routes still respond.
+- [ ] **Fix lint**: `npm run lint` fails because `eslint` is not installed and no eslint
+      config exists anywhere in the repo (pre-existing, unrelated to Reports).
 
-### 2. Backend deploy
-- [ ] Run `npm run start:dev` and hit `/api` + Swagger (`/api/docs`) to sanity-check the notifications endpoints.
-- [ ] Pin CORS + HTTPS; decide deployment target (LAN, VPS, Railway, etc.).
-- [ ] `safebunk-backend/node_modules` is tracked in git — should be gitignored (pre-existing).
+### Security (separate task, approved as phase 0 remainder)
+- [ ] Rotate `BACKEND_JWT_SECRET`, `SESSION_ENCRYPTION_KEY`, `GOOGLE_CLIENT_ID`.
+- [ ] Decide on history purge (`git filter-repo`) — destructive, explicitly deferred.
+- [ ] `npm run lint`/CI: no CI pipeline exists at all.
 
-### 3. Flutter run flags
-- [ ] Build/run the app with:
-      `flutter run --dart-define=PULSE_BACKEND_URL=https://<host>:<port>`
-- [ ] Verify FCM token appears in the debug log (`[FCM] token obtained (…)`).
+### Phase 2+ (awaiting explicit approval — do NOT start automatically)
+- [ ] Phase 2: report creation flow (Flutter UI) — after Phase 1 smoke test.
+- [ ] Phase 3: photo storage + validation.
+- [ ] Phase 4: Flutter Reports tab replacing Subjects in `main_shell_screen.dart`
+      (Subjects stays until Reports list+detail verified).
+- [ ] Phase 5: report timeline endpoints (`GET /api/reports/:id/events`) — schema ready.
+- [ ] Phase 6: staff roles + admin auth path + status/assign endpoints (state machine ready).
+- [ ] Phase 7–10: rules-based routing → real ML (needs labeled data), priority prediction,
+      duplicate detection, campus analytics. FastAPI ML service deferred; NestJS only.
+- [ ] Phase 11: report events → existing FCM `dispatchEvent()`.
+- [ ] Phase 12: conversational AI assistant.
 
-### 4. End-to-end verification (once 1–3 done) — test matrix from the spec
-- [ ] TEST 1/2/3/4: attendance marked while app OPEN / BACKGROUND / REMOVED FROM RECENTS / SCREEN LOCKED → notification arrives.
-- [ ] TEST 5: phone powered off → event detected by backend → phone on → FCM delivers within configured TTL (10 min reminders / 1 h state events).
-- [ ] TEST 6: same attendance record polled repeatedly → exactly ONE notification.
-- [ ] TEST 7: timetable changed → old reminders cancelled, new ones scheduled, one `timetableUpdated` push.
-- [ ] TEST 8: no timetable → no class reminders. TEST 9: no faculty → no invented names. TEST 10: Roast Mode OFF → neutral copy.
-- [ ] Toggle every settings switch → verify `PUT /api/notifications/preferences` and that the server respects it.
-- [ ] Logout → device unregistered + backend session invalidated; login again → re-registered.
-- [ ] `GET /api/notifications/status` shows devices, preferences and recent event ids.
+### Older pending items (notifications, still open)
+- [ ] Download service-account JSON for `pulse-5b489` → `FCM_SERVICE_ACCOUNT_PATH`
+      (backend runs in dev mode without it).
+- [ ] Backend deploy + pinned CORS/HTTPS + persistent `PULSE_STORE_PATH`.
+- [ ] Run Flutter with `--dart-define=PULSE_BACKEND_URL=…`.
+- [ ] 10-case E2E notification test matrix (see git history of this file).
 
 ## Notes
-- Without `PULSE_BACKEND_URL` the app behaves exactly as before (local-only notifications, all backend calls are no-ops).
-- FCM messages carry notification + data payloads; the app renders foreground messages locally so channels/priority/silence settings stay consistent. Android shows system-tray notifications automatically in background/terminated/killed states.
-- A powered-off phone cannot show a notification. FCM retains the message per the per-type TTL and delivers when the phone reconnects; stale class reminders are dropped server-side and never fire late.
+- Without `PULSE_BACKEND_URL` the app behaves exactly as before (local-only notifications).
+- `npm run lint` was already broken before this work (eslint never in devDependencies) —
+  pre-existing, not introduced by the Reports work.
+- Nothing in attendance, dashboard, analytics, timetable, auth or notifications was
+  modified for Phases 0/1 except: `.gitignore` (+db entries), `package.json` (+prisma
+  deps/scripts), `app.module.ts` (+2 module imports), and the isolated test fix.
