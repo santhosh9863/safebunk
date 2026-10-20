@@ -1,4 +1,10 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from '../../auth/auth.service';
 import { AuthenticatedUser } from '../decorators/current-user.decorator';
 
@@ -21,7 +27,13 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Session expired or invalid');
     }
 
+    // Staff/admin sessions must never be usable against student-only routes.
+    if (session.role !== 'STUDENT') {
+      throw new ForbiddenException('Student access required');
+    }
+
     request.user = {
+      role: 'STUDENT',
       studentId: session.studentId,
       cookies: session.cookies,
       username: session.username,

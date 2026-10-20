@@ -152,6 +152,28 @@ export class ReportsService {
     return this.toSummary(report);
   }
 
+  /**
+   * Staff/admin view: all reports, newest first. This is intentionally
+   * separate from listMyReports; ownership is a student-side rule.
+   */
+  async listReportsForStaff(): Promise<ReportSummary[]> {
+    const rows = await this.prisma.report.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.toSummary(r));
+  }
+
+  /** Staff/admin view of any report, including reports owned by students. */
+  async getReportForStaff(id: string): Promise<ReportSummary> {
+    const report = await this.prisma.report.findUnique({
+      where: { id },
+    });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+    return this.toSummary(report);
+  }
+
   private async nextCode(): Promise<string> {
     const count = await this.prisma.report.count();
     // Monotonic per DB; unique constraint backstops any race.

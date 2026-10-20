@@ -14,6 +14,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status = exception.getStatus();
       const res = exception.getResponse();
       message = typeof res === 'string' ? res : (res as any).message || exception.message;
+
+      const retryAfterSeconds =
+        res && typeof res === 'object'
+          ? (res as { retryAfterSeconds?: unknown }).retryAfterSeconds
+          : undefined;
+      if (
+        status === HttpStatus.TOO_MANY_REQUESTS &&
+        typeof retryAfterSeconds === 'number' &&
+        Number.isFinite(retryAfterSeconds)
+      ) {
+        response.setHeader(
+          'Retry-After',
+          String(Math.max(1, Math.ceil(retryAfterSeconds))),
+        );
+      }
     } else if (exception instanceof Error) {
       message = exception.message;
     }

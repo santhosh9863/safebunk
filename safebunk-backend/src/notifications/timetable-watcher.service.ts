@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { AuthService, Session } from '../auth/auth.service';
+import { AuthService, StudentSession } from '../auth/auth.service';
 import { LinwaysService } from '../linways/linways.service';
 import { LINWAYS_ENDPOINTS } from '../linways/linways.constants';
 import { JsonStoreService } from '../common/store/json-store.service';
@@ -99,7 +99,7 @@ export class TimetableWatcherService {
     }
   }
 
-  private async safeWatch(session: Session): Promise<void> {
+  private async safeWatch(session: StudentSession): Promise<void> {
     const studentId = session.studentId;
     if (this.running.has(studentId)) return;
     this.running.add(studentId);

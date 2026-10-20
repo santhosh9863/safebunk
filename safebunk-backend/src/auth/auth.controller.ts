@@ -1,8 +1,21 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Headers, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  HttpCode,
+  HttpStatus,
+  Headers,
+  Ip,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { StaffAuthService } from './staff-auth.service';
+import { LoginRateLimiterService } from './login-rate-limiter.service';
 import { LoginDto } from './dto/login.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { StaffLoginDto } from './dto/staff-login.dto';
+import { StaffLoginResponseDto } from './dto/staff-login-response.dto';
 import { ApiResponse } from '../common/dto/api-response.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -11,14 +24,22 @@ import { NotificationsService } from '../notifications/notifications.service';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly staffAuthService: StaffAuthService,
     private readonly notificationsService: NotificationsService,
+    private readonly loginRateLimiter: LoginRateLimiterService,
   ) {}
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login with Linways credentials' })
-  async login(@Body() dto: LoginDto): Promise<ApiResponse<LoginResponseDto>> {
+  async login(
+    @Body() dto: LoginDto,
+    @Ip() ip: string,
+  ): Promise<ApiResponse<LoginResponseDto>> {
+    this.loginRateLimiter.consume('student', ip, dto.username);
+
     const { session, studentInfo } = await this.authService.login(dto.username, dto.password);
+    this.loginRateLimiter.resetAccount('student', dto.username);
 
     // Auto-detect gender from Linways and store it — but never override a
     // gender the user already picked manually.
@@ -39,6 +60,32 @@ export class AuthController {
         gender: studentInfo.gender,
         batch: studentInfo.batch,
         username: studentInfo.username,
+      },
+    });
+  }
+
+  @Post('staff/login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login with a locally provisioned staff/admin account' })
+  async staffLogin(
+    @Body() dto: StaffLoginDto,
+    @Ip() ip: string,
+  ): Promise<ApiResponse<StaffLoginResponseDto>> {
+    this.loginRateLimiter.consume('staff', ip, dto.username);
+
+    const { session, staff } = await this.staffAuthService.login(
+      dto.username,
+      dto.password,
+    );
+    this.loginRateLimiter.resetAccount('staff', dto.username);
+
+    return ApiResponse.ok({
+      accessToken: session.token,
+      staff: {
+        id: staff.id,
+        username: staff.username,
+        displayName: staff.displayName,
+        role: staff.role,
       },
     });
   }

@@ -97,3 +97,19 @@ model Department {
   name   String @unique
   active Boolean @default(true)
 }
+
+// Locally provisioned staff/admin identities. Role is intentionally required
+// (no default): the account creator must choose STAFF or ADMIN explicitly.
+// Password hashes use the versioned scrypt format in src/auth/password.ts.
+model StaffUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  displayName  String?
+  passwordHash String
+  role         String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([role, active])
+}

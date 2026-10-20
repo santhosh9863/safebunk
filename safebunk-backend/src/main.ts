@@ -1,12 +1,38 @@
 import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+/**
+ * Login throttling keys on the client IP. Behind a reverse proxy, Express only
+ * sees the proxy address unless TRUST_PROXY is explicitly configured, which is
+ * why the default is off. Set TRUST_PROXY to the number of proxy hops (for
+ * example `1`) when direct access to the app is blocked and the proxy sets
+ * X-Forwarded-For. Never enable it when clients can reach the app directly.
+ */
+function configureTrustProxy(app: NestExpressApplication): void {
+  const raw = process.env.TRUST_PROXY?.trim();
+  if (!raw || raw === '0' || raw.toLowerCase() === 'false') return;
 
+  if (raw.toLowerCase() === 'true') {
+    app.set('trust proxy', 1);
+    return;
+  }
+
+  if (/^\d+$/.test(raw)) {
+    app.set('trust proxy', Number(raw));
+    return;
+  }
+
+  app.set('trust proxy', raw);
+}
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  configureTrustProxy(app);
   app.setGlobalPrefix('api', { exclude: ['/'] });
 
   app.enableCors({

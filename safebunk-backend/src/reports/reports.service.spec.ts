@@ -30,15 +30,20 @@ class FakePrisma {
     }),
     count: jest.fn(async () => this.rows.length),
     findMany: jest.fn(async ({ where, orderBy }: any) => {
-      let out = this.rows.filter((r) =>
-        Object.entries(where).every(([k, v]) => r[k] === v),
-      );
+      let out = where
+        ? this.rows.filter((r) =>
+            Object.entries(where).every(([k, v]) => r[k] === v),
+          )
+        : [...this.rows];
       if (orderBy?.createdAt === 'desc') {
         out = [...out].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
       }
       return out;
     }),
     findFirst: jest.fn(async ({ where }: any) => {
+      return this.rows.find((r) => Object.entries(where).every(([k, v]) => r[k] === v)) ?? null;
+    }),
+    findUnique: jest.fn(async ({ where }: any) => {
       return this.rows.find((r) => Object.entries(where).every(([k, v]) => r[k] === v)) ?? null;
     }),
   };
@@ -158,6 +163,39 @@ describe('ReportsService', () => {
       const spoofed = { ...dto, studentId: '9999' } as unknown as CreateReportDto;
       const report = await service.createReport('4301', spoofed);
       expect(report.studentId).toBe('4301');
+    });
+  });
+
+  describe('staff views', () => {
+    it('lists reports from every student, newest first, without exposing studentId', async () => {
+      await service.createReport('4301', baseDto({ title: 'Student A old' }));
+      await service.createReport('9999', baseDto({ title: 'Student B' }));
+      await service.createReport('4301', baseDto({ title: 'Student A new' }));
+
+      const all = await service.listReportsForStaff();
+
+      expect(all).toHaveLength(3);
+      expect(all.map((r) => r.title)).toEqual([
+        'Student A new',
+        'Student B',
+        'Student A old',
+      ]);
+      expect(all.every((r) => !('studentId' in r))).toBe(true);
+    });
+
+    it('reads a report owned by any student', async () => {
+      const created = await service.createReport('4301', baseDto());
+
+      const found = await service.getReportForStaff(created.id);
+
+      expect(found.id).toBe(created.id);
+      expect(found.code).toBe(created.code);
+    });
+
+    it('throws NotFoundException for a missing staff report id', async () => {
+      await expect(service.getReportForStaff('does-not-exist')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

@@ -5,15 +5,16 @@ import { LINWAYS_ENDPOINTS } from '../linways/linways.constants';
 import { CacheService } from '../cache/cache.service';
 import { JsonStoreService } from '../common/store/json-store.service';
 import { normalizeGender } from '../profile/profile.service';
+import {
+  isStaffRole,
+  isStudentSession,
+  Session,
+  StaffRole,
+  StaffSession,
+  StudentSession,
+} from './session.types';
 
-export interface Session {
-  token: string;
-  studentId: string;
-  username: string;
-  cookies: string;
-  authToken: string;
-  createdAt: number;
-}
+export type { Session, StaffSession, StudentSession } from './session.types';
 
 const STORE_SESSIONS = 'authSessions';
 
@@ -35,11 +36,12 @@ export class AuthService {
 
   private restoreSessions(): void {
     try {
-      const stored = this.store.get<Session[]>(STORE_SESSIONS) ?? [];
+      const stored = this.store.get<unknown[]>(STORE_SESSIONS) ?? [];
       const now = Date.now();
       let restored = 0;
-      for (const session of stored) {
-        if (!session?.token || !session?.studentId || !session?.cookies || !session?.authToken) continue;
+      for (const raw of stored) {
+        const session = this.normalizeStoredSession(raw);
+        if (!session) continue;
         if (now - session.createdAt > this.sessionTtlMs) continue;
         this.sessions.set(session.token, session);
         restored++;
@@ -52,11 +54,70 @@ export class AuthService {
     }
   }
 
+  /**
+   * Rebuilds a session from the JSON store. Legacy student sessions written
+   * before roles existed are restored as STUDENT only because they carry the
+   * complete student session shape. Unknown roles are dropped, never defaulted
+   * to a privileged role.
+   */
+  private normalizeStoredSession(raw: unknown): Session | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const value = raw as Record<string, unknown>;
+
+    const token = typeof value.token === 'string' ? value.token : '';
+    const username = typeof value.username === 'string' ? value.username : '';
+    const createdAt =
+      typeof value.createdAt === 'number' ? value.createdAt : NaN;
+
+    if (
+      !token ||
+      !username ||
+      !Number.isFinite(createdAt) ||
+      createdAt <= 0
+    ) {
+      return null;
+    }
+
+    if (value.role === 'STAFF' || value.role === 'ADMIN') {
+      const staffId = typeof value.staffId === 'string' ? value.staffId : '';
+      if (!staffId) return null;
+      return {
+        token,
+        role: value.role,
+        staffId,
+        username,
+        createdAt,
+      };
+    }
+
+    if (value.role !== undefined && value.role !== 'STUDENT') {
+      return null;
+    }
+
+    const studentId =
+      typeof value.studentId === 'string' ? value.studentId : '';
+    const cookies = typeof value.cookies === 'string' ? value.cookies : '';
+    const authToken =
+      typeof value.authToken === 'string' ? value.authToken : '';
+
+    if (!studentId || !cookies || !authToken) return null;
+
+    return {
+      token,
+      role: 'STUDENT',
+      studentId,
+      username,
+      cookies,
+      authToken,
+      createdAt,
+    };
+  }
+
   private persistSessions(): void {
     this.store.set(STORE_SESSIONS, Array.from(this.sessions.values()));
   }
 
-  async login(username: string, password: string): Promise<{ session: Session; studentInfo: any }> {
+  async login(username: string, password: string): Promise<{ session: StudentSession; studentInfo: any }> {
     const loginPayload = { username, password, next: '', userType: 'STUDENT' };
 
     this.logger.log(`Attempting Linways login for ${username}`);
@@ -90,8 +151,9 @@ export class AuthService {
       studentId,
     );
 
-    const session: Session = {
+    const session: StudentSession = {
       token: sessionToken,
+      role: 'STUDENT',
       studentId: studentInfo.studentId,
       username,
       cookies: cookieString,
@@ -105,6 +167,41 @@ export class AuthService {
     this.logger.log(`Session created for ${username} (${studentInfo.studentId})`);
 
     return { session, studentInfo };
+  }
+
+  /**
+   * Creates a staff/admin session from a role that was read from the
+   * StaffUser row by StaffAuthService. Never call this with a client-supplied
+   * role.
+   */
+  createStaffSession(input: {
+    staffId: string;
+    username: string;
+    role: StaffRole;
+  }): StaffSession {
+    if (!input.staffId) {
+      throw new Error('Cannot create a staff session without a staff id');
+    }
+    if (!isStaffRole(input.role)) {
+      throw new Error('Cannot create a staff session with an invalid role');
+    }
+
+    const session: StaffSession = {
+      token: this.generateSessionToken(),
+      role: input.role,
+      staffId: input.staffId,
+      username: input.username,
+      createdAt: Date.now(),
+    };
+
+    this.sessions.set(session.token, session);
+    this.persistSessions();
+
+    this.logger.log(
+      `Staff session created for ${session.username} (${session.role})`,
+    );
+
+    return session;
   }
 
   async refreshCookies(username: string, password: string): Promise<string> {
@@ -136,10 +233,10 @@ export class AuthService {
     this.persistSessions();
   }
 
-  /** All non-expired sessions — used by the background notification watchers. */
-  getActiveSessions(): Session[] {
+  /** All non-expired student sessions — used by the notification watchers. */
+  getActiveSessions(): StudentSession[] {
     const now = Date.now();
-    const active: Session[] = [];
+    const active: StudentSession[] = [];
     let pruned = false;
     for (const [token, session] of this.sessions.entries()) {
       if (now - session.createdAt > this.sessionTtlMs) {
@@ -147,7 +244,9 @@ export class AuthService {
         pruned = true;
         continue;
       }
-      active.push(session);
+      if (isStudentSession(session)) {
+        active.push(session);
+      }
     }
     if (pruned) this.persistSessions();
     return active;

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { AuthService, Session } from '../auth/auth.service';
+import { AuthService, StudentSession } from '../auth/auth.service';
 import { LinwaysService } from '../linways/linways.service';
 import { LINWAYS_ENDPOINTS } from '../linways/linways.constants';
 import { JsonStoreService } from '../common/store/json-store.service';
@@ -67,7 +67,7 @@ export class AttendanceWatcherService {
     }
   }
 
-  private async safePoll(session: Session): Promise<void> {
+  private async safePoll(session: StudentSession): Promise<void> {
     const studentId = session.studentId;
     if (this.running.has(studentId)) return;
     this.running.add(studentId);
@@ -82,7 +82,7 @@ export class AttendanceWatcherService {
 
   // ── Newly marked attendance records ─────────────────────────
 
-  private async checkMarkedRecords(session: Session): Promise<void> {
+  private async checkMarkedRecords(session: StudentSession): Promise<void> {
     const studentId = session.studentId;
     const response = await this.linwaysService.get(
       LINWAYS_ENDPOINTS.DAILY_ATTENDANCE,

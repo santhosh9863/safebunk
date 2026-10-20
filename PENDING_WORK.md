@@ -104,6 +104,10 @@ Reports is fully functional.
 ### Security (separate task, approved as phase 0 remainder)
 - [ ] Rotate `BACKEND_JWT_SECRET`, `SESSION_ENCRYPTION_KEY`, `GOOGLE_CLIENT_ID`.
 - [ ] Decide on history purge (`git filter-repo`) — destructive, explicitly deferred.
+- [x] Add focused login rate limiting for student and staff/admin login (per-IP and
+      per-account, in-memory).
+- [ ] Back the login limiter with a shared store before a multi-instance deployment,
+      and add permanent account lockout if the deployment policy requires it.
 - [ ] `npm run lint`/CI: no CI pipeline exists at all.
 
 ### Phase 2+ (awaiting explicit approval — do NOT start automatically)
@@ -113,6 +117,13 @@ Reports is fully functional.
       (Subjects stays until Reports list+detail verified).
 - [ ] Phase 5: report timeline endpoints (`GET /api/reports/:id/events`) — schema ready.
 - [ ] Phase 6: staff roles + admin auth path + status/assign endpoints (state machine ready).
+  - [x] Staff/admin identities, role guards, read-only staff report views, admin-only
+        account provisioning, and first-admin CLI (feature branch, pending review).
+  - [x] Focused login throttling for student and staff/admin login (per-IP and
+        per-account, in-memory, fixed 15-minute window).
+  - [ ] Status/assignment mutation endpoints and report lifecycle events.
+  - [ ] Staff deactivation/role-change API (DB changes already revoke the next request);
+        staff/admin UI; staff photo access.
 - [ ] Phase 7–10: rules-based routing → real ML (needs labeled data), priority prediction,
       duplicate detection, campus analytics. FastAPI ML service deferred; NestJS only.
 - [ ] Phase 11: report events → existing FCM `dispatchEvent()`.
