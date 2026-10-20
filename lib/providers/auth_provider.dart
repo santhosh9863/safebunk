@@ -82,7 +82,12 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   final sessionManager = ref.watch(sessionManagerProvider);
   final cacheManager = ref.watch(cacheManagerProvider);
-  final notifier = AuthNotifier(authRepository, sessionManager, cacheManager, ref);
+  final notifier = AuthNotifier(
+    authRepository,
+    sessionManager,
+    cacheManager,
+    ref,
+  );
   DioClient.sessionExpiredHandler = () => notifier.handleSessionExpired();
   return notifier;
 });
@@ -110,7 +115,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final username = session?.username;
 
       state = AuthState(
-        status: hasSession ? AuthStatus.authenticated : AuthStatus.unauthenticated,
+        status: hasSession
+            ? AuthStatus.authenticated
+            : AuthStatus.unauthenticated,
         username: username,
       );
 
@@ -124,44 +131,75 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Login the app against the PULSE backend (best-effort) and register this
-  /// device's FCM token so server-side watchers can push to it.
+  /// Registers this device's FCM token when a PULSE backend session already
+  /// exists. Runs after fresh login and after restoring the Linways session.
   Future<void> _syncPushRegistration() async {
-    final backend = _ref.read(pulseBackendServiceProvider);
-    // No backend session yet (restore-only path): the explicit login() flow
-    // re-authenticates the backend with fresh credentials.
-    if (!backend.isEnabled || !await backend.isLoggedIn) return;
+    try {
+      final backend = _ref.read(pulseBackendServiceProvider);
+      // No backend session (restore-only path): only a fresh login can
+      // re-authenticate the backend because the password is never stored.
+      if (!backend.isEnabled || !await backend.isLoggedIn) return;
 
-    final token = await FcmController.refreshToken();
-    _ref.read(deviceTokenProvider.notifier).state = token;
-    if (token == null) return;
-    await backend.registerDevice(token);
+      final token = await FcmController.refreshToken();
+      _ref.read(deviceTokenProvider.notifier).state = token;
+      if (token == null) return;
+      await backend.registerDevice(token);
 
-    FcmController.attachTokenRefreshListener((newToken) async {
-      _ref.read(deviceTokenProvider.notifier).state = newToken;
-      if (await backend.isLoggedIn) {
-        await backend.registerDevice(newToken);
-      }
-    });
+      FcmController.attachTokenRefreshListener((newToken) async {
+        _ref.read(deviceTokenProvider.notifier).state = newToken;
+        if (await backend.isLoggedIn) {
+          await backend.registerDevice(newToken);
+        }
+      });
+    } catch (e) {
+      debugPrint('[PULSE backend] push registration sync failed: $e');
+    }
   }
 
-  /// Backend login + device registration, called after a fresh Linways login.
-  Future<void> _registerPushWithCredentials(String username, String password) async {
+  /// Establishes the PULSE backend session with the same credentials used for
+  /// the Linways login. This is awaited during login so Reports never races a
+  /// background request that has not stored its token yet.
+  Future<bool> _establishBackendSession(
+    String username,
+    String password,
+  ) async {
     final backend = _ref.read(pulseBackendServiceProvider);
-    if (!backend.isEnabled) return;
-    await backend.login(username, password);
-    await _syncPushRegistration();
-
-    // Auto-fill the message vibe from the gender Linways provides — but
-    // never override a choice the user already made in the profile.
-    final detected = await backend.getDetectedGender();
-    if (detected.isNotEmpty) {
-      final settings = _ref.read(notificationSettingsProvider);
-      if (settings.gender.isEmpty) {
-        await _ref
-            .read(notificationSettingsProvider.notifier)
-            .setGender(detected);
+    if (!backend.isEnabled) return false;
+    try {
+      final ok = await backend.login(username, password);
+      if (!ok) {
+        debugPrint(
+          '[PULSE backend] session establishment failed; Reports will ask for login again.',
+        );
       }
+      return ok;
+    } catch (e) {
+      debugPrint('[PULSE backend] session establishment error: $e');
+      return false;
+    }
+  }
+
+  /// Non-critical post-login sync: FCM device registration and the detected
+  /// gender preference. Failures here never block attendance or login.
+  Future<void> _syncAfterBackendLogin() async {
+    await _syncPushRegistration();
+    try {
+      final backend = _ref.read(pulseBackendServiceProvider);
+      if (!backend.isEnabled) return;
+
+      // Auto-fill the message vibe from the gender Linways provides — but
+      // never override a choice the user already made in the profile.
+      final detected = await backend.getDetectedGender();
+      if (detected.isNotEmpty) {
+        final settings = _ref.read(notificationSettingsProvider);
+        if (settings.gender.isEmpty) {
+          await _ref
+              .read(notificationSettingsProvider.notifier)
+              .setGender(detected);
+        }
+      }
+    } catch (e) {
+      debugPrint('[PULSE backend] post-login profile sync failed: $e');
     }
   }
 
@@ -169,11 +207,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _clearPushRegistration() async {
     _ref.read(deviceTokenProvider.notifier).state = null;
     final backend = _ref.read(pulseBackendServiceProvider);
-    if (!backend.isEnabled || !await backend.isLoggedIn) return;
-    final token = await FcmController.refreshToken();
-    if (token != null) {
-      await backend.unregisterDevice(token);
+    if (!backend.isEnabled) return;
+    if (await backend.isLoggedIn) {
+      final token = await FcmController.refreshToken();
+      if (token != null) {
+        await backend.unregisterDevice(token);
+      }
     }
+    // Always clear persisted backend credentials, including a stale/expired
+    // token that is no longer considered logged in.
     await backend.logout();
   }
 
@@ -188,11 +230,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // stale data can be served after login.
       await _cacheManager.clearAll();
       debugPrint('[AccountSwitch] login(): all caches cleared');
-      state = AuthState(
-        status: AuthStatus.authenticated,
-        username: username,
-      );
-      unawaited(_registerPushWithCredentials(username, password));
+      // Await the PULSE backend session before exposing the authenticated
+      // state, so the Reports tab cannot open with a missing token.
+      await _establishBackendSession(username, password);
+      state = AuthState(status: AuthStatus.authenticated, username: username);
+      unawaited(_syncAfterBackendLogin());
     } catch (e) {
       state = AuthState(
         status: AuthStatus.unauthenticated,

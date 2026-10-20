@@ -1,6 +1,6 @@
 # PULSE — Current Work Status & Pending Items
 
-Last updated: 2026-10-06
+Last updated: 2026-10-20
 
 Project direction: **AI/ML Powered Smart Campus Issue Reporting System** on top of the
 existing attendance app. Approved plan lives in the session record; schema design is in
@@ -66,6 +66,34 @@ Reports is fully functional.
 
 ## PENDING / TO-DO
 
+### Reports auth/session (fixed 2026-10-20)
+- The installed Android app was running an **older build**: its error text
+  (`Reports need the PULSE backend. Build with ...`) no longer exists in the current
+  source. The old build's invalid backend URL made `/api/auth/login` fail.
+- Backend login is now **awaited during Linways login**, so a fresh login cannot leave
+  Reports racing a half-finished background request. A backend `401` clears the stale
+  token; logout clears the token, student id and cached gender.
+- **After installing the new build, log out and sign in once.** The previous install has
+  Linways cookies but no PULSE backend token; the token can only be created from a fresh
+  login because the password is never persisted.
+- Clean Android run (backend on port 3000, same Wi-Fi, Node allowed through the firewall):
+  ```powershell
+  # terminal 1 - backend
+  cd safebunk-backend
+  npm run start:prod
+
+  # terminal 2 - app
+  adb shell am force-stop com.example.safebunk_v2
+  flutter clean
+  flutter pub get
+  flutter devices
+  flutter run -d <device-id> --dart-define=PULSE_BACKEND_URL=http://10.133.160.180:3000
+  ```
+  `10.133.160.180` was the PC Wi-Fi address at the time; re-check with `ipconfig` and
+  replace it if the router assigned a new one. For USB, `adb reverse tcp:3000 tcp:3000`
+  and use `http://localhost:3000`; for the emulator use `http://10.0.2.2:3000`.
+  The define is compile-time: hot reload/restart does **not** change it.
+
 ### Immediate — finish Phase 1 verification
 - [ ] Boot backend (`npm run start:prod`) and smoke test:
       `POST /api/reports`, `GET /api/reports/my`, `GET /api/reports/:id`,
@@ -94,7 +122,10 @@ Reports is fully functional.
 - [ ] Download service-account JSON for `pulse-5b489` → `FCM_SERVICE_ACCOUNT_PATH`
       (backend runs in dev mode without it).
 - [ ] Backend deploy + pinned CORS/HTTPS + persistent `PULSE_STORE_PATH`.
-- [ ] Run Flutter with `--dart-define=PULSE_BACKEND_URL=…`.
+- [ ] Run Flutter with the correct local backend origin:
+      `--dart-define=PULSE_BACKEND_URL=http://localhost:3000` (web/Windows),
+      `http://10.0.2.2:3000` (Android emulator), or
+      `http://YOUR_PC_LAN_IP:3000` (physical Android device). Do not include `/api`.
 - [ ] 10-case E2E notification test matrix (see git history of this file).
 
 ## Notes

@@ -33,6 +33,10 @@ class FakePrisma {
     delete: jest.fn(async ({ where }: any) => {
       const i = this.reports.findIndex((r) => r.id === where.id);
       const [row] = this.reports.splice(i, 1);
+      // Mirrors the Attachment FK's `onDelete: SetNull`.
+      this.attachments.forEach((a) => {
+        if (a.reportId === where.id) a.reportId = null;
+      });
       return row;
     }),
     findMany: jest.fn(),
@@ -109,5 +113,18 @@ describe('ReportsService — attachment association', () => {
     );
     expect(prisma.report.delete).toHaveBeenCalledTimes(1);
     expect(prisma.reports).toHaveLength(0);
+  });
+
+  it('rolls back and releases the claim when the image URL update fails', async () => {
+    prisma.attachments.push({ id: 'att_1', studentId: '4301', reportId: null });
+    prisma.report.update.mockRejectedValueOnce(new Error('db update failed'));
+
+    await expect(service.createReport('4301', dto({ attachmentId: 'att_1' }))).rejects.toThrow(
+      'db update failed',
+    );
+    expect(prisma.report.delete).toHaveBeenCalledTimes(1);
+    expect(prisma.reports).toHaveLength(0);
+    // Fake reproduces the FK's SetNull behaviour: photo is reusable/removable again.
+    expect(prisma.attachments[0].reportId).toBeNull();
   });
 });

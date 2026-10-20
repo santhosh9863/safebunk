@@ -101,22 +101,28 @@ export class ReportsService {
     });
 
     if (dto.attachmentId) {
-      const claimed = await this.attachments.claimForReport(
-        studentId,
-        dto.attachmentId,
-        report.id,
-      );
-      if (!claimed) {
-        // Lost a race / stale attachment: roll back the just-created report so
-        // it never references a photo it does not own.
+      try {
+        const claimed = await this.attachments.claimForReport(
+          studentId,
+          dto.attachmentId,
+          report.id,
+        );
+        if (!claimed) {
+          throw new BadRequestException('Invalid or already-used attachment.');
+        }
+        report.imageUrl = AttachmentsService.urlFor(dto.attachmentId);
+        await this.prisma.report.update({
+          where: { id: report.id },
+          data: { imageUrl: report.imageUrl },
+        });
+      } catch (error) {
+        // Lost a race, stale attachment, or the follow-up update failed: roll
+        // back the just-created report so it never references a photo it does
+        // not own and no attachment stays claimed by a half-created report.
+        // The Attachment FK is `onDelete: SetNull`, which releases the claim.
         await this.prisma.report.delete({ where: { id: report.id } }).catch(() => undefined);
-        throw new BadRequestException('Invalid or already-used attachment.');
+        throw error;
       }
-      report.imageUrl = AttachmentsService.urlFor(dto.attachmentId);
-      await this.prisma.report.update({
-        where: { id: report.id },
-        data: { imageUrl: report.imageUrl },
-      });
     }
 
     return report;

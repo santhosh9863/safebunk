@@ -5,41 +5,56 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/errors/app_exceptions.dart';
 import '../../features/reports/data/models/report_attachment.dart';
 import '../../features/reports/data/models/report_model.dart';
+import 'pulse_backend_config.dart';
 
 /// Client for the PULSE NestJS backend (device registration, preferences,
-/// FCM-backed events).
+/// FCM-backed events, Reports).
 ///
-/// The backend base URL is injected at build time:
-///   flutter run --dart-define=PULSE_BACKEND_URL=https://your-backend:3000
+/// The backend base URL is injected at build time (local development examples):
+///   web / Windows:        --dart-define=PULSE_BACKEND_URL=http://localhost:3000
+///   Android emulator:     --dart-define=PULSE_BACKEND_URL=http://10.0.2.2:3000
+///   physical Android:     --dart-define=PULSE_BACKEND_URL=http://YOUR_PC_LAN_IP:3000
 ///
-/// When no URL is configured every call is a no-op and the app keeps working
-/// exactly as before (local notifications only). Never throws for that case.
+/// A missing or placeholder value is treated as "not configured": notification
+/// syncing stays a no-op, while Reports surfaces an actionable configuration
+/// error instead of an opaque network failure.
 class PulseBackendService {
-  static const _baseUrl = String.fromEnvironment('PULSE_BACKEND_URL');
+  static const _baseUrl = String.fromEnvironment(PulseBackendConfig.defineName);
 
   static const _tokenKey = 'backend_access_token';
   static const _studentIdKey = 'backend_student_id';
   static const _genderKey = 'backend_student_gender';
 
+  final PulseBackendConfig _config;
   final Dio _dio;
   final FlutterSecureStorage _storage;
-  final bool _enabled;
 
-  PulseBackendService({Dio? dio, FlutterSecureStorage? storage})
-      : _dio = dio ??
-            Dio(BaseOptions(
-              baseUrl: _baseUrl,
+  PulseBackendService({
+    Dio? dio,
+    FlutterSecureStorage? storage,
+    String? baseUrl,
+  }) : this._(PulseBackendConfig.parse(baseUrl ?? _baseUrl), dio, storage);
+
+  PulseBackendService._(this._config, Dio? dio, FlutterSecureStorage? storage)
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: _config.baseUrl ?? '',
               connectTimeout: const Duration(seconds: 10),
               receiveTimeout: const Duration(seconds: 10),
               headers: {'Accept': 'application/json'},
-            )),
-        _storage = storage ?? const FlutterSecureStorage(),
-        _enabled = _baseUrl.isNotEmpty;
+            ),
+          ),
+      _storage = storage ?? const FlutterSecureStorage();
 
-  bool get isEnabled => _enabled;
+  bool get isEnabled => _config.isEnabled;
+
+  /// Actionable configuration problem, or null when the URL is valid.
+  String? get configurationError => _config.error;
 
   Future<bool> get isLoggedIn async {
-    if (!_enabled) return false;
+    if (!isEnabled) return false;
     final token = await _storage.read(key: _tokenKey);
     return token != null && token.isNotEmpty;
   }
@@ -47,12 +62,16 @@ class PulseBackendService {
   /// Authenticate against the backend so it has a live Linways session for
   /// the watchers, and remember the token for device registration.
   Future<bool> login(String username, String password) async {
-    if (!_enabled) return false;
+    if (!isEnabled) return false;
+    // A fresh Linways login must never keep a PULSE token from a previous
+    // account/session. Clear first; a failed login leaves Reports asking for
+    // a fresh login instead of reusing stale credentials.
+    await _clearStoredSession();
     try {
-      final response = await _dio.post('/api/auth/login', data: {
-        'username': username,
-        'password': password,
-      });
+      final response = await _dio.post(
+        '/api/auth/login',
+        data: {'username': username, 'password': password},
+      );
       final body = response.data;
       if (body is Map && body['success'] == true) {
         final data = body['data'];
@@ -79,7 +98,7 @@ class PulseBackendService {
   }
 
   Future<void> logout() async {
-    if (!_enabled) return;
+    if (!isEnabled) return;
     final token = await _storage.read(key: _tokenKey);
     if (token != null && token.isNotEmpty) {
       try {
@@ -91,13 +110,20 @@ class PulseBackendService {
         // Best-effort: the backend session will expire on its own.
       }
     }
+    await _clearStoredSession();
+  }
+
+  /// Deletes every persisted PULSE backend credential. Used on logout, on a
+  /// fresh login, and when the backend rejects a token as expired.
+  Future<void> _clearStoredSession() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _studentIdKey);
+    await _storage.delete(key: _genderKey);
   }
 
   Future<bool> registerDevice(String fcmToken) async {
     final token = await _storage.read(key: _tokenKey);
-    if (!_enabled || token == null || token.isEmpty) return false;
+    if (!isEnabled || token == null || token.isEmpty) return false;
     try {
       await _dio.post(
         '/api/notifications/register-device',
@@ -113,7 +139,7 @@ class PulseBackendService {
 
   Future<void> unregisterDevice(String fcmToken) async {
     final token = await _storage.read(key: _tokenKey);
-    if (!_enabled || token == null || token.isEmpty) return;
+    if (!isEnabled || token == null || token.isEmpty) return;
     try {
       await _dio.post(
         '/api/notifications/unregister-device',
@@ -140,7 +166,7 @@ class PulseBackendService {
     bool wrapUpEnabled = true,
   }) async {
     final token = await _storage.read(key: _tokenKey);
-    if (!_enabled || token == null || token.isEmpty) return;
+    if (!isEnabled || token == null || token.isEmpty) return;
     try {
       await _dio.put(
         '/api/notifications/preferences',
@@ -165,7 +191,7 @@ class PulseBackendService {
 
   /// Gender detected from Linways at the last backend login ('' if unknown).
   Future<String> getDetectedGender() async {
-    if (!_enabled) return '';
+    if (!isEnabled) return '';
     return (await _storage.read(key: _genderKey)) ?? '';
   }
 
@@ -173,7 +199,7 @@ class PulseBackendService {
   /// app to decide whether the server owns the daily messages (FCM) or the
   /// local scheduler must step in as fallback.
   Future<bool> isReachable() async {
-    if (!_enabled) return false;
+    if (!isEnabled) return false;
     try {
       final response = await _dio.get<dynamic>(
         '/',
@@ -248,9 +274,12 @@ class PulseBackendService {
         data: {
           'title': title,
           'description': description,
-          if (category != null && category.trim().isNotEmpty) 'category': category.trim(),
-          if (location != null && location.trim().isNotEmpty) 'location': location.trim(),
-          if (priority != null && priority.trim().isNotEmpty) 'priority': priority.trim(),
+          if (category != null && category.trim().isNotEmpty)
+            'category': category.trim(),
+          if (location != null && location.trim().isNotEmpty)
+            'location': location.trim(),
+          if (priority != null && priority.trim().isNotEmpty)
+            'priority': priority.trim(),
           if (attachmentId != null && attachmentId.trim().isNotEmpty)
             'attachmentId': attachmentId.trim(),
         },
@@ -311,16 +340,17 @@ class PulseBackendService {
   String? absoluteUrl(String? path) {
     if (path == null || path.trim().isEmpty) return null;
     final value = path.trim();
-    if (value.startsWith('http://') || value.startsWith('https://')) return value;
-    if (!_enabled) return null;
-    final base =
-        _baseUrl.endsWith('/') ? _baseUrl.substring(0, _baseUrl.length - 1) : _baseUrl;
+    if (value.startsWith('http://') || value.startsWith('https://')) {
+      return value;
+    }
+    if (!isEnabled) return null;
+    final base = _config.baseUrl!;
     return value.startsWith('/') ? '$base$value' : '$base/$value';
   }
 
   /// Bearer headers needed to fetch an authenticated attachment image.
   Future<Map<String, String>?> imageAuthHeaders() async {
-    if (!_enabled) return null;
+    if (!isEnabled) return null;
     final token = await _storage.read(key: _tokenKey);
     if (token == null || token.isEmpty) return null;
     return {'Authorization': 'Bearer $token'};
@@ -344,21 +374,30 @@ class PulseBackendService {
   /// Runs an authenticated backend call, mapping transport failures to the
   /// app's typed [ApiException] hierarchy.
   Future<T> _authed<T>(Future<T> Function(String token) run) async {
-    if (!_enabled) {
-      throw const NetworkException(
-        'Reports need the PULSE backend. Build with '
-        '--dart-define=PULSE_BACKEND_URL=https://<host:port>.',
+    if (!isEnabled) {
+      throw NetworkException(
+        _config.error ?? PulseBackendConfig.missingMessage,
       );
     }
     final token = await _storage.read(key: _tokenKey);
     if (token == null || token.isEmpty) {
       throw const UnauthorizedException(
-        'Your PULSE backend session is missing. Please login again.',
+        'Your PULSE backend session is missing. Log out and sign in again '
+        'to reconnect Reports.',
       );
     }
     try {
       return await run(token);
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        // The PULSE session expired or was revoked. Drop the stale token so
+        // it is never reused, and tell the user how to reconnect Reports.
+        await _clearStoredSession();
+        throw const SessionExpiredException(
+          'Your PULSE backend session expired. Log out and sign in again '
+          'to reconnect Reports.',
+        );
+      }
       throw mapDioException(e);
     }
   }

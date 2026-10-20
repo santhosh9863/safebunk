@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/notifications/notification_providers.dart' show notificationServiceProvider, notificationStateStoreProvider;
@@ -14,7 +15,13 @@ final deviceTokenProvider = StateProvider<String?>((ref) => null);
 
 /// Client for the PULSE backend (push registration + preferences sync).
 final pulseBackendServiceProvider = Provider<PulseBackendService>((ref) {
-  return PulseBackendService();
+  final service = PulseBackendService();
+  if (!service.isEnabled) {
+    debugPrint(
+      '[PULSE backend] disabled: ${service.configurationError ?? 'missing URL'}',
+    );
+  }
+  return service;
 });
 
 /// Repository for notification persistence (baselines + dedup markers).

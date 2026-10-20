@@ -22,7 +22,13 @@ class ReportsTab extends ConsumerStatefulWidget {
 class _ReportsTabState extends ConsumerState<ReportsTab> {
   Future<void> _refresh() async {
     ref.invalidate(reportsListProvider);
-    await ref.read(reportsListProvider.future);
+    try {
+      await ref.read(reportsListProvider.future);
+    } catch (_) {
+      // The provider's error state renders the actionable message in the
+      // Reports tab. Swallow here so Retry / pull-to-refresh never leaks an
+      // uncaught async exception when the backend is unreachable.
+    }
   }
 
   Future<void> _openCreate() async {
