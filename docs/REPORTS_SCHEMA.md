@@ -1,7 +1,9 @@
 # PULSE Reports — Database & Schema Design
 
 Status: approved for Phase 1 (backend foundation).
-Scope: design only. No ML claims. Timeline/event APIs deferred to Phase 5; status mutation APIs deferred to Phase 6.
+Scope: schema design + implemented report/staff workflow. Timeline is embedded in
+report detail; assignment/status mutations are implemented (see
+`docs/ISSUE_HANDLING.md`). No ML claims.
 
 ## 1. Goals
 
@@ -54,6 +56,10 @@ run `prisma migrate deploy`. Column types map 1:1 for the types used here.
 | priority | String | no | `LOW \| MEDIUM \| HIGH \| CRITICAL`, default `MEDIUM` (human-confirmed) |
 | status | String | no | see state machine; initial `SUBMITTED` |
 | assignedDepartment | String? | yes | rules-based routing may fill later |
+| assignedStaffId | String? | yes | FK → StaffUser, `SET NULL` if the account is deleted |
+| assignedAt | DateTime? | yes | last assignment/reassignment time |
+| resolutionNotes | String? | yes | required when STAFF resolves; student-visible |
+| rejectionReason | String? | yes | required when ADMIN rejects; student-visible |
 | aiCategory | String? | yes | AI prediction — never trusted for authz |
 | aiPriority | String? | yes | AI prediction |
 | aiConfidence | Float? | yes | 0..1 |
@@ -65,7 +71,8 @@ run `prisma migrate deploy`. Column types map 1:1 for the types used here.
 | updatedAt | DateTime | no | `@updatedAt` |
 | resolvedAt | DateTime? | yes | set on `RESOLVED` |
 
-Indexes: `@@index([studentId, createdAt])`, `@@unique([code])`.
+Indexes: `@@index([studentId, createdAt])`, `@@index([assignedStaffId, status])`,
+`@@index([status])`, `@@unique([code])`.
 
 ### ReportEvent (append-only, created in Phase 1, API in Phase 5)
 
@@ -121,18 +128,21 @@ tables are forward-compatible placeholders and are not written to yet.
 ## 5. Status state machine (explicit)
 
 ```
-SUBMITTED  → ASSIGNED     (staff only, Phase 6)
-SUBMITTED  → REJECTED     (staff only, Phase 6)
-ASSIGNED   → IN_PROGRESS  (staff only, Phase 6)
-IN_PROGRESS→ RESOLVED     (staff only, Phase 6)
+SUBMITTED  → ASSIGNED     (ADMIN assign; implemented)
+SUBMITTED  → REJECTED     (ADMIN reject with reason; implemented)
+ASSIGNED   → IN_PROGRESS  (assigned STAFF accepts; implemented)
+ASSIGNED   → REJECTED     (ADMIN reject with reason; implemented)
+IN_PROGRESS→ RESOLVED     (assigned STAFF, resolution notes required; implemented)
+IN_PROGRESS→ REJECTED     (ADMIN reject with reason; implemented)
 ```
 
 - Initial status on create: `SUBMITTED`.
 - Terminal: `RESOLVED`, `REJECTED`.
 - `resolvedAt` set only when reaching `RESOLVED`.
 - Any other transition is invalid (`INVALID_TRANSITION`).
-- **No status mutation endpoints exist in Phase 1.** The state machine is implemented as a
-  pure, unit-tested module so Phase 6 only has to wire guarded endpoints to it.
+- ADMIN reassignment keeps `ASSIGNED`/`IN_PROGRESS` and appends `REASSIGNED`.
+- Workflow endpoints and authorization are documented in
+  `docs/ISSUE_HANDLING.md`.
 
 ## 6. AI field rules
 
@@ -147,16 +157,27 @@ IN_PROGRESS→ RESOLVED     (staff only, Phase 6)
 ```
 POST   /api/reports                     create (AuthGuard)
 GET    /api/reports/my                  list own reports (AuthGuard)
-GET    /api/reports/:id                 get one owned report (AuthGuard)
+GET    /api/reports/:id                 get one owned report + safe history (AuthGuard)
 POST   /api/reports/attachments         upload a photo, multipart "file" (AuthGuard)
 GET    /api/reports/attachments/:id     download own photo, bytes (AuthGuard)
 DELETE /api/reports/attachments/:id     remove own not-yet-linked photo (AuthGuard)
+
+GET    /api/staff/reports               assigned-only (STAFF) / all (ADMIN)
+GET    /api/staff/reports/:id           detail + full history (assigned STAFF/ADMIN)
+GET    /api/staff/reports/:id/photo     authorized photo bytes (assigned STAFF/ADMIN)
+POST   /api/staff/reports/:id/assign    assign/reassign (ADMIN)
+POST   /api/staff/reports/:id/accept    ASSIGNED -> IN_PROGRESS (STAFF)
+POST   /api/staff/reports/:id/progress  internal progress note (STAFF)
+POST   /api/staff/reports/:id/resolve   IN_PROGRESS -> RESOLVED (STAFF)
+POST   /api/staff/reports/:id/reject    reject with reason (ADMIN)
 ```
 
 Authorization rule: `studentId` always comes from the authenticated session
 (`request.user.studentId` set by `AuthGuard`). Any `studentId` in a request body/query is
 ignored. `GET /api/reports/:id` returns 404 when the report belongs to another student
-(no existence leak differences beyond 404, no cross-student reads).
+(no existence leak differences beyond 404, no cross-student reads). Staff report access
+comes from `StaffAuthGuard`; a STAFF account can only read/update its own assignments,
+and another staff member's report returns 404. See `docs/ISSUE_HANDLING.md`.
 
 Upload validation: multipart field `file` only; max 5 MB; the true type is sniffed
 from magic bytes (JPEG/PNG/WebP) — a spoofed `Content-Type` is rejected. Reports
@@ -181,6 +202,7 @@ there is no insecure or local-disk fallback.
 
 ## 8. Future phases (not in schema yet)
 
-- Phase 5: `GET /api/reports/:id/events` timeline.
-- Phase 6: staff role model + status/assign endpoints writing `ReportEvent`.
+- Phase 5: standalone `GET /api/reports/:id/events` timeline. History is currently
+  embedded in report detail responses.
+- Phase 6: implemented — staff assignment/workflow endpoints write `ReportEvent` rows.
 - Phase 7+: ML service fills `ai*` columns via NestJS (Flutter never talks to ML directly).

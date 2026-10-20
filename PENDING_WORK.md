@@ -36,7 +36,8 @@ Reports is fully functional.
     `assignedDepartment` null.
   - `report-status.ts` — explicit, unit-tested state machine:
     `SUBMITTED→ASSIGNED|REJECTED`, `ASSIGNED→IN_PROGRESS`, `IN_PROGRESS→RESOLVED`.
-    **No status mutation endpoints exist yet** (Phase 6).
+    Phase 1 shipped read-only; Phase 6 now adds guarded assignment/workflow endpoints
+    (see `docs/ISSUE_HANDLING.md`).
   - Routing = documented **rules-based stub returning null**. No ML, no model, no AI claimed.
 - **Verification**: `npm test` **68/68 pass** (8 suites), `npx tsc --noEmit` clean,
   `nest build` OK, `prisma migrate dev` OK. Swagger at `/docs`.
@@ -121,9 +122,12 @@ Reports is fully functional.
         account provisioning, and first-admin CLI (feature branch, pending review).
   - [x] Focused login throttling for student and staff/admin login (per-IP and
         per-account, in-memory, fixed 15-minute window).
-  - [ ] Status/assignment mutation endpoints and report lifecycle events.
-  - [ ] Staff deactivation/role-change API (DB changes already revoke the next request);
-        staff/admin UI; staff photo access.
+  - [x] Staff/admin Flutter login, secure session restore/logout, and role-based
+        navigation (STAFF: reports/account; ADMIN: plus admin-only staff list).
+  - [x] Staff issue handling (feature branch, implemented 2026-10-20): admin
+        assignment/reassignment/rejection, staff accept/progress/resolve, lifecycle
+        events, assigned-only staff views, and assignment-authorized staff photo access.
+  - [ ] Staff deactivation/role-change API (DB changes already revoke the next request).
 - [ ] Phase 7–10: rules-based routing → real ML (needs labeled data), priority prediction,
       duplicate detection, campus analytics. FastAPI ML service deferred; NestJS only.
 - [ ] Phase 11: report events → existing FCM `dispatchEvent()`.

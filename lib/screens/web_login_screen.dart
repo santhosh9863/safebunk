@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/auth/auth_landing.dart';
+import '../features/staff/presentation/staff_shell_screen.dart';
 import '../providers/auth_provider.dart';
 import '../services/analytics_service.dart';
 import 'credential_login_screen.dart';
 import 'pulse_transition_screen.dart';
+import 'staff_login_screen.dart';
 
 class WebLoginScreen extends ConsumerStatefulWidget {
   const WebLoginScreen({super.key});
@@ -38,12 +41,27 @@ class _WebLoginScreenState extends ConsumerState<WebLoginScreen> {
     );
   }
 
-  void _navigateToDashboard() {
+  void _openStaffLogin() {
+    ref.read(authProvider.notifier).clearError();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StaffLoginScreen()),
+    );
+  }
+
+  void _navigateToAuthenticatedHome(AuthState auth) {
     if (_navigated) return;
+    final landing = authLandingFor(auth);
+    if (landing == null) return;
     _navigated = true;
+
+    final destination = landing == AuthLanding.student
+        ? const PulseTransitionScreen()
+        : const StaffShellScreen();
+
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (_) => const PulseTransitionScreen()),
+      MaterialPageRoute(builder: (_) => destination),
     );
   }
 
@@ -54,7 +72,7 @@ class _WebLoginScreenState extends ConsumerState<WebLoginScreen> {
         if (previous?.status == AuthStatus.unauthenticated) {
           AnalyticsService.logLoginSuccess();
         }
-        _navigateToDashboard();
+        _navigateToAuthenticatedHome(next);
       }
     });
 
@@ -62,7 +80,7 @@ class _WebLoginScreenState extends ConsumerState<WebLoginScreen> {
 
     if (authState.status == AuthStatus.authenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _navigateToDashboard();
+        if (mounted) _navigateToAuthenticatedHome(authState);
       });
     }
 
@@ -95,6 +113,8 @@ class _WebLoginScreenState extends ConsumerState<WebLoginScreen> {
             _PrimaryCard(onCredentialsTap: _openCredentialLogin),
             const SizedBox(height: 16),
             _SecondaryCard(onBrowserTap: _openLinways),
+            const SizedBox(height: 16),
+            _StaffCard(onStaffTap: _openStaffLogin),
             const SizedBox(height: 24),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -230,6 +250,69 @@ class _SecondaryCard extends StatelessWidget {
                   ),
                 ),
                 child: const Text('Open Linways Portal'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StaffCard extends StatelessWidget {
+  final VoidCallback onStaffTap;
+
+  const _StaffCard({required this.onStaffTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.admin_panel_settings_outlined,
+                  color: cs.tertiary,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Campus Staff',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: cs.tertiary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'For staff and administrators with PULSE accounts.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: OutlinedButton.icon(
+                onPressed: onStaffTap,
+                icon: const Icon(Icons.login, size: 18),
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                label: const Text('Staff / Admin Login'),
               ),
             ),
           ],

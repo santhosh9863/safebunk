@@ -76,6 +76,24 @@ export class AttachmentsService {
   }
 
   /**
+   * Attachment download used by the staff report route. The caller MUST first
+   * authorize the staff/admin actor against the report; this method only
+   * resolves the bytes and deliberately performs no identity check itself.
+   */
+  async downloadForReport(
+    reportId: string,
+  ): Promise<{ buffer: Buffer; contentType: string }> {
+    const row = await this.prisma.attachment.findFirst({
+      where: { reportId },
+    });
+    if (!row) {
+      throw new NotFoundException('Attachment not found');
+    }
+    const buffer = await this.storage.get(row.storagePath);
+    return { buffer, contentType: row.contentType };
+  }
+
+  /**
    * Removes an attachment the student uploaded but has not yet attached to a
    * report. Once linked to a report it is immutable here (report history must
    * stay intact).

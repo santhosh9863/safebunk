@@ -5,6 +5,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../core/errors/app_exceptions.dart';
 import '../../features/reports/data/models/report_attachment.dart';
 import '../../features/reports/data/models/report_model.dart';
+import '../../models/auth/staff_account.dart';
+import '../../models/auth/staff_session.dart';
 import 'pulse_backend_config.dart';
 
 /// Client for the PULSE NestJS backend (device registration, preferences,
@@ -119,6 +121,244 @@ class PulseBackendService {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _studentIdKey);
     await _storage.delete(key: _genderKey);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Staff/admin authentication
+  // ---------------------------------------------------------------------------
+
+  /// `POST /api/auth/staff/login` — local staff/admin credentials only.
+  ///
+  /// The returned role is parsed strictly from the backend response. The token
+  /// is deliberately not persisted here: the auth notifier stores the complete
+  /// session through the app's secure [SessionManager].
+  Future<StaffSession> staffLogin(String username, String password) async {
+    if (!isEnabled) {
+      throw NetworkException(
+        _config.error ?? PulseBackendConfig.missingMessage,
+      );
+    }
+
+    try {
+      final response = await _dio.post<dynamic>(
+        '/api/auth/staff/login',
+        data: {'username': username, 'password': password},
+      );
+      final data = _unwrap(response.data);
+      if (data is! Map) {
+        throw const BadResponseException('Unexpected staff login response');
+      }
+      try {
+        return StaffSession.fromLoginJson(Map<String, dynamic>.from(data));
+      } on FormatException {
+        throw const BadResponseException('Unexpected staff login response');
+      }
+    } on DioException catch (e) {
+      // A failed login is not an expired session. Use one generic message so
+      // the screen does not reveal whether the username exists or is inactive.
+      if (e.response?.statusCode == 401) {
+        throw const UnauthorizedException('Invalid username or password.');
+      }
+      if (e.response?.statusCode == 403) {
+        throw const UnauthorizedException(
+          'This account is not allowed to use staff sign-in.',
+        );
+      }
+      if (e.response?.statusCode == 429) {
+        throw ServerException(
+          _serverMessage(e.response?.data) ??
+              'Too many login attempts. Please try again later.',
+          statusCode: 429,
+        );
+      }
+      throw mapDioException(e);
+    }
+  }
+
+  /// Best-effort revocation of a staff/admin token.
+  Future<void> staffLogout(String token) async {
+    if (!isEnabled || token.trim().isEmpty) return;
+    try {
+      await _dio.post<dynamic>(
+        '/api/auth/logout',
+        options: _authOptions(token),
+      );
+    } catch (_) {
+      // The backend session expires on its own; local state is cleared by the
+      // auth notifier regardless.
+    }
+  }
+
+  /// `GET /api/staff/reports` — staff see their assigned queue; admin sees all.
+  Future<List<ReportModel>> fetchStaffReports(String token, {String? status}) {
+    return _staffAuthed<List<ReportModel>>(token, (staffToken) async {
+      final response = await _dio.get<dynamic>(
+        '/api/staff/reports',
+        queryParameters: status == null || status.trim().isEmpty
+            ? null
+            : {'status': status},
+        options: _authOptions(staffToken),
+      );
+      final data = _unwrap(response.data);
+      if (data is! List) {
+        throw const BadResponseException('Unexpected staff reports response');
+      }
+      return data
+          .whereType<Map>()
+          .map((e) => ReportModel.fromJson(Map<String, dynamic>.from(e)))
+          .toList(growable: false);
+    });
+  }
+
+  /// `GET /api/staff/reports/:id` — detail plus full status/progress history.
+  Future<ReportModel> fetchStaffReport(String token, String reportId) {
+    return _staffAuthed<ReportModel>(token, (staffToken) async {
+      final response = await _dio.get<dynamic>(
+        '/api/staff/reports/$reportId',
+        options: _authOptions(staffToken),
+      );
+      return _parseStaffReport(response.data);
+    });
+  }
+
+  /// `POST /api/staff/reports/:id/assign` — admin assignment/reassignment.
+  Future<ReportModel> assignStaffReport(
+    String token,
+    String reportId, {
+    required String staffId,
+    String? department,
+  }) {
+    return _staffAuthed<ReportModel>(token, (staffToken) async {
+      final response = await _dio.post<dynamic>(
+        '/api/staff/reports/$reportId/assign',
+        data: {
+          'staffId': staffId,
+          'department': ?department,
+        },
+        options: _authOptions(staffToken),
+      );
+      return _parseStaffReport(response.data);
+    });
+  }
+
+  /// `POST /api/staff/reports/:id/accept` — assigned staff starts work.
+  Future<ReportModel> acceptStaffReport(String token, String reportId) {
+    return _staffAuthed<ReportModel>(token, (staffToken) async {
+      final response = await _dio.post<dynamic>(
+        '/api/staff/reports/$reportId/accept',
+        options: _authOptions(staffToken),
+      );
+      return _parseStaffReport(response.data);
+    });
+  }
+
+  /// `POST /api/staff/reports/:id/progress` — add an internal progress note.
+  Future<ReportModel> addStaffProgressNote(
+    String token,
+    String reportId,
+    String note,
+  ) {
+    return _staffAuthed<ReportModel>(token, (staffToken) async {
+      final response = await _dio.post<dynamic>(
+        '/api/staff/reports/$reportId/progress',
+        data: {'note': note},
+        options: _authOptions(staffToken),
+      );
+      return _parseStaffReport(response.data);
+    });
+  }
+
+  /// `POST /api/staff/reports/:id/resolve` — resolve with required notes.
+  Future<ReportModel> resolveStaffReport(
+    String token,
+    String reportId,
+    String resolutionNotes,
+  ) {
+    return _staffAuthed<ReportModel>(token, (staffToken) async {
+      final response = await _dio.post<dynamic>(
+        '/api/staff/reports/$reportId/resolve',
+        data: {'resolutionNotes': resolutionNotes},
+        options: _authOptions(staffToken),
+      );
+      return _parseStaffReport(response.data);
+    });
+  }
+
+  /// `POST /api/staff/reports/:id/reject` — admin-only rejection with reason.
+  Future<ReportModel> rejectStaffReport(
+    String token,
+    String reportId,
+    String reason,
+  ) {
+    return _staffAuthed<ReportModel>(token, (staffToken) async {
+      final response = await _dio.post<dynamic>(
+        '/api/staff/reports/$reportId/reject',
+        data: {'reason': reason},
+        options: _authOptions(staffToken),
+      );
+      return _parseStaffReport(response.data);
+    });
+  }
+
+  ReportModel _parseStaffReport(dynamic body) {
+    final data = _unwrap(body);
+    if (data is! Map) {
+      throw const BadResponseException('Unexpected staff report response');
+    }
+    return ReportModel.fromJson(Map<String, dynamic>.from(data));
+  }
+
+  /// `GET /api/staff/users` — admin-only staff account list.
+  Future<List<StaffAccount>> fetchStaffAccounts(String token) {
+    return _staffAuthed<List<StaffAccount>>(token, (staffToken) async {
+      final response = await _dio.get<dynamic>(
+        '/api/staff/users',
+        options: _authOptions(staffToken),
+      );
+      final data = _unwrap(response.data);
+      if (data is! List) {
+        throw const BadResponseException('Unexpected staff accounts response');
+      }
+      try {
+        return data
+            .whereType<Map>()
+            .map((e) => StaffAccount.fromJson(Map<String, dynamic>.from(e)))
+            .toList(growable: false);
+      } on FormatException {
+        throw const BadResponseException('Unexpected staff accounts response');
+      }
+    });
+  }
+
+  Future<T> _staffAuthed<T>(
+    String token,
+    Future<T> Function(String staffToken) run,
+  ) async {
+    if (!isEnabled) {
+      throw NetworkException(
+        _config.error ?? PulseBackendConfig.missingMessage,
+      );
+    }
+    if (token.trim().isEmpty) {
+      throw const UnauthorizedException(
+        'Your staff session is missing. Sign in again.',
+      );
+    }
+    try {
+      return await run(token);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw const SessionExpiredException(
+          'Your staff session expired. Please sign in again.',
+        );
+      }
+      if (e.response?.statusCode == 403) {
+        throw const UnauthorizedException(
+          'You do not have permission to access this area.',
+        );
+      }
+      throw mapDioException(e);
+    }
   }
 
   Future<bool> registerDevice(String fcmToken) async {
@@ -369,6 +609,13 @@ class PulseBackendService {
       throw ServerException(body['message'].toString());
     }
     throw const BadResponseException();
+  }
+
+  String? _serverMessage(dynamic body) {
+    if (body is Map && body['message'] != null) {
+      return body['message'].toString();
+    }
+    return null;
   }
 
   /// Runs an authenticated backend call, mapping transport failures to the

@@ -5,35 +5,43 @@ import '../../application/reports_providers.dart';
 
 /// Displays a report photo served by the PULSE backend.
 ///
-/// The backend mediates downloads (`GET /api/reports/attachments/:id`) behind
-/// the student's Bearer session, so the image is fetched with auth headers and
-/// never via a public URL.
+/// The backend mediates downloads behind a Bearer session, so the image is
+/// fetched with auth headers and never via a public URL. Student report images
+/// default to the student token; staff detail screens can pass [authHeaders]
+/// from the staff session. The path is resolved by the same backend client.
 class ReportImage extends ConsumerWidget {
   final String path;
   final double? height;
   final BoxFit fit;
+  final AsyncValue<Map<String, String>?>? authHeaders;
 
   const ReportImage({
     super.key,
     required this.path,
     this.height,
     this.fit = BoxFit.cover,
+    this.authHeaders,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final url = ref.watch(reportsRepositoryProvider).absoluteUrl(path);
     if (url == null) {
-      return _Box(height: height, child: _message(context, 'Photo unavailable'));
+      return _Box(
+        height: height,
+        child: _message(context, 'Photo unavailable'),
+      );
     }
 
-    final headers = ref.watch(reportImageHeadersProvider);
+    final AsyncValue<Map<String, String>?> headers =
+        authHeaders ?? ref.watch(reportImageHeadersProvider);
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: headers.when(
         loading: () => _Box(height: height, child: const _Spinner()),
-        error: (_, _) => _Box(height: height, child: _message(context, 'Photo unavailable')),
+        error: (_, _) =>
+            _Box(height: height, child: _message(context, 'Photo unavailable')),
         data: (h) => Image.network(
           url,
           headers: h,
@@ -44,8 +52,10 @@ class ReportImage extends ConsumerWidget {
             if (progress == null) return child;
             return _Box(height: height, child: const _Spinner());
           },
-          errorBuilder: (context, _, _) =>
-              _Box(height: height, child: _message(context, 'Could not load photo')),
+          errorBuilder: (context, _, _) => _Box(
+            height: height,
+            child: _message(context, 'Could not load photo'),
+          ),
         ),
       ),
     );
@@ -68,8 +78,11 @@ class _Spinner extends StatelessWidget {
   const _Spinner();
 
   @override
-  Widget build(BuildContext context) =>
-      const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2));
+  Widget build(BuildContext context) => const SizedBox(
+    width: 22,
+    height: 22,
+    child: CircularProgressIndicator(strokeWidth: 2),
+  );
 }
 
 class _Box extends StatelessWidget {

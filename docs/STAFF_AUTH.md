@@ -1,6 +1,7 @@
 # Staff/Admin Authorization Foundation
 
-Status: implemented on `feature/staff-admin-auth-foundation`; awaiting review.
+Status: implemented on `feature/staff-admin-auth-foundation` (including the Flutter
+staff/admin login/navigation and the staff issue-handling workflow).
 
 ## Roles and identity source
 
@@ -68,6 +69,34 @@ proxy hops (normally `1`) so the login routes key on the client address. Leave
 it unset when clients can reach the app directly; otherwise clients could spoof
 `X-Forwarded-For`.
 
+## Flutter staff/admin UI
+
+The student login screen keeps its existing Linways flow and adds a clearly
+visible **Staff / Admin Login** option. That option opens a separate
+username/password screen that calls `POST /api/auth/staff/login`; there is no
+staff registration screen.
+
+The backend-issued role is parsed strictly as `STAFF` or `ADMIN`. An unknown or
+missing role invalidates the response rather than falling back to a privileged
+identity. The complete staff session is stored through the existing
+`SecureStorageService`/`SessionManager` architecture under
+`saved_staff_session`, and student and staff sessions are mutually exclusive:
+saving either one removes the other.
+
+Role-based navigation is enforced at the shell level:
+
+- `STAFF` — assigned issue queue with accept/progress/resolve actions and account/sign-out.
+- `ADMIN` — all campus reports with assignment/reassignment/rejection oversight, plus
+  the admin-only staff account list.
+- Student sessions cannot enter the staff shell; staff/admin sessions cannot
+  enter the student shell. The backend still enforces every endpoint
+  independently, so the UI gates are not the security boundary.
+
+Invalid/inactive credentials use a generic failure message. Network failures
+are shown in the staff form. A `401` from a staff endpoint clears the local staff
+session and returns to the login screen. Signing out revokes the staff token,
+clears secure storage, caches and notification state.
+
 ## API
 
 | Method | Route | Access |
@@ -125,11 +154,13 @@ through `POST /api/staff/users`.
 
 Never commit `.env`, `prisma/dev.db`, a password, or a password hash.
 
-## Not included yet
+## Related
 
-- Status/assignment mutation endpoints and lifecycle events.
-- Staff access to student report photos.
-- Staff/admin Flutter UI.
+- Issue workflow, assignment rules and report lifecycle endpoints:
+  `docs/ISSUE_HANDLING.md`.
+
+## Still pending
+
 - Permanent account lockout and shared/distributed throttling state. The current
   login limiter is in-memory and per-process; see “Login throttling” above.
 - Account deactivation/role-change APIs. Changing `active` or `role` directly in

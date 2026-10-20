@@ -1,9 +1,50 @@
-import { BadRequestException, Injectable, NotFoundException, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Prisma, Report, ReportEvent, StaffUser } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { AuthenticatedStaff } from '../common/decorators/current-user.decorator';
 import { CreateReportDto } from './dto/create-report.dto';
-import { Report } from '@prisma/client';
-import { isReportPriority } from './report-status';
+import {
+  AddProgressNoteDto,
+  AssignReportDto,
+  RejectReportDto,
+  ResolveReportDto,
+} from './dto/staff-report-actions.dto';
+import {
+  canTransition,
+  isReportPriority,
+  isReportStatus,
+  REJECTABLE_STATUSES,
+  ReportStatus,
+} from './report-status';
 import { AttachmentsService } from './attachments/attachments.service';
+
+type StaffAssignee = Pick<
+  StaffUser,
+  'id' | 'username' | 'displayName' | 'role' | 'active'
+>;
+
+type ReportSummarySource = Report & {
+  assignedStaff?: StaffAssignee | null;
+};
+
+type ReportDetailSource = Report & {
+  assignedStaff?: StaffAssignee | null;
+  events: ReportEvent[];
+};
+
+export interface ReportEventView {
+  id: string;
+  type: string;
+  actorRole: string;
+  remark: string | null;
+  createdAt: Date;
+}
 
 export interface ReportSummary {
   id: string;
@@ -16,6 +57,10 @@ export interface ReportSummary {
   priority: string;
   status: string;
   assignedDepartment: string | null;
+  assignedAt: Date | null;
+  assignedStaff?: StaffAssignee;
+  resolutionNotes: string | null;
+  rejectionReason: string | null;
   aiCategory: string | null;
   aiPriority: string | null;
   aiConfidence: number | null;
@@ -24,10 +69,27 @@ export interface ReportSummary {
   resolvedAt: Date | null;
 }
 
+export interface ReportDetail extends ReportSummary {
+  events: ReportEventView[];
+}
+
+const STAFF_VISIBLE_STATUSES: readonly ReportStatus[] = [
+  'ASSIGNED',
+  'IN_PROGRESS',
+  'RESOLVED',
+];
+
+const STUDENT_VISIBLE_EVENT_TYPES = new Set([
+  'SUBMITTED',
+  'ASSIGNED',
+  'REASSIGNED',
+  'IN_PROGRESS',
+  'RESOLVED',
+  'REJECTED',
+]);
+
 @Injectable()
 export class ReportsService {
-  private readonly logger = new Logger(ReportsService.name);
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly attachments: AttachmentsService,
@@ -71,7 +133,8 @@ export class ReportsService {
     }
 
     const routing = this.recommendDepartment(dto);
-    const priority = dto.priority && isReportPriority(dto.priority) ? dto.priority : 'MEDIUM';
+    const priority =
+      dto.priority && isReportPriority(dto.priority) ? dto.priority : 'MEDIUM';
     const code = await this.nextCode();
 
     const report = await this.prisma.report.create({
@@ -120,7 +183,9 @@ export class ReportsService {
         // back the just-created report so it never references a photo it does
         // not own and no attachment stays claimed by a half-created report.
         // The Attachment FK is `onDelete: SetNull`, which releases the claim.
-        await this.prisma.report.delete({ where: { id: report.id } }).catch(() => undefined);
+        await this.prisma.report
+          .delete({ where: { id: report.id } })
+          .catch(() => undefined);
         throw error;
       }
     }
@@ -128,7 +193,7 @@ export class ReportsService {
     return report;
   }
 
-  /** Own reports only, newest first. */
+  /** Own reports only, newest first. Assignment identity is never exposed. */
   async listMyReports(studentId: string): Promise<ReportSummary[]> {
     const rows = await this.prisma.report.findMany({
       where: { studentId },
@@ -141,37 +206,439 @@ export class ReportsService {
    * Single report fetch. The query always filters by the authenticated
    * studentId, so another student's report is indistinguishable from a
    * missing one (404) — no IDOR, no existence oracle.
+   *
+   * Student history deliberately excludes internal progress notes and all
+   * staff identity fields. Resolution/rejection reasons remain visible.
    */
-  async getOwnedReport(studentId: string, id: string): Promise<ReportSummary> {
+  async getOwnedReport(studentId: string, id: string): Promise<ReportDetail> {
     const report = await this.prisma.report.findFirst({
       where: { id, studentId },
+      include: {
+        events: {
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        },
+      },
     });
     if (!report) {
       throw new NotFoundException('Report not found');
     }
-    return this.toSummary(report);
+    return this.toDetail(report, false);
   }
 
   /**
-   * Staff/admin view: all reports, newest first. This is intentionally
-   * separate from listMyReports; ownership is a student-side rule.
+   * Staff/admin view: ADMIN sees all reports; STAFF sees only reports assigned
+   * to the staffId from the verified session. The status filter is optional,
+   * and STAFF can never widen their scope through it.
    */
-  async listReportsForStaff(): Promise<ReportSummary[]> {
+  async listReportsForStaff(
+    actor: AuthenticatedStaff,
+    status?: string,
+  ): Promise<ReportSummary[]> {
+    this.assertStaffOrAdminActor(actor);
+    const where: Prisma.ReportWhereInput = {};
+
+    if (actor.role === 'STAFF') {
+      where.assignedStaffId = actor.staffId;
+      where.status = status
+        ? STAFF_VISIBLE_STATUSES.includes(status as ReportStatus)
+          ? (status as ReportStatus)
+          : { in: [] }
+        : { in: [...STAFF_VISIBLE_STATUSES] };
+    } else if (status) {
+      if (!isReportStatus(status)) {
+        throw new BadRequestException('Invalid report status filter');
+      }
+      where.status = status;
+    }
+
     const rows = await this.prisma.report.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
+      include: {
+        assignedStaff: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            role: true,
+            active: true,
+          },
+        },
+      },
     });
-    return rows.map((r) => this.toSummary(r));
+
+    return rows.map((r) => this.toSummary(r, true));
   }
 
-  /** Staff/admin view of any report, including reports owned by students. */
-  async getReportForStaff(id: string): Promise<ReportSummary> {
+  /**
+   * Staff/admin detail. A STAFF token may read only its own assignments; an
+   * unassigned report is indistinguishable from a missing one (404).
+   */
+  async getReportForStaff(
+    actor: AuthenticatedStaff,
+    id: string,
+  ): Promise<ReportDetail> {
+    this.assertStaffOrAdminActor(actor);
     const report = await this.prisma.report.findUnique({
       where: { id },
+      include: {
+        assignedStaff: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            role: true,
+            active: true,
+          },
+        },
+        events: {
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+        },
+      },
     });
     if (!report) {
       throw new NotFoundException('Report not found');
     }
-    return this.toSummary(report);
+    this.assertCanViewStaffReport(actor, report);
+    return this.toDetail(report, true);
+  }
+
+  /**
+   * ADMIN-only assignment/reassignment to an active STAFF account. Assigning
+   * a SUBMITTED report moves it to ASSIGNED; reassignment preserves
+   * IN_PROGRESS (the new assignee continues from the existing history).
+   */
+  async assignReport(
+    actor: AuthenticatedStaff,
+    id: string,
+    dto: AssignReportDto,
+  ): Promise<ReportDetail> {
+    this.assertAdminActor(actor);
+
+    const target = await this.prisma.staffUser.findUnique({
+      where: { id: dto.staffId },
+      select: { id: true, role: true, active: true },
+    });
+    if (!target || !target.active || target.role !== 'STAFF') {
+      throw new BadRequestException(
+        'Assignments require an active STAFF account.',
+      );
+    }
+
+    const report = await this.prisma.report.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        assignedStaffId: true,
+        assignedDepartment: true,
+      },
+    });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+    if (
+      !isReportStatus(report.status) ||
+      !['SUBMITTED', 'ASSIGNED', 'IN_PROGRESS'].includes(report.status)
+    ) {
+      throw new ConflictException(
+        'Resolved or rejected reports cannot be assigned.',
+      );
+    }
+
+    const isReassignment = report.assignedStaffId !== null;
+    const nextStatus: ReportStatus =
+      report.status === 'SUBMITTED' ? 'ASSIGNED' : report.status;
+    const now = new Date();
+    const department =
+      dto.department === undefined
+        ? report.assignedDepartment
+        : dto.department.trim() || null;
+
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.report.updateMany({
+        where: { id, status: report.status },
+        data: {
+          assignedStaffId: target.id,
+          assignedAt: now,
+          status: nextStatus,
+          assignedDepartment: department,
+        },
+      });
+      if (updated.count !== 1) {
+        throw new ConflictException(
+          'The report changed while it was being assigned. Refresh and try again.',
+        );
+      }
+
+      await tx.reportEvent.create({
+        data: {
+          reportId: id,
+          type: isReassignment ? 'REASSIGNED' : 'ASSIGNED',
+          actorId: actor.staffId,
+          actorRole: 'ADMIN',
+          remark: department,
+        },
+      });
+    });
+
+    return this.getReportForStaff(actor, id);
+  }
+
+  /**
+   * STAFF-only acceptance of their own assignment. Uses a conditional update
+   * so concurrent requests cannot accept/resolve the same report twice.
+   */
+  async acceptReport(
+    actor: AuthenticatedStaff,
+    id: string,
+  ): Promise<ReportDetail> {
+    this.assertStaffActor(actor);
+
+    const report = await this.requireStaffAssignedReport(actor, id);
+    this.assertTransition(report.status, 'IN_PROGRESS');
+
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.report.updateMany({
+        where: {
+          id,
+          status: 'ASSIGNED',
+          assignedStaffId: actor.staffId,
+        },
+        data: { status: 'IN_PROGRESS' },
+      });
+      if (updated.count !== 1) {
+        throw new ConflictException(
+          'Only an assigned report can be accepted. Refresh and try again.',
+        );
+      }
+      await tx.reportEvent.create({
+        data: {
+          reportId: id,
+          type: 'IN_PROGRESS',
+          actorId: actor.staffId,
+          actorRole: 'STAFF',
+        },
+      });
+    });
+
+    return this.getReportForStaff(actor, id);
+  }
+
+  /**
+   * STAFF-only progress notes for their own assigned/in-progress report.
+   * Notes are internal history and are hidden from the student timeline.
+   */
+  async addProgressNote(
+    actor: AuthenticatedStaff,
+    id: string,
+    dto: AddProgressNoteDto,
+  ): Promise<ReportDetail> {
+    this.assertStaffActor(actor);
+    const note = dto.note.trim();
+    if (!note) {
+      throw new BadRequestException('Progress note cannot be empty.');
+    }
+
+    const report = await this.requireStaffAssignedReport(actor, id);
+    if (report.status !== 'ASSIGNED' && report.status !== 'IN_PROGRESS') {
+      throw new ConflictException(
+        'Progress notes can only be added to active assignments.',
+      );
+    }
+
+    await this.prisma.reportEvent.create({
+      data: {
+        reportId: id,
+        type: 'PROGRESS_NOTE',
+        actorId: actor.staffId,
+        actorRole: 'STAFF',
+        remark: note,
+      },
+    });
+
+    return this.getReportForStaff(actor, id);
+  }
+
+  /**
+   * STAFF-only resolution of their own IN_PROGRESS report. Resolution notes
+   * are required and are exposed to the student.
+   */
+  async resolveReport(
+    actor: AuthenticatedStaff,
+    id: string,
+    dto: ResolveReportDto,
+  ): Promise<ReportDetail> {
+    this.assertStaffActor(actor);
+    const notes = dto.resolutionNotes.trim();
+    if (!notes) {
+      throw new BadRequestException('Resolution notes cannot be empty.');
+    }
+
+    const report = await this.requireStaffAssignedReport(actor, id);
+    this.assertTransition(report.status, 'RESOLVED');
+
+    const now = new Date();
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.report.updateMany({
+        where: {
+          id,
+          status: 'IN_PROGRESS',
+          assignedStaffId: actor.staffId,
+        },
+        data: {
+          status: 'RESOLVED',
+          resolvedAt: now,
+          resolutionNotes: notes,
+        },
+      });
+      if (updated.count !== 1) {
+        throw new ConflictException(
+          'Only an in-progress report can be resolved. Refresh and try again.',
+        );
+      }
+      await tx.reportEvent.create({
+        data: {
+          reportId: id,
+          type: 'RESOLVED',
+          actorId: actor.staffId,
+          actorRole: 'STAFF',
+          remark: notes,
+        },
+      });
+    });
+
+    return this.getReportForStaff(actor, id);
+  }
+
+  /**
+   * ADMIN-only explicit rejection with a required reason. Any non-terminal
+   * status can be rejected; the reason is visible to the owning student.
+   */
+  async rejectReport(
+    actor: AuthenticatedStaff,
+    id: string,
+    dto: RejectReportDto,
+  ): Promise<ReportDetail> {
+    this.assertAdminActor(actor);
+    const reason = dto.reason.trim();
+    if (!reason) {
+      throw new BadRequestException('A rejection reason is required.');
+    }
+
+    const report = await this.prisma.report.findUnique({
+      where: { id },
+      select: { id: true, status: true },
+    });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+    if (
+      !isReportStatus(report.status) ||
+      !REJECTABLE_STATUSES.includes(report.status)
+    ) {
+      throw new ConflictException('This report can no longer be rejected.');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.report.updateMany({
+        where: {
+          id,
+          status: { in: [...REJECTABLE_STATUSES] },
+        },
+        data: {
+          status: 'REJECTED',
+          rejectionReason: reason,
+          resolvedAt: null,
+        },
+      });
+      if (updated.count !== 1) {
+        throw new ConflictException(
+          'The report changed while it was being rejected. Refresh and try again.',
+        );
+      }
+      await tx.reportEvent.create({
+        data: {
+          reportId: id,
+          type: 'REJECTED',
+          actorId: actor.staffId,
+          actorRole: 'ADMIN',
+          remark: reason,
+        },
+      });
+    });
+
+    return this.getReportForStaff(actor, id);
+  }
+
+  /**
+   * Staff-side attachment download. Authorization is checked against the
+   * report before the attachment bytes are fetched.
+   */
+  async downloadReportPhoto(
+    actor: AuthenticatedStaff,
+    id: string,
+  ): Promise<{ buffer: Buffer; contentType: string }> {
+    this.assertStaffOrAdminActor(actor);
+    const report = await this.prisma.report.findUnique({
+      where: { id },
+      select: { id: true, assignedStaffId: true, imageUrl: true },
+    });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+    this.assertCanViewStaffReport(actor, {
+      assignedStaffId: report.assignedStaffId,
+    });
+    return this.attachments.downloadForReport(report.id);
+  }
+
+  private assertAdminActor(actor: AuthenticatedStaff): void {
+    if (actor.role !== 'ADMIN') {
+      throw new ForbiddenException('Administrator access is required.');
+    }
+  }
+
+  private assertStaffActor(actor: AuthenticatedStaff): void {
+    if (actor.role !== 'STAFF') {
+      throw new ForbiddenException('Staff access is required.');
+    }
+  }
+
+  private assertStaffOrAdminActor(actor: AuthenticatedStaff): void {
+    if (actor.role !== 'STAFF' && actor.role !== 'ADMIN') {
+      throw new ForbiddenException('Staff access is required.');
+    }
+  }
+
+  private assertCanViewStaffReport(
+    actor: AuthenticatedStaff,
+    report: { assignedStaffId: string | null },
+  ): void {
+    if (actor.role === 'STAFF' && report.assignedStaffId !== actor.staffId) {
+      // Hide unassigned/other-staff reports rather than confirming their id.
+      throw new NotFoundException('Report not found');
+    }
+  }
+
+  private async requireStaffAssignedReport(
+    actor: AuthenticatedStaff,
+    id: string,
+  ): Promise<Report> {
+    const report = await this.prisma.report.findUnique({ where: { id } });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+    if (report.assignedStaffId !== actor.staffId) {
+      throw new NotFoundException('Report not found');
+    }
+    return report;
+  }
+
+  private assertTransition(from: string, to: ReportStatus): void {
+    if (!isReportStatus(from) || !canTransition(from, to)) {
+      throw new ConflictException(`Cannot move report from ${from} to ${to}.`);
+    }
   }
 
   private async nextCode(): Promise<string> {
@@ -180,24 +647,61 @@ export class ReportsService {
     return `PULSE-${1042 + count}`;
   }
 
-  private toSummary(r: Report): ReportSummary {
-    return {
+  private toSummary(
+    r: ReportSummarySource,
+    staffView = false,
+  ): ReportSummary {
+    const summary: ReportSummary = {
       id: r.id,
       code: r.code,
       title: r.title,
       description: r.description,
       category: r.category,
       location: r.location,
-      imageUrl: r.imageUrl,
+      imageUrl: staffView && r.imageUrl
+        ? `/api/staff/reports/${r.id}/photo`
+        : r.imageUrl,
       priority: r.priority,
       status: r.status,
       assignedDepartment: r.assignedDepartment,
+      assignedAt: r.assignedAt,
+      resolutionNotes: r.resolutionNotes,
+      rejectionReason: r.rejectionReason,
       aiCategory: r.aiCategory,
       aiPriority: r.aiPriority,
       aiConfidence: r.aiConfidence,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
       resolvedAt: r.resolvedAt,
+    };
+
+    if (staffView && r.assignedStaff) {
+      summary.assignedStaff = r.assignedStaff;
+    }
+
+    return summary;
+  }
+
+  private toDetail(
+    r: ReportDetailSource,
+    staffView: boolean,
+  ): ReportDetail {
+    const events = (r.events ?? [])
+      .filter(
+        (event) =>
+          staffView || STUDENT_VISIBLE_EVENT_TYPES.has(event.type),
+      )
+      .map((event) => ({
+        id: event.id,
+        type: event.type,
+        actorRole: event.actorRole,
+        remark: event.remark,
+        createdAt: event.createdAt,
+      }));
+
+    return {
+      ...this.toSummary(r, staffView),
+      events,
     };
   }
 }

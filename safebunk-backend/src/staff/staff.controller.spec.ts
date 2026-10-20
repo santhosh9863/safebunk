@@ -44,4 +44,37 @@ describe('staff route authorization wiring', () => {
       'ADMIN',
     ]);
   });
+
+  it('restricts workflow mutations to the correct staff role', () => {
+    expect(
+      Reflect.getMetadata(
+        ROLES_KEY,
+        StaffReportsController.prototype.assignReport,
+      ),
+    ).toEqual(['ADMIN']);
+    expect(
+      Reflect.getMetadata(
+        ROLES_KEY,
+        StaffReportsController.prototype.rejectReport,
+      ),
+    ).toEqual(['ADMIN']);
+    expect(
+      Reflect.getMetadata(
+        ROLES_KEY,
+        StaffReportsController.prototype.acceptReport,
+      ),
+    ).toEqual(['STAFF']);
+    expect(
+      Reflect.getMetadata(
+        ROLES_KEY,
+        StaffReportsController.prototype.addProgressNote,
+      ),
+    ).toEqual(['STAFF']);
+    expect(
+      Reflect.getMetadata(
+        ROLES_KEY,
+        StaffReportsController.prototype.resolveReport,
+      ),
+    ).toEqual(['STAFF']);
+  });
 });

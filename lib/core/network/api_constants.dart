@@ -31,6 +31,7 @@ class ApiConstants {
   static const String storageUsername = 'saved_username';
   static const String storageStudentId = 'saved_student_id';
   static const String storageStudentData = 'saved_student_data';
+  static const String storageStaffSession = 'saved_staff_session';
 
   static const String authSessionCookie = 'AUTH_SESSION';
 

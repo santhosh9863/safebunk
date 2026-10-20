@@ -13,7 +13,9 @@ describe('report status state machine', () => {
     expect(canTransition('SUBMITTED', 'ASSIGNED')).toBe(true);
     expect(canTransition('SUBMITTED', 'REJECTED')).toBe(true);
     expect(canTransition('ASSIGNED', 'IN_PROGRESS')).toBe(true);
+    expect(canTransition('ASSIGNED', 'REJECTED')).toBe(true);
     expect(canTransition('IN_PROGRESS', 'RESOLVED')).toBe(true);
+    expect(canTransition('IN_PROGRESS', 'REJECTED')).toBe(true);
   });
 
   it('rejects every other transition', () => {
@@ -23,8 +25,6 @@ describe('report status state machine', () => {
     expect(canTransition('RESOLVED', 'IN_PROGRESS')).toBe(false);
     expect(canTransition('REJECTED', 'SUBMITTED')).toBe(false);
     expect(canTransition('RESOLVED', 'REJECTED')).toBe(false);
-    expect(canTransition('IN_PROGRESS', 'REJECTED')).toBe(false);
-    expect(canTransition('ASSIGNED', 'REJECTED')).toBe(false);
   });
 
   it('treats RESOLVED and REJECTED as terminal', () => {

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/auth/auth_landing.dart';
+import '../features/staff/presentation/staff_shell_screen.dart';
 import '../providers/auth_provider.dart';
 import 'pulse_transition_screen.dart';
 
@@ -83,13 +85,17 @@ class _CredentialLoginScreenState extends ConsumerState<CredentialLoginScreen> {
     final authState = ref.watch(authProvider);
 
     if (authState.status == AuthStatus.authenticated) {
+      final landing = authLandingFor(authState);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const PulseTransitionScreen()),
-          );
-        }
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => landing == AuthLanding.student
+                ? const PulseTransitionScreen()
+                : const StaffShellScreen(),
+          ),
+        );
       });
     }
 

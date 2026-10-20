@@ -5,13 +5,25 @@ import { CreateReportDto } from './dto/create-report.dto';
 /** Minimal in-memory stand-in for the Prisma report model. */
 class FakePrisma {
   rows: any[] = [];
+  events: any[] = [];
   private seq = 0;
+  private eventSeq = 0;
+
+  private withEvents(row: any, include: any) {
+    if (!row) return row;
+    if (!include?.events) return row;
+    return {
+      ...row,
+      events: this.events.filter((e) => e.reportId === row.id),
+    };
+  }
 
   report = {
     create: jest.fn(async ({ data }: any) => {
       if (this.rows.some((r) => r.code === data.code)) {
         throw new Error('Unique constraint failed on code');
       }
+      const { events, ...rest } = data;
       const row = {
         id: `rep_${++this.seq}`,
         aiCategory: null,
@@ -21,11 +33,23 @@ class FakePrisma {
         aiOverrideBy: null,
         aiOverrideAt: null,
         resolvedAt: null,
+        assignedStaffId: null,
+        assignedAt: null,
+        resolutionNotes: null,
+        rejectionReason: null,
         createdAt: new Date(Date.UTC(2026, 9, 6, 10, 0, this.seq)),
         updatedAt: new Date(Date.UTC(2026, 9, 6, 10, 0, this.seq)),
-        ...data,
+        ...rest,
       };
       this.rows.push(row);
+      if (events?.create) {
+        this.events.push({
+          id: `evt_${++this.eventSeq}`,
+          reportId: row.id,
+          createdAt: new Date(),
+          ...events.create,
+        });
+      }
       return row;
     }),
     count: jest.fn(async () => this.rows.length),
@@ -40,14 +64,22 @@ class FakePrisma {
       }
       return out;
     }),
-    findFirst: jest.fn(async ({ where }: any) => {
-      return this.rows.find((r) => Object.entries(where).every(([k, v]) => r[k] === v)) ?? null;
+    findFirst: jest.fn(async ({ where, include }: any) => {
+      const row = this.rows.find((r) => Object.entries(where).every(([k, v]) => r[k] === v)) ?? null;
+      return this.withEvents(row, include);
     }),
-    findUnique: jest.fn(async ({ where }: any) => {
-      return this.rows.find((r) => Object.entries(where).every(([k, v]) => r[k] === v)) ?? null;
+    findUnique: jest.fn(async ({ where, include }: any) => {
+      const row = this.rows.find((r) => Object.entries(where).every(([k, v]) => r[k] === v)) ?? null;
+      return this.withEvents(row, include);
     }),
   };
 }
+
+const ADMIN_ACTOR = {
+  staffId: 'admin_1',
+  username: 'campus.admin',
+  role: 'ADMIN' as const,
+};
 
 const baseDto = (over: Partial<CreateReportDto> = {}): CreateReportDto => ({
   title: 'Water Leakage',
@@ -172,7 +204,7 @@ describe('ReportsService', () => {
       await service.createReport('9999', baseDto({ title: 'Student B' }));
       await service.createReport('4301', baseDto({ title: 'Student A new' }));
 
-      const all = await service.listReportsForStaff();
+      const all = await service.listReportsForStaff(ADMIN_ACTOR);
 
       expect(all).toHaveLength(3);
       expect(all.map((r) => r.title)).toEqual([
@@ -186,14 +218,14 @@ describe('ReportsService', () => {
     it('reads a report owned by any student', async () => {
       const created = await service.createReport('4301', baseDto());
 
-      const found = await service.getReportForStaff(created.id);
+      const found = await service.getReportForStaff(ADMIN_ACTOR, created.id);
 
       expect(found.id).toBe(created.id);
       expect(found.code).toBe(created.code);
     });
 
     it('throws NotFoundException for a missing staff report id', async () => {
-      await expect(service.getReportForStaff('does-not-exist')).rejects.toThrow(
+      await expect(service.getReportForStaff(ADMIN_ACTOR, 'does-not-exist')).rejects.toThrow(
         NotFoundException,
       );
     });

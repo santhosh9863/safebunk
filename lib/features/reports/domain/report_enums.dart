@@ -3,7 +3,7 @@
 ///
 /// Backend values:
 ///   SUBMITTED -> ASSIGNED -> IN_PROGRESS -> RESOLVED
-///   SUBMITTED -> REJECTED
+///   SUBMITTED / ASSIGNED / IN_PROGRESS -> REJECTED (admin only, with reason)
 enum ReportStatus {
   submitted('SUBMITTED', 'Submitted'),
   assigned('ASSIGNED', 'Assigned'),
@@ -24,7 +24,8 @@ enum ReportStatus {
     );
   }
 
-  bool get isTerminal => this == ReportStatus.resolved || this == ReportStatus.rejected;
+  bool get isTerminal =>
+      this == ReportStatus.resolved || this == ReportStatus.rejected;
   bool get isOpen => !isTerminal;
 }
 

@@ -7,6 +7,7 @@ import '../../data/models/report_model.dart';
 import '../../domain/report_enums.dart';
 import '../report_format.dart';
 import '../report_style.dart';
+import '../widgets/report_history.dart';
 import '../widgets/report_image.dart';
 import '../widgets/report_status_chip.dart';
 
@@ -14,11 +15,7 @@ class ReportDetailScreen extends ConsumerWidget {
   final String reportId;
   final ReportModel? initial;
 
-  const ReportDetailScreen({
-    super.key,
-    required this.reportId,
-    this.initial,
-  });
+  const ReportDetailScreen({super.key, required this.reportId, this.initial});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -72,12 +69,47 @@ class _ReportBody extends StatelessWidget {
         _SectionCard(
           title: 'Description',
           child: Text(
-            report.description.isEmpty ? 'No description provided.' : report.description,
+            report.description.isEmpty
+                ? 'No description provided.'
+                : report.description,
             style: const TextStyle(fontSize: 14, height: 1.5),
           ),
         ),
         const SizedBox(height: 12),
         _StatusProgress(status: report.statusEnum),
+        if (report.resolutionNotes != null) ...[
+          const SizedBox(height: 12),
+          _SectionCard(
+            title: 'Resolution',
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.check_circle_outline,
+                  size: 20,
+                  color: Color(0xFF2E7D32),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    report.resolutionNotes!,
+                    style: const TextStyle(fontSize: 13, height: 1.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (report.rejectionReason != null) ...[
+          const SizedBox(height: 12),
+          _SectionCard(
+            title: 'Rejection reason',
+            child: Text(
+              report.rejectionReason!,
+              style: const TextStyle(fontSize: 13, height: 1.5),
+            ),
+          ),
+        ],
         const SizedBox(height: 12),
         _SectionCard(
           title: 'Details',
@@ -117,6 +149,8 @@ class _ReportBody extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(height: 12),
+        ReportHistory(events: report.events),
         const SizedBox(height: 16),
         Center(
           child: Text(
@@ -152,10 +186,7 @@ class _HeaderCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            statusColor.withValues(alpha: 0.16),
-            cs.surfaceContainerLow,
-          ],
+          colors: [statusColor.withValues(alpha: 0.16), cs.surfaceContainerLow],
         ),
         border: Border.all(color: statusColor.withValues(alpha: 0.30)),
       ),
@@ -181,7 +212,11 @@ class _HeaderCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             report.title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, height: 1.25),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              height: 1.25,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -357,7 +392,11 @@ class _DetailRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _DetailRow({required this.icon, required this.label, required this.value});
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {

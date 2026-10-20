@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/cache/persistent_cache.dart';
 import 'firebase_options.dart';
+import 'core/auth/auth_landing.dart';
 import 'core/network/dio_client.dart';
 import 'core/notifications/notification_providers.dart';
 import 'core/notifications/notification_service.dart';
@@ -20,6 +21,7 @@ import 'services/update_service.dart';
 import 'shared/widgets/update_dialog.dart';
 import 'screens/web_login_screen.dart';
 import 'screens/main_shell_screen.dart';
+import 'features/staff/presentation/staff_shell_screen.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -87,11 +89,15 @@ class _SafeBunkAppState extends ConsumerState<SafeBunkApp> {
     // yet the login screen's restore flow handles navigation on its own.
     Future<void> handleNotificationOpen() async {
       final auth = ref.read(authProvider);
-      if (auth.status != AuthStatus.authenticated) return;
+      final landing = authLandingFor(auth);
+      if (landing == null) return;
       final context = rootNavigatorKey.currentContext;
       if (context == null) return;
+      final destination = landing == AuthLanding.student
+          ? const MainShellScreen()
+          : const StaffShellScreen();
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const MainShellScreen()),
+        MaterialPageRoute(builder: (_) => destination),
         (route) => false,
       );
     }

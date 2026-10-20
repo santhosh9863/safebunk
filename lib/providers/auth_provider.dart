@@ -13,39 +13,82 @@ import '../core/storage/secure_storage_service.dart';
 import '../features/notifications/application/fcm_setup.dart';
 import '../features/notifications/application/notification_providers.dart';
 import '../features/notifications/presentation/providers/notification_settings_provider.dart';
+import '../models/auth/staff_session.dart';
 import '../services/api/auth_api_service.dart';
 import '../services/repositories/auth_repository.dart';
 
 enum AuthStatus { unknown, authenticated, unauthenticated }
+
+/// The identity type of the active session.
+///
+/// Student sessions come from Linways; staff/admin sessions come from the
+/// PULSE backend's local `StaffUser` table. The role is only ever assigned from
+/// the backend response or the securely stored session created from one.
+enum AuthRole {
+  student('STUDENT'),
+  staff('STAFF'),
+  admin('ADMIN');
+
+  const AuthRole(this.apiValue);
+
+  final String apiValue;
+
+  bool get isStaff => this == staff || this == admin;
+  bool get isAdmin => this == admin;
+
+  static AuthRole fromStaffRole(StaffRole role) {
+    return switch (role) {
+      StaffRole.staff => AuthRole.staff,
+      StaffRole.admin => AuthRole.admin,
+    };
+  }
+}
 
 class AuthState {
   final AuthStatus status;
   final String? error;
   final bool isLoading;
   final String? username;
+  final AuthRole? role;
+  final StaffSession? staffSession;
 
   const AuthState({
     required this.status,
     this.error,
     this.isLoading = false,
     this.username,
+    this.role,
+    this.staffSession,
   });
 
   static const unknown = AuthState(status: AuthStatus.unknown);
-  static const authenticated = AuthState(status: AuthStatus.authenticated);
+  static const authenticated = AuthState(
+    status: AuthStatus.authenticated,
+    role: AuthRole.student,
+  );
   static const unauthenticated = AuthState(status: AuthStatus.unauthenticated);
+
+  bool get isStaff => role?.isStaff ?? false;
+  bool get isAdmin => role == AuthRole.admin;
 
   AuthState copyWith({
     AuthStatus? status,
     String? error,
     bool? isLoading,
     String? username,
+    AuthRole? role,
+    StaffSession? staffSession,
+    bool clearStaffSession = false,
   }) {
     return AuthState(
       status: status ?? this.status,
       error: error,
       isLoading: isLoading ?? this.isLoading,
       username: username ?? this.username,
+      role: role ?? this.role,
+      staffSession: clearStaffSession
+          ? null
+          : staffSession ?? this.staffSession,
     );
   }
 }
@@ -110,15 +153,35 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _checkSession() async {
     try {
+      // Staff and student sessions are mutually exclusive. Restore the staff
+      // session first because it is the only identity allowed into staff
+      // screens; a stale student cookie must never take precedence.
+      final staffSession = await _sessionManager.restoreStaffSession();
+      if (staffSession != null) {
+        await _sessionManager.clearSession();
+        state = AuthState(
+          status: AuthStatus.authenticated,
+          username: staffSession.username,
+          role: AuthRole.fromStaffRole(staffSession.role),
+          staffSession: staffSession,
+        );
+        return;
+      }
+
       final session = await _sessionManager.restoreSession();
       final hasSession = session != null;
       final username = session?.username;
+
+      if (hasSession) {
+        await _sessionManager.clearStaffSession();
+      }
 
       state = AuthState(
         status: hasSession
             ? AuthStatus.authenticated
             : AuthStatus.unauthenticated,
         username: username,
+        role: hasSession ? AuthRole.student : null,
       );
 
       // Re-attach the device to the backend with the stored backend session
@@ -203,7 +266,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Unregister the device token and invalidate the backend session.
+  /// Unregister the device token and invalidate the backend student session.
   Future<void> _clearPushRegistration() async {
     _ref.read(deviceTokenProvider.notifier).state = null;
     final backend = _ref.read(pulseBackendServiceProvider);
@@ -221,6 +284,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> login(String username, String password) async {
     if (state.isLoading) return;
+    final previousStaff = state.staffSession;
     state = state.copyWith(isLoading: true, error: null);
     try {
       await _authRepository.login(username, password);
@@ -233,24 +297,73 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // Await the PULSE backend session before exposing the authenticated
       // state, so the Reports tab cannot open with a missing token.
       await _establishBackendSession(username, password);
-      state = AuthState(status: AuthStatus.authenticated, username: username);
+      await _revokeStaffSession(previousStaff);
+      await _sessionManager.clearStaffSession();
+      state = AuthState(
+        status: AuthStatus.authenticated,
+        username: username,
+        role: AuthRole.student,
+      );
       unawaited(_syncAfterBackendLogin());
     } catch (e) {
       state = AuthState(
         status: AuthStatus.unauthenticated,
-        error: e is ApiException ? e.message : e.toString(),
+        error: _errorMessage(e),
+      );
+    }
+  }
+
+  /// Signs in with a locally provisioned staff/admin account.
+  ///
+  /// The backend verifies the credentials and supplies the role. This method
+  /// never accepts a role from the UI or request body.
+  Future<void> staffLogin(String username, String password) async {
+    if (state.isLoading) return;
+
+    final normalizedUsername = username.trim();
+    if (normalizedUsername.isEmpty || password.isEmpty) {
+      state = const AuthState(
+        status: AuthStatus.unauthenticated,
+        error: 'Enter your staff username and password.',
+      );
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, error: null);
+    StaffSession? issuedSession;
+    try {
+      final backend = _ref.read(pulseBackendServiceProvider);
+      issuedSession = await backend.staffLogin(normalizedUsername, password);
+
+      // A staff login must never leave a usable student identity or stale
+      // student backend token on the device.
+      await _clearPushRegistration();
+      await _authRepository.logout();
+      await _sessionManager.saveStaffSession(issuedSession);
+      await _cacheManager.clearAll();
+      await _clearNotificationState();
+
+      state = AuthState(
+        status: AuthStatus.authenticated,
+        username: issuedSession.username,
+        role: AuthRole.fromStaffRole(issuedSession.role),
+        staffSession: issuedSession,
+      );
+    } catch (e) {
+      if (issuedSession != null) {
+        await _revokeStaffSession(issuedSession);
+      }
+      await _sessionManager.clearStaffSession();
+      state = AuthState(
+        status: AuthStatus.unauthenticated,
+        error: _errorMessage(e),
       );
     }
   }
 
   Future<void> logout() async {
-    await _clearPushRegistration();
-    await _authRepository.logout();
-    await _cacheManager.clearAll();
-    final store = _ref.read(notificationStateStoreProvider);
-    await store.clearOperationalState();
-    final service = _ref.read(notificationServiceProvider);
-    await service?.cancelAll();
+    final staff = state.staffSession;
+    await _clearSessionState(staffSession: staff);
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
@@ -261,16 +374,60 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (_handlingSessionExpiry) return;
     _handlingSessionExpiry = true;
     try {
-      await _clearPushRegistration();
-      await _authRepository.logout();
-      await _cacheManager.clearAll();
+      final staff = state.staffSession;
+      await _clearSessionState(staffSession: staff);
+      state = const AuthState(
+        status: AuthStatus.unauthenticated,
+        error: 'Your session expired. Please sign in again.',
+      );
+    } finally {
+      _handlingSessionExpiry = false;
+    }
+  }
+
+  /// Clears a transient login error without changing the authentication state.
+  void clearError() {
+    if (state.error != null) {
+      state = state.copyWith(error: null);
+    }
+  }
+
+  Future<void> _clearSessionState({StaffSession? staffSession}) async {
+    await _clearPushRegistration();
+    await _revokeStaffSession(staffSession);
+    await _authRepository.logout();
+    await _sessionManager.clearStaffSession();
+    await _cacheManager.clearAll();
+    await _clearNotificationState();
+  }
+
+  Future<void> _revokeStaffSession(StaffSession? session) async {
+    if (session == null) return;
+    try {
+      await _ref
+          .read(pulseBackendServiceProvider)
+          .staffLogout(session.accessToken);
+    } catch (e) {
+      debugPrint('[PULSE backend] staff logout failed: $e');
+    }
+  }
+
+  Future<void> _clearNotificationState() async {
+    try {
       final store = _ref.read(notificationStateStoreProvider);
       await store.clearOperationalState();
       final service = _ref.read(notificationServiceProvider);
       await service?.cancelAll();
-      state = const AuthState(status: AuthStatus.unauthenticated);
-    } finally {
-      _handlingSessionExpiry = false;
+    } catch (e) {
+      debugPrint('[Notifications] session cleanup failed: $e');
     }
+  }
+
+  String _errorMessage(Object error) {
+    if (error is ApiException) return error.message;
+    if (error is FormatException) {
+      return 'The server returned an invalid staff session. Please try again.';
+    }
+    return error.toString();
   }
 }

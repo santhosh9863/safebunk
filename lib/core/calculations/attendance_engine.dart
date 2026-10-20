@@ -117,10 +117,15 @@ class AttendanceEngine {
 
       final status = AttendanceStatus.fromRaw(r.attendanceStatus);
       agg.total++;
-      if (status == AttendanceStatus.present) agg.present++;
-      else if (status == AttendanceStatus.absent) agg.absent++;
-      else if (status == AttendanceStatus.leave) agg.leave++;
-      else if (status == AttendanceStatus.dutyLeave) agg.dutyLeave++;
+      if (status == AttendanceStatus.present) {
+        agg.present++;
+      } else if (status == AttendanceStatus.absent) {
+        agg.absent++;
+      } else if (status == AttendanceStatus.leave) {
+        agg.leave++;
+      } else if (status == AttendanceStatus.dutyLeave) {
+        agg.dutyLeave++;
+      }
     }
 
     final result = map.entries.map((e) {

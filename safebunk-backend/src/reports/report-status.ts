@@ -11,20 +11,30 @@ export type ReportPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export const TERMINAL_STATUSES: readonly ReportStatus[] = ['RESOLVED', 'REJECTED'];
 
 /**
- * Explicit, auditable state machine (docs/REPORTS_SCHEMA.md §5):
+ * Explicit, auditable state machine:
  *   SUBMITTED  → ASSIGNED | REJECTED
- *   ASSIGNED   → IN_PROGRESS
- *   IN_PROGRESS→ RESOLVED
- * Status mutation endpoints are NOT exposed in Phase 1; this module exists so
- * Phase 6 only has to wire guarded endpoints to a tested transition table.
+ *   ASSIGNED   → IN_PROGRESS | REJECTED
+ *   IN_PROGRESS→ RESOLVED | REJECTED
+ *   RESOLVED / REJECTED are terminal.
+ *
+ * REJECTED is a state-valid transition from any non-terminal status, but the
+ * service/controller additionally require an ADMIN actor and a non-empty
+ * reason. STAFF can only accept, note progress and resolve their own reports.
  */
 const ALLOWED_TRANSITIONS: Readonly<Record<ReportStatus, readonly ReportStatus[]>> = {
   SUBMITTED: ['ASSIGNED', 'REJECTED'],
-  ASSIGNED: ['IN_PROGRESS'],
-  IN_PROGRESS: ['RESOLVED'],
+  ASSIGNED: ['IN_PROGRESS', 'REJECTED'],
+  IN_PROGRESS: ['RESOLVED', 'REJECTED'],
   RESOLVED: [],
   REJECTED: [],
 };
+
+/** Statuses an administrator may explicitly reject, with a recorded reason. */
+export const REJECTABLE_STATUSES: readonly ReportStatus[] = [
+  'SUBMITTED',
+  'ASSIGNED',
+  'IN_PROGRESS',
+];
 
 export const ALL_REPORT_STATUSES: readonly ReportStatus[] = [
   'SUBMITTED',

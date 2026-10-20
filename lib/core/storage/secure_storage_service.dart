@@ -65,4 +65,20 @@ class SecureStorageService {
     await _storage.delete(key: ApiConstants.storageStudentData);
   }
 
+  Future<void> saveStaffSession(String json) async {
+    await _storage.write(key: ApiConstants.storageStaffSession, value: json);
+  }
+
+  Future<String?> getStaffSession() async {
+    return _storage.read(key: ApiConstants.storageStaffSession);
+  }
+
+  Future<bool> hasStaffSession() async {
+    final json = await _storage.read(key: ApiConstants.storageStaffSession);
+    return json != null && json.isNotEmpty;
+  }
+
+  Future<void> clearStaffSession() async {
+    await _storage.delete(key: ApiConstants.storageStaffSession);
+  }
 }

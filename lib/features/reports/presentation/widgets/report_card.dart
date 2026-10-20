@@ -8,8 +8,14 @@ import 'report_status_chip.dart';
 class ReportCard extends StatelessWidget {
   final ReportModel report;
   final VoidCallback onTap;
+  final bool showAssignee;
 
-  const ReportCard({super.key, required this.report, required this.onTap});
+  const ReportCard({
+    super.key,
+    required this.report,
+    required this.onTap,
+    this.showAssignee = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +45,9 @@ class ReportCard extends StatelessWidget {
                       report.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                      style: tt.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -63,6 +71,13 @@ class ReportCard extends StatelessWidget {
               if ((report.location ?? '').isNotEmpty) ...[
                 const SizedBox(height: 8),
                 _MetaItem(icon: Icons.place_outlined, text: report.location!),
+              ],
+              if (showAssignee && report.assignedStaff != null) ...[
+                const SizedBox(height: 8),
+                _MetaItem(
+                  icon: Icons.person_outline,
+                  text: 'Assigned to ${report.assignedStaff!.displayLabel}',
+                ),
               ],
               const SizedBox(height: 12),
               Row(
