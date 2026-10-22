@@ -1,0 +1,27 @@
+{
+  "baseline": {
+    "f1": 0.7702702702702704,
+    "false_positive_rate": 0.007648953301127214,
+    "precision": 0.75,
+    "protocol": "Phase 2 test-corpus-fitted diagnostic",
+    "recall": 0.7916666666666666,
+    "threshold": 0.2
+  },
+  "candidate": {
+    "f1": 0.6715328467153284,
+    "false_positive_rate": 0.007648953301127214,
+    "precision": 0.7076923076923077,
+    "protocol": "Phase 2.1 frozen-test persisted train-fitted artifact",
+    "recall": 0.6388888888888888,
+    "threshold": 0.5
+  },
+  "delta": {
+    "f1": -0.0987,
+    "false_positive_rate": 0.0,
+    "precision": -0.0423,
+    "recall": -0.1528
+  },
+  "frozen_test_pairs_sha256": "954cc5b44336cd4f81fbc4345801649ebe1f7b6745f92f4f1e9dca99926bacdc",
+  "note": "The baseline diagnostic uses test text to fit its vocabulary, so it is not an apples-to-apples unseen-corpus comparison. The candidate is the only deployable path.",
+  "test_frozen": true
+}

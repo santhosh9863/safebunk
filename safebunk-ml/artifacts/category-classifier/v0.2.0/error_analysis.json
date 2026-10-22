@@ -1,0 +1,276 @@
+{
+  "model_version": "0.2.0",
+  "dataset": {
+    "path": "data/synthetic_complaints_v2.csv",
+    "sha256": "61c1b361f2bdb4713c04178268ee1d760678f23f22373dbe7398b032c620fbe8"
+  },
+  "split_method": "fixed holdout",
+  "holdout_rows": 48,
+  "metrics": {
+    "accuracy": 0.75,
+    "macro_f1": 0.753584,
+    "macro_precision": 0.789484,
+    "macro_recall": 0.75,
+    "per_class": {
+      "Infrastructure": {
+        "precision": 0.444444,
+        "recall": 0.666667,
+        "f1": 0.533333,
+        "support": 6
+      },
+      "Electrical": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.666667,
+        "support": 6
+      },
+      "Plumbing": {
+        "precision": 0.857143,
+        "recall": 1.0,
+        "f1": 0.923077,
+        "support": 6
+      },
+      "Cleanliness": {
+        "precision": 0.8,
+        "recall": 0.666667,
+        "f1": 0.727273,
+        "support": 6
+      },
+      "Safety": {
+        "precision": 0.666667,
+        "recall": 0.666667,
+        "f1": 0.666667,
+        "support": 6
+      },
+      "Network / IT": {
+        "precision": 0.714286,
+        "recall": 0.833333,
+        "f1": 0.769231,
+        "support": 6
+      },
+      "Academic": {
+        "precision": 1.0,
+        "recall": 0.833333,
+        "f1": 0.909091,
+        "support": 6
+      },
+      "Other": {
+        "precision": 0.833333,
+        "recall": 0.833333,
+        "f1": 0.833333,
+        "support": 6
+      }
+    },
+    "confusion_matrix": [
+      [
+        4,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        3,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        4,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        5
+      ]
+    ],
+    "confusion_matrix_labels": [
+      "Infrastructure",
+      "Electrical",
+      "Plumbing",
+      "Cleanliness",
+      "Safety",
+      "Network / IT",
+      "Academic",
+      "Other"
+    ],
+    "support": 48
+  },
+  "errors": [
+    {
+      "row_number": 7,
+      "actual": "Infrastructure",
+      "predicted": "Cleanliness",
+      "confidence": 0.156433,
+      "decision": "abstain",
+      "description": "The flooring tiles in the main lobby are lifting and need replacement."
+    },
+    {
+      "row_number": 15,
+      "actual": "Infrastructure",
+      "predicted": "Safety",
+      "confidence": 0.200761,
+      "decision": "predict",
+      "description": "A window in the administrative office is stuck and cannot be closed."
+    },
+    {
+      "row_number": 42,
+      "actual": "Electrical",
+      "predicted": "Infrastructure",
+      "confidence": 0.175946,
+      "decision": "abstain",
+      "description": "The switchboard in the corridor has a broken cover and exposed wires."
+    },
+    {
+      "row_number": 44,
+      "actual": "Electrical",
+      "predicted": "Plumbing",
+      "confidence": 0.23162,
+      "decision": "predict",
+      "description": "The circuit breaker in the hostel wing trips when the water heater is used."
+    },
+    {
+      "row_number": 47,
+      "actual": "Electrical",
+      "predicted": "Network / IT",
+      "confidence": 0.14878,
+      "decision": "abstain",
+      "description": "The wire from the projector is frayed and needs replacement."
+    },
+    {
+      "row_number": 92,
+      "actual": "Cleanliness",
+      "predicted": "Network / IT",
+      "confidence": 0.163662,
+      "decision": "abstain",
+      "description": "The windows and desks in the classroom are covered in dust."
+    },
+    {
+      "row_number": 95,
+      "actual": "Cleanliness",
+      "predicted": "Infrastructure",
+      "confidence": 0.201522,
+      "decision": "predict",
+      "description": "The sports ground has litter and broken bottles near the stands."
+    },
+    {
+      "row_number": 104,
+      "actual": "Safety",
+      "predicted": "Infrastructure",
+      "confidence": 0.193472,
+      "decision": "abstain",
+      "description": "The playground swing has a broken chain and sharp metal edges."
+    },
+    {
+      "row_number": 117,
+      "actual": "Safety",
+      "predicted": "Infrastructure",
+      "confidence": 0.148985,
+      "decision": "abstain",
+      "description": "The playground equipment has a sharp metal edge."
+    },
+    {
+      "row_number": 126,
+      "actual": "Network / IT",
+      "predicted": "Infrastructure",
+      "confidence": 0.164029,
+      "decision": "abstain",
+      "description": "The printer in the administration office is offline and jobs are stuck."
+    },
+    {
+      "row_number": 167,
+      "actual": "Academic",
+      "predicted": "Other",
+      "confidence": 0.161665,
+      "decision": "abstain",
+      "description": "The faculty feedback portal is closed before the deadline."
+    },
+    {
+      "row_number": 185,
+      "actual": "Other",
+      "predicted": "Safety",
+      "confidence": 0.172365,
+      "decision": "abstain",
+      "description": "The parking area is full and there is no space for visitors."
+    }
+  ],
+  "focus_errors": [
+    {
+      "row_number": 47,
+      "actual": "Electrical",
+      "predicted": "Network / IT",
+      "confidence": 0.14878,
+      "decision": "abstain",
+      "description": "The wire from the projector is frayed and needs replacement."
+    }
+  ],
+  "focus_pairs": [
+    [
+      "Electrical",
+      "Network / IT"
+    ],
+    [
+      "Network / IT",
+      "Electrical"
+    ]
+  ]
+}

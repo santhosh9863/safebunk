@@ -1,0 +1,225 @@
+description,category,source
+The ceiling plaster in the second-floor corridor is cracked and falling near the stairs.,Infrastructure,phase1_synthetic
+A concrete step outside the library is broken and creates a trip hazard.,Infrastructure,phase1_synthetic
+The classroom door hinge is loose and the door does not close properly.,Infrastructure,phase1_synthetic
+Part of the boundary wall near the sports ground has collapsed after heavy rain.,Infrastructure,phase1_synthetic
+The window frame in the chemistry lab is warped and lets in rainwater.,Infrastructure,phase1_synthetic
+The flooring tiles in the main lobby are lifting and need replacement.,Infrastructure,phase1_synthetic
+The staircase handrail is loose along the entire first flight.,Infrastructure,phase1_synthetic
+A large pothole has formed on the road inside the campus gate.,Infrastructure,phase1_synthetic
+The roof above the seminar hall is leaking during rain.,Infrastructure,phase1_synthetic
+The bench near the canteen has a broken leg and is unstable.,Infrastructure,phase1_synthetic
+The plaster on the hostel corridor wall is damp and crumbling.,Infrastructure,phase1_synthetic
+The access ramp near the administration block is uneven and difficult to use.,Infrastructure,phase1_synthetic
+The plaster on the ceiling of room 12 is cracked and falling onto the desks.,Infrastructure,phase1_synthetic
+A window in the administrative office is stuck and cannot be closed.,Infrastructure,phase1_synthetic
+The concrete ramp at the main entrance has a broken edge.,Infrastructure,phase1_synthetic
+The roof of the cycle shed has a hole that lets rain through.,Infrastructure,phase1_synthetic
+The floor tiles near the laboratory sink are loose and uneven.,Infrastructure,phase1_synthetic
+The wooden door of the seminar hall is swollen and scrapes the floor.,Infrastructure,phase1_synthetic
+The boundary wall behind the hostel has a large crack.,Infrastructure,phase1_synthetic
+A section of the campus road is sinking near the drainage cover.,Infrastructure,phase1_synthetic
+The handrail on the library staircase is missing a support bracket.,Infrastructure,phase1_synthetic
+The ceiling in the computer room has water stains and sagging panels.,Infrastructure,phase1_synthetic
+The bench outside the administration office has a cracked seat.,Infrastructure,phase1_synthetic
+The window glass in the corridor is loose and rattles in the wind.,Infrastructure,phase1_synthetic
+The tube light in the physics lab keeps flickering and then switches off.,Electrical,phase1_synthetic
+There is a sparking wall socket beside the computer desks in room 204.,Electrical,phase1_synthetic
+The ceiling fan in the library reading room makes a loud buzzing noise.,Electrical,phase1_synthetic
+All power outlets in the electronics workshop stopped working this morning.,Electrical,phase1_synthetic
+A street light outside the hostel gate stays on during the day and is dark at night.,Electrical,phase1_synthetic
+The main switchboard near the canteen is warm and smells like burning plastic.,Electrical,phase1_synthetic
+The emergency light in the stairwell does not turn on during a power cut.,Electrical,phase1_synthetic
+The air conditioner in the server room trips the circuit breaker repeatedly.,Electrical,phase1_synthetic
+The corridor lights on the third floor have been out for two days.,Electrical,phase1_synthetic
+The generator does not start when the campus loses mains power.,Electrical,phase1_synthetic
+An exposed wire is hanging from the wall near the auditorium entrance.,Electrical,phase1_synthetic
+The charging point in the study area gives a mild electric shock when touched.,Electrical,phase1_synthetic
+The light near the main entrance flickers whenever the wind blows.,Electrical,phase1_synthetic
+A wall socket in the library is loose and the plug falls out.,Electrical,phase1_synthetic
+The fan in the examination hall is making a grinding noise.,Electrical,phase1_synthetic
+The power supply to the computer room was cut off without warning.,Electrical,phase1_synthetic
+The switchboard in the corridor has a broken cover and exposed wires.,Electrical,phase1_synthetic
+The street light near the parking area is not working.,Electrical,phase1_synthetic
+The circuit breaker in the hostel wing trips when the water heater is used.,Electrical,phase1_synthetic
+The emergency light above the exit door has a dead battery.,Electrical,phase1_synthetic
+The generator is running but the building still has no power.,Electrical,phase1_synthetic
+The wire from the projector is frayed and needs replacement.,Electrical,phase1_synthetic
+The light in the washroom is broken and the room is dark.,Electrical,phase1_synthetic
+The electrical socket near the laboratory bench sparks when used.,Electrical,phase1_synthetic
+Water is leaking from the pipe under the sink in the staff room.,Plumbing,phase1_synthetic
+The tap in the washroom on the ground floor will not stop running.,Plumbing,phase1_synthetic
+The toilet in the boys hostel is blocked and overflowing.,Plumbing,phase1_synthetic
+There is no water pressure on the second floor of the academic block.,Plumbing,phase1_synthetic
+A drain outside the kitchen is clogged and dirty water is backing up.,Plumbing,phase1_synthetic
+The water cooler near the library is leaking onto the floor.,Plumbing,phase1_synthetic
+The overhead tank is overflowing and water is running down the wall.,Plumbing,phase1_synthetic
+The shower in the hostel bathroom has no hot water connection.,Plumbing,phase1_synthetic
+A pipe burst in the basement and the floor is flooded.,Plumbing,phase1_synthetic
+The washbasin in the art room is detached from the wall.,Plumbing,phase1_synthetic
+The drinking water tap in the canteen tastes metallic and needs inspection.,Plumbing,phase1_synthetic
+Rainwater is entering the stairwell because the roof drain is blocked.,Plumbing,phase1_synthetic
+The sink in the pantry is blocked and water drains very slowly.,Plumbing,phase1_synthetic
+A pipe under the washroom basin is leaking onto the floor.,Plumbing,phase1_synthetic
+The toilet flush in the staff washroom does not work.,Plumbing,phase1_synthetic
+The water tank on the roof is not filling and taps are dry.,Plumbing,phase1_synthetic
+The drain in the shower area is clogged with hair and soap.,Plumbing,phase1_synthetic
+The tap in the science lab drips continuously.,Plumbing,phase1_synthetic
+Water is seeping through the wall near the bathroom pipe.,Plumbing,phase1_synthetic
+The water cooler in the corridor is not dispensing cold water.,Plumbing,phase1_synthetic
+The sewer line behind the hostel is blocked and smells.,Plumbing,phase1_synthetic
+The overhead pipe in the basement is leaking at a joint.,Plumbing,phase1_synthetic
+The washbasin tap in the art room has very low water pressure.,Plumbing,phase1_synthetic
+Rainwater from the roof is leaking into the stairwell.,Plumbing,phase1_synthetic
+The garbage bins near the canteen are overflowing and attracting flies.,Cleanliness,phase1_synthetic
+The washroom on the first floor has not been cleaned and smells bad.,Cleanliness,phase1_synthetic
+There is food waste left on the tables in the student dining hall.,Cleanliness,phase1_synthetic
+The corridor floor is covered with dust and litter after the weekend.,Cleanliness,phase1_synthetic
+Broken glass and wrappers are lying around the sports ground.,Cleanliness,phase1_synthetic
+The classroom desks are sticky and have not been wiped for several days.,Cleanliness,phase1_synthetic
+The hostel laundry area has stagnant water and dirty clothes on the floor.,Cleanliness,phase1_synthetic
+The library reading tables are dusty and the waste bin is full.,Cleanliness,phase1_synthetic
+Someone has spilled paint in the art corridor and it is spreading.,Cleanliness,phase1_synthetic
+The area behind the auditorium is littered with plastic bottles.,Cleanliness,phase1_synthetic
+The water dispenser tray is full of stagnant water and needs cleaning.,Cleanliness,phase1_synthetic
+The hand wash basin in the science lab is stained and dirty.,Cleanliness,phase1_synthetic
+The floor of the washroom is dirty and has not been mopped.,Cleanliness,phase1_synthetic
+Garbage is piling up beside the dustbin near the library.,Cleanliness,phase1_synthetic
+The classroom floor is littered with paper and food wrappers.,Cleanliness,phase1_synthetic
+The dining hall tables are dirty and need to be wiped.,Cleanliness,phase1_synthetic
+The corridor near the laboratory smells of stale waste.,Cleanliness,phase1_synthetic
+The dustbin in the staff room is full and has not been emptied.,Cleanliness,phase1_synthetic
+The windows and desks in the classroom are covered in dust.,Cleanliness,phase1_synthetic
+The hostel bathroom has dirty walls and a stained floor.,Cleanliness,phase1_synthetic
+Someone has spilled food in the stairwell and it is attracting insects.,Cleanliness,phase1_synthetic
+The sports ground has litter and broken bottles near the stands.,Cleanliness,phase1_synthetic
+The library shelves are dusty and the floor has not been cleaned.,Cleanliness,phase1_synthetic
+The cleaning staff have not cleaned the washroom since morning.,Cleanliness,phase1_synthetic
+A fire extinguisher near the laboratory is expired and has no pressure.,Safety,phase1_synthetic
+The emergency exit on the second floor is blocked by stacked chairs.,Safety,phase1_synthetic
+A loose electrical cable runs across the walkway outside the workshop.,Safety,phase1_synthetic
+The balcony railing in the hostel is broken and unsafe for students.,Safety,phase1_synthetic
+There is no lighting on the narrow path behind the sports hall at night.,Safety,phase1_synthetic
+A laboratory chemical bottle is leaking and stored without a label.,Safety,phase1_synthetic
+The playground swing has a broken chain and sharp metal edges.,Safety,phase1_synthetic
+The fire alarm in the administrative building does not sound during a test.,Safety,phase1_synthetic
+A window on the fourth floor has a cracked pane that could fall.,Safety,phase1_synthetic
+The security gate near the parking area cannot be locked properly.,Safety,phase1_synthetic
+Wet floor near the entrance has no warning sign and people are slipping.,Safety,phase1_synthetic
+The gas cylinder in the canteen kitchen is stored next to a heat source.,Safety,phase1_synthetic
+The fire exit door is locked and cannot be opened from inside.,Safety,phase1_synthetic
+A fire extinguisher is missing from the laboratory wall.,Safety,phase1_synthetic
+The electric wire near the stairwell is exposed and dangerous.,Safety,phase1_synthetic
+The balcony railing is loose and could give way.,Safety,phase1_synthetic
+There is a large crack in the ceiling that may collapse.,Safety,phase1_synthetic
+A broken chair with sharp edges is left in the classroom.,Safety,phase1_synthetic
+The chemical cabinet in the lab is unlocked and unsafe.,Safety,phase1_synthetic
+The playground equipment has a sharp metal edge.,Safety,phase1_synthetic
+The floor near the entrance is wet and there is no warning sign.,Safety,phase1_synthetic
+The fire alarm near the library is not working.,Safety,phase1_synthetic
+A gas cylinder is stored in the corridor without ventilation.,Safety,phase1_synthetic
+The window on the upper floor is cracked and could fall.,Safety,phase1_synthetic
+The Wi-Fi in the library disconnects every few minutes.,Network / IT,phase1_synthetic
+There is no internet access in the computer lab on the third floor.,Network / IT,phase1_synthetic
+The projector in seminar room B will not connect to any laptop.,Network / IT,phase1_synthetic
+The campus login portal shows an error when students try to sign in.,Network / IT,phase1_synthetic
+The printer in the administration office is offline and jobs are stuck.,Network / IT,phase1_synthetic
+The network switch in the hostel common room has a red status light.,Network / IT,phase1_synthetic
+The smart classroom display freezes and needs to be restarted constantly.,Network / IT,phase1_synthetic
+The attendance terminal near the main gate cannot reach the server.,Network / IT,phase1_synthetic
+The Ethernet port in room 108 is loose and disconnects when touched.,Network / IT,phase1_synthetic
+The college website is showing a database error page.,Network / IT,phase1_synthetic
+The biometric scanner at the library entrance rejects valid fingerprints.,Network / IT,phase1_synthetic
+The video call system in the conference room has no audio.,Network / IT,phase1_synthetic
+The Wi-Fi signal in the hostel is weak and keeps dropping.,Network / IT,phase1_synthetic
+The internet connection in the library is very slow.,Network / IT,phase1_synthetic
+The printer in the library will not connect to the network.,Network / IT,phase1_synthetic
+The projector in the classroom displays no signal.,Network / IT,phase1_synthetic
+The student portal returns a server error after login.,Network / IT,phase1_synthetic
+The computer in the lab does not start.,Network / IT,phase1_synthetic
+The network cable in room 210 is damaged.,Network / IT,phase1_synthetic
+The server room air conditioner is not working and the server is hot.,Network / IT,phase1_synthetic
+The smart board in the seminar room is not responding.,Network / IT,phase1_synthetic
+The campus Wi-Fi asks for a password that does not work.,Network / IT,phase1_synthetic
+The attendance app crashes when opening the timetable.,Network / IT,phase1_synthetic
+The video conferencing microphone is not working.,Network / IT,phase1_synthetic
+The timetable displayed for the third semester has two classes at the same time.,Academic,phase1_synthetic
+The internal assessment marks for the database course are missing from the portal.,Academic,phase1_synthetic
+The syllabus for the electronics course does not match the printed handout.,Academic,phase1_synthetic
+A lab batch has more students than the available workstation capacity.,Academic,phase1_synthetic
+The exam seating plan on the notice board lists the wrong room number.,Academic,phase1_synthetic
+The course registration portal closed before the announced deadline.,Academic,phase1_synthetic
+The library does not have the reference books listed for the final-year project.,Academic,phase1_synthetic
+The lecture hall assigned to the morning class is already occupied.,Academic,phase1_synthetic
+The credit transfer request has not been reviewed by the department.,Academic,phase1_synthetic
+The practical exam schedule was changed without informing the students.,Academic,phase1_synthetic
+The academic calendar on the website still shows last semester dates.,Academic,phase1_synthetic
+The faculty feedback form is not accepting submissions for one department.,Academic,phase1_synthetic
+The timetable for the new semester has not been published.,Academic,phase1_synthetic
+The exam schedule shows two papers in the same slot.,Academic,phase1_synthetic
+The course registration system is not accepting my subjects.,Academic,phase1_synthetic
+The marks for the midterm exam are not visible on the portal.,Academic,phase1_synthetic
+The syllabus for the data structures course is incomplete.,Academic,phase1_synthetic
+The library has no copies of the prescribed textbook.,Academic,phase1_synthetic
+The class timetable was changed without notice.,Academic,phase1_synthetic
+The practical exam venue was moved to a different lab.,Academic,phase1_synthetic
+The academic calendar lists the wrong holiday dates.,Academic,phase1_synthetic
+The faculty feedback portal is closed before the deadline.,Academic,phase1_synthetic
+The credit transfer request is still pending with the department.,Academic,phase1_synthetic
+The lecture hall for the morning class is locked.,Academic,phase1_synthetic
+The vending machine near the library keeps my payment but does not dispense anything.,Other,phase1_synthetic
+The school bus is arriving late on the afternoon route.,Other,phase1_synthetic
+The water bottles in the canteen are past their expiry date.,Other,phase1_synthetic
+The sports equipment room is locked during the announced practice hours.,Other,phase1_synthetic
+The cycle stand is full and there is no space to park safely.,Other,phase1_synthetic
+The public address system in the auditorium is too quiet at the back.,Other,phase1_synthetic
+The visitor parking area is being used by long-term staff vehicles.,Other,phase1_synthetic
+The cafeteria menu board does not match the food being served.,Other,phase1_synthetic
+A stray dog has entered the sports field during practice.,Other,phase1_synthetic
+The ID card printing office is closed during its posted opening hours.,Other,phase1_synthetic
+The lost and found counter has no record of an item submitted last week.,Other,phase1_synthetic
+The campus map near the main gate is outdated and missing building names.,Other,phase1_synthetic
+The canteen is not serving the items listed on the menu.,Other,phase1_synthetic
+The college bus is late on the morning route.,Other,phase1_synthetic
+The vending machine is not accepting coins.,Other,phase1_synthetic
+The parking area is full and there is no space for visitors.,Other,phase1_synthetic
+The sports equipment room is closed during practice hours.,Other,phase1_synthetic
+The public address system is not working in the auditorium.,Other,phase1_synthetic
+The water bottle sold in the canteen is past its expiry date.,Other,phase1_synthetic
+The lost and found office has no record of the missing item.,Other,phase1_synthetic
+The campus map at the gate is out of date.,Other,phase1_synthetic
+The ID card office is closed during the posted hours.,Other,phase1_synthetic
+A stray animal is roaming near the sports field.,Other,phase1_synthetic
+The cycle stand is overcrowded and bicycles are falling over.,Other,phase1_synthetic
+The ceiling fan in the computer lab sparks and stops spinning while the desktop computers stay online.,Electrical,phase1_1_synthetic
+The wall outlet that powers the projector is loose and the plug falls out.,Electrical,phase1_1_synthetic
+The power strip behind the server rack is hot to the touch and smells burnt.,Electrical,phase1_1_synthetic
+The distribution board that controls the library lights is buzzing loudly.,Electrical,phase1_1_synthetic
+The breaker for the computer lab shuts off whenever the laser printer starts.,Electrical,phase1_1_synthetic
+The battery backup for the network room light is not charging.,Electrical,phase1_1_synthetic
+The ceiling fan in the examination hall slows down and makes a grinding noise.,Electrical,phase1_1_synthetic
+The wall socket beside the office printer sparks when a plug is inserted.,Electrical,phase1_1_synthetic
+The battery backup in the server room beeps continuously and does not hold a charge.,Electrical,phase1_1_synthetic
+The extension cord supplying the classroom projector overheats and the casing is melting.,Electrical,phase1_1_synthetic
+The lights in the computer lab flicker whenever the air conditioner starts.,Electrical,phase1_1_synthetic
+The backup generator for the server room fails to start during an outage.,Electrical,phase1_1_synthetic
+The electrical panel near the IT office is warm and buzzing.,Electrical,phase1_1_synthetic
+The wall switch in the library is broken and the reading room lights stay off.,Electrical,phase1_1_synthetic
+The power outlet behind the water cooler is cracked and loose.,Electrical,phase1_1_synthetic
+The ceiling light above the office printer flickers and then goes out.,Electrical,phase1_1_synthetic
+The projector in the classroom has power but cannot connect to the campus network.,Network / IT,phase1_1_synthetic
+The library printer appears online but every print job fails with a network timeout.,Network / IT,phase1_1_synthetic
+The biometric attendance device at the hostel entrance is powered but cannot sync records.,Network / IT,phase1_1_synthetic
+Students can reach the campus Wi-Fi but the authentication page times out.,Network / IT,phase1_1_synthetic
+The Wi-Fi access point in the library is powered but clients cannot connect.,Network / IT,phase1_1_synthetic
+The network switch in the computer lab is powered but all connected desktops have lost connectivity.,Network / IT,phase1_1_synthetic
+The internet is down in the hostel but the lights and sockets are working normally.,Network / IT,phase1_1_synthetic
+The office desktop is powered on but has no network connection.,Network / IT,phase1_1_synthetic
+The network cable in the classroom is damaged and the projector cannot reach the internet.,Network / IT,phase1_1_synthetic
+The printer is plugged into a working socket but cannot connect to the print server.,Network / IT,phase1_1_synthetic
+The campus email service rejects every login with a server error.,Network / IT,phase1_1_synthetic
+The firewall is blocking access to the campus email service.,Network / IT,phase1_1_synthetic
+The attendance scanner has power but cannot upload records to the server.,Network / IT,phase1_1_synthetic
+The smart classroom display turns on but cannot load the network lesson portal.,Network / IT,phase1_1_synthetic
+The LAN port in the library is active but the network login fails.,Network / IT,phase1_1_synthetic
+The conference room camera is powered but the video call cannot connect to the meeting server.,Network / IT,phase1_1_synthetic

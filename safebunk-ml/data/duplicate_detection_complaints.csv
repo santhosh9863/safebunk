@@ -1,0 +1,97 @@
+complaint_id,group_id,description,category,location,split
+C001,G01,One of the chairs in Computer Lab 1 has a broken leg and is unstable.,Infrastructure,Computer Lab 1,train
+C002,G01,A chair in Computer Lab 1 is missing a wheel and cannot be used safely.,Infrastructure,Computer Lab 1,train
+C003,G01,The rolling chair at the front desk in Computer Lab 1 is broken.,Infrastructure,Computer Lab 1,train
+C004,G02,The door to Computer Lab 1 is stuck and will not open fully.,Infrastructure,Computer Lab 1,train
+C005,G02,Students cannot get through the entrance door of Computer Lab 1 because it jams.,Infrastructure,Computer Lab 1,train
+C006,G02,The Computer Lab 1 doorway is blocked by a door that will not close properly.,Infrastructure,Computer Lab 1,train
+C007,G03,A floor tile near the main library entrance is cracked and loose.,Infrastructure,Main Library,test
+C008,G03,The flooring by the main library doors has a broken tile that moves when stepped on.,Infrastructure,Main Library,test
+C009,G03,There is a damaged tile at the entrance of the main library.,Infrastructure,Main Library,test
+C010,G04,A window in the main library reading room will not close.,Infrastructure,Main Library,test
+C011,G04,The main library window latch is broken and the window stays open.,Infrastructure,Main Library,test
+C012,G04,Cold air is coming through a damaged window in the main library.,Infrastructure,Main Library,test
+C013,G05,The ceiling fan in Computer Lab 1 makes a loud rattling noise.,Electrical,Computer Lab 1,train
+C014,G05,A ceiling fan in Computer Lab 1 is noisy and vibrates.,Electrical,Computer Lab 1,train
+C015,G05,The fan above the desks in Computer Lab 1 will not stop rattling.,Electrical,Computer Lab 1,train
+C016,G06,The wall socket beside the printer in Computer Lab 1 has no power.,Electrical,Computer Lab 1,train
+C017,G06,Plugging a charger into the socket near the Computer Lab 1 printer does nothing.,Electrical,Computer Lab 1,train
+C018,G06,The electrical outlet next to the printer in Computer Lab 1 is dead.,Electrical,Computer Lab 1,train
+C019,G07,The lights in the main library reading room keep flickering.,Electrical,Main Library,test
+C020,G07,Lighting above the main library study area is flashing on and off.,Electrical,Main Library,test
+C021,G07,The main library reading room has lights that flicker constantly.,Electrical,Main Library,test
+C022,G08,A wall socket in the main library reading room sparks when used.,Electrical,Main Library,test
+C023,G08,The power outlet near the main library shelves is sparking.,Electrical,Main Library,test
+C024,G08,There is a sparking electrical socket by the main library windows.,Electrical,Main Library,test
+C025,G09,The shower in the Hostel A washroom is leaking continuously.,Plumbing,Hostel A,train
+C026,G09,Water keeps dripping from the shower head in Hostel A.,Plumbing,Hostel A,train
+C027,G09,A Hostel A shower will not stop running after it is turned off.,Plumbing,Hostel A,train
+C028,G10,The toilet on the ground floor of Hostel A is blocked.,Plumbing,Hostel A,train
+C029,G10,A Hostel A toilet is overflowing because it is clogged.,Plumbing,Hostel A,train
+C030,G10,The ground-floor toilet in Hostel A will not flush.,Plumbing,Hostel A,train
+C031,G11,The sink in the main library washroom is leaking underneath.,Plumbing,Main Library,test
+C032,G11,Water is pooling under the sink in the main library restroom.,Plumbing,Main Library,test
+C033,G11,The main library washroom sink has a constant leak.,Plumbing,Main Library,test
+C034,G12,The floor drain in the main library washroom is clogged.,Plumbing,Main Library,test
+C035,G12,Water will not drain from the main library washroom floor.,Plumbing,Main Library,test
+C036,G12,The main library washroom drain is blocked and water is rising.,Plumbing,Main Library,test
+C037,G13,The waste bin near the cafeteria entrance is overflowing.,Cleanliness,Cafeteria,train
+C038,G13,Trash is piling up around the cafeteria bin.,Cleanliness,Cafeteria,train
+C039,G13,The cafeteria entrance bin has not been emptied and is full.,Cleanliness,Cafeteria,train
+C040,G14,The tables in the cafeteria are sticky and have not been cleaned.,Cleanliness,Cafeteria,train
+C041,G14,Food crumbs and spills are left on the cafeteria tables.,Cleanliness,Cafeteria,train
+C042,G14,Cafeteria tables are dirty during the lunch period.,Cleanliness,Cafeteria,train
+C043,G15,The main library washroom floor is dirty and wet.,Cleanliness,Main Library,test
+C044,G15,The main library restroom needs cleaning; the floor is covered in debris.,Cleanliness,Main Library,test
+C045,G15,The main library washroom has not been cleaned and smells bad.,Cleanliness,Main Library,test
+C046,G16,The bin at the main library entrance is full and overflowing.,Cleanliness,Main Library,test
+C047,G16,Trash is spilling out of the main library entrance bin.,Cleanliness,Main Library,test
+C048,G16,The main library entrance waste bin needs to be emptied.,Cleanliness,Main Library,test
+C049,G17,A car is parked in the emergency lane at the main gate.,Safety,Main Gate,train
+C050,G17,The emergency access lane near the main gate is blocked by a vehicle.,Safety,Main Gate,train
+C051,G17,Vehicles are stopping in the main gate emergency lane.,Safety,Main Gate,train
+C052,G18,The barrier at the main gate is broken and will not lower.,Safety,Main Gate,train
+C053,G18,The main gate security barrier is stuck in the open position.,Safety,Main Gate,train
+C054,G18,The vehicle barrier at the main gate is damaged.,Safety,Main Gate,train
+C055,G19,Boxes are blocking the emergency exit in the sports hall.,Safety,Sports Hall,test
+C056,G19,The sports hall emergency exit is obstructed by equipment.,Safety,Sports Hall,test
+C057,G19,A pile of equipment is blocking the sports hall fire exit.,Safety,Sports Hall,test
+C058,G20,The railing around the sports hall balcony is loose.,Safety,Sports Hall,test
+C059,G20,A handrail in the sports hall is wobbly and unsafe.,Safety,Sports Hall,test
+C060,G20,The balcony railing in the sports hall is not fixed securely.,Safety,Sports Hall,test
+C061,G21,The Wi-Fi in Hostel A is down.,Network / IT,Hostel A,train
+C062,G21,Students in Hostel A cannot connect to the campus wireless network.,Network / IT,Hostel A,train
+C063,G21,There is no Wi-Fi signal in Hostel A.,Network / IT,Hostel A,train
+C064,G22,The printer in Hostel A shows offline and will not print.,Network / IT,Hostel A,train
+C065,G22,Print jobs from Hostel A are stuck because the printer is offline.,Network / IT,Hostel A,train
+C066,G22,The Hostel A printer cannot connect to the print server.,Network / IT,Hostel A,train
+C067,G23,The Wi-Fi network in the main library is not working.,Network / IT,Main Library,test
+C068,G23,Students cannot connect to Wi-Fi in the main library.,Network / IT,Main Library,test
+C069,G23,The main library wireless network is down.,Network / IT,Main Library,test
+C070,G24,The printer in the main library is offline.,Network / IT,Main Library,test
+C071,G24,Print jobs at the main library printer are stuck because it is offline.,Network / IT,Main Library,test
+C072,G24,The main library printer cannot reach the print server.,Network / IT,Main Library,test
+C073,G25,The timetable in the student portal shows the wrong classes.,Academic,Online Portal,train
+C074,G25,My registered courses appear under the wrong times in the portal.,Academic,Online Portal,train
+C075,G25,The student portal timetable does not match the official schedule.,Academic,Online Portal,train
+C076,G26,The course registration page returns an error when I submit.,Academic,Online Portal,train
+C077,G26,Students cannot complete course registration because the portal rejects the form.,Academic,Online Portal,train
+C078,G26,The registration portal shows an error after selecting courses.,Academic,Online Portal,train
+C079,G27,Exam results for one course are missing from the student portal.,Academic,Online Portal,test
+C080,G27,A completed course has no grade in the portal.,Academic,Online Portal,test
+C081,G27,The student portal does not show the exam result for a course.,Academic,Online Portal,test
+C082,G28,The fee receipt in the student portal shows the wrong amount.,Academic,Online Portal,test
+C083,G28,A paid fee is listed as unpaid in the student portal.,Academic,Online Portal,test
+C084,G28,The student portal displays an incorrect fee receipt.,Academic,Online Portal,test
+C085,G29,The lost and found box at the student center is overflowing.,Other,Student Center,train
+C086,G29,There is no space left in the student center lost and found.,Other,Student Center,train
+C087,G29,The student center lost and found needs to be cleared.,Other,Student Center,train
+C088,G30,The notice board in the student center has old posters.,Other,Student Center,train
+C089,G30,Outdated notices are still displayed in the student center.,Other,Student Center,train
+C090,G30,The student center notice board needs new information.,Other,Student Center,train
+C091,G31,An abandoned bicycle has been left in the parking lot for weeks.,Other,Parking Lot,test
+C092,G31,A broken bicycle is taking up a space in the parking lot.,Other,Parking Lot,test
+C093,G31,The parking lot has a bicycle that nobody has claimed.,Other,Parking Lot,test
+C094,G32,There is a large pothole in the parking lot.,Other,Parking Lot,test
+C095,G32,The parking lot surface has a deep hole near the entrance.,Other,Parking Lot,test
+C096,G32,A pothole in the parking lot is damaging cars.,Other,Parking Lot,test

@@ -1,4 +1,5 @@
 import '../../../../services/api/pulse_backend_service.dart';
+import '../models/ml_suggestion.dart';
 import '../models/report_attachment.dart';
 import '../models/report_model.dart';
 
@@ -34,6 +35,33 @@ class ReportsRepository {
     );
   }
 
+  /// Optional category suggestion. The caller must apply it explicitly.
+  Future<CategorySuggestion> suggestCategory(String description) =>
+      _backend.suggestCategory(description);
+
+  /// Pre-submission duplicate check for an unsaved draft. No report is created.
+  Future<DuplicateSuggestion> suggestDraftDuplicates({
+    required String description,
+    String? category,
+    String? location,
+    int maxCandidates = 5,
+  }) {
+    return _backend.suggestDraftDuplicates(
+      description: description,
+      category: category,
+      location: location,
+      maxCandidates: maxCandidates,
+    );
+  }
+
+  /// Duplicate check for one of the student's existing reports.
+  Future<DuplicateSuggestion> suggestDuplicates(
+    String reportId, {
+    int maxCandidates = 5,
+  }) {
+    return _backend.suggestDuplicates(reportId, maxCandidates: maxCandidates);
+  }
+
   /// Uploads a report photo; [onProgress] drives the upload progress UI.
   Future<ReportAttachment> uploadImage({
     required List<int> bytes,
@@ -53,5 +81,6 @@ class ReportsRepository {
 
   String? absoluteUrl(String? path) => _backend.absoluteUrl(path);
 
-  Future<Map<String, String>?> imageAuthHeaders() => _backend.imageAuthHeaders();
+  Future<Map<String, String>?> imageAuthHeaders() =>
+      _backend.imageAuthHeaders();
 }

@@ -1,0 +1,245 @@
+{
+  "schema_version": 1,
+  "model_version": "0.1.0",
+  "created_at": "2026-10-21T04:20:17.596791Z",
+  "environment": {
+    "python": "3.13.7",
+    "scikit_learn": "1.9.1",
+    "numpy": "2.5.4",
+    "joblib": "1.6.0"
+  },
+  "task": "complaint_category_classification",
+  "categories": [
+    "Infrastructure",
+    "Electrical",
+    "Plumbing",
+    "Cleanliness",
+    "Safety",
+    "Network / IT",
+    "Academic",
+    "Other"
+  ],
+  "confidence_threshold": 0.2,
+  "confidence_note": "Confidence is the maximum predict_proba score. It is not a calibrated probability; consumers must treat scores below the threshold as abstain. The default 0.20 threshold is an operational routing choice for eight classes, not a measure of certainty.",
+  "dataset": {
+    "path": "data/synthetic_complaints.csv",
+    "sha256": "ae78cd491da998b60cf66d27cf2b309bcd6706619ff1a6dedf6d4df869b580d4",
+    "rows": 192,
+    "category_counts": {
+      "Infrastructure": 24,
+      "Electrical": 24,
+      "Plumbing": 24,
+      "Cleanliness": 24,
+      "Safety": 24,
+      "Network / IT": 24,
+      "Academic": 24,
+      "Other": 24
+    },
+    "metadata": {
+      "dataset_id": "pulse-synthetic-complaints-v1",
+      "synthetic": true,
+      "provenance": "Hand-written synthetic examples created for PULSE Phase 1 ML foundation. These are not real campus complaints.",
+      "label_source": "Synthetic category templates aligned with the eight categories in the existing Flutter report form.",
+      "human_verified": false,
+      "pii_review": "No names, student IDs, contact details, credentials, addresses, or other personal information are present.",
+      "intended_use": "Training and smoke-testing a baseline complaint-category classifier only.",
+      "collection_method": "Authored from common campus facility and academic support scenarios; no campus records were used.",
+      "categories": [
+        "Infrastructure",
+        "Electrical",
+        "Plumbing",
+        "Cleanliness",
+        "Safety",
+        "Network / IT",
+        "Academic",
+        "Other"
+      ],
+      "notes": "Do not describe this dataset or its metrics as production evidence. Future authorized real complaints require anonymization and human-verified labels."
+    }
+  },
+  "training": {
+    "pipeline": "tfidf_word_1_2 + logistic_regression",
+    "vectorizer": {
+      "analyzer": "word",
+      "ngram_range": [
+        1,
+        2
+      ],
+      "max_df": 0.95,
+      "sublinear_tf": true
+    },
+    "classifier": {
+      "class_weight": "balanced",
+      "max_iter": 2000,
+      "solver": "lbfgs"
+    },
+    "random_state": 42
+  },
+  "split": {
+    "method": "category-stratified grouped holdout",
+    "test_fraction": 0.25,
+    "random_state": 42,
+    "n_groups": 192,
+    "train_rows": 144,
+    "test_rows": 48,
+    "leakage_guard": "Exact duplicates are rejected; near-identical rows are grouped by TF-IDF cosine similarity before the split."
+  },
+  "evaluation": {
+    "accuracy": 0.666667,
+    "macro_f1": 0.660795,
+    "macro_precision": 0.690278,
+    "macro_recall": 0.666667,
+    "per_class": {
+      "Infrastructure": {
+        "precision": 0.444444,
+        "recall": 0.666667,
+        "f1": 0.533333,
+        "support": 6
+      },
+      "Electrical": {
+        "precision": 0.5,
+        "recall": 0.166667,
+        "f1": 0.25,
+        "support": 6
+      },
+      "Plumbing": {
+        "precision": 0.833333,
+        "recall": 0.833333,
+        "f1": 0.833333,
+        "support": 6
+      },
+      "Cleanliness": {
+        "precision": 0.8,
+        "recall": 0.666667,
+        "f1": 0.727273,
+        "support": 6
+      },
+      "Safety": {
+        "precision": 0.666667,
+        "recall": 0.666667,
+        "f1": 0.666667,
+        "support": 6
+      },
+      "Network / IT": {
+        "precision": 0.444444,
+        "recall": 0.666667,
+        "f1": 0.533333,
+        "support": 6
+      },
+      "Academic": {
+        "precision": 1.0,
+        "recall": 0.833333,
+        "f1": 0.909091,
+        "support": 6
+      },
+      "Other": {
+        "precision": 0.833333,
+        "recall": 0.833333,
+        "f1": 0.833333,
+        "support": 6
+      }
+    },
+    "confusion_matrix": [
+      [
+        4,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        1,
+        1,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        5,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        4,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        1,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        5
+      ]
+    ],
+    "confusion_matrix_labels": [
+      "Infrastructure",
+      "Electrical",
+      "Plumbing",
+      "Cleanliness",
+      "Safety",
+      "Network / IT",
+      "Academic",
+      "Other"
+    ],
+    "support": 48
+  },
+  "limitations": [
+    "This artifact is trained on a small, hand-written synthetic starter dataset.",
+    "The examples are not real campus complaints and the labels are not human-verified.",
+    "Metrics describe this synthetic holdout split only and are not production evidence.",
+    "The model accepts only the description text and does not use identity or role data.",
+    "Confidence scores are uncalibrated and must not be shown as certainty.",
+    "Low-confidence results require manual review or retention of the existing category.",
+    "No priority prediction, duplicate detection, chatbot, or automatic report mutation is included."
+  ]
+}

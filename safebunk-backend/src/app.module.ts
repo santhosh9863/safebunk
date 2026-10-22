@@ -13,6 +13,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReportsModule } from './reports/reports.module';
 import { StaffModule } from './staff/staff.module';
+import { MlModule } from './ml/ml.module';
 import { HealthController } from './health.controller';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -32,6 +33,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     PrismaModule,
     ReportsModule,
     StaffModule,
+    MlModule,
   ],
   controllers: [HealthController],
   providers: [

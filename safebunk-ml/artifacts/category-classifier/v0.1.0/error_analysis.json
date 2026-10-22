@@ -1,0 +1,332 @@
+{
+  "model_version": "0.1.0",
+  "dataset": {
+    "path": "data/synthetic_complaints.csv",
+    "sha256": "ae78cd491da998b60cf66d27cf2b309bcd6706619ff1a6dedf6d4df869b580d4"
+  },
+  "split_method": "category-stratified grouped holdout",
+  "holdout_rows": 48,
+  "metrics": {
+    "accuracy": 0.666667,
+    "macro_f1": 0.660795,
+    "macro_precision": 0.690278,
+    "macro_recall": 0.666667,
+    "per_class": {
+      "Infrastructure": {
+        "precision": 0.444444,
+        "recall": 0.666667,
+        "f1": 0.533333,
+        "support": 6
+      },
+      "Electrical": {
+        "precision": 0.5,
+        "recall": 0.166667,
+        "f1": 0.25,
+        "support": 6
+      },
+      "Plumbing": {
+        "precision": 0.833333,
+        "recall": 0.833333,
+        "f1": 0.833333,
+        "support": 6
+      },
+      "Cleanliness": {
+        "precision": 0.8,
+        "recall": 0.666667,
+        "f1": 0.727273,
+        "support": 6
+      },
+      "Safety": {
+        "precision": 0.666667,
+        "recall": 0.666667,
+        "f1": 0.666667,
+        "support": 6
+      },
+      "Network / IT": {
+        "precision": 0.444444,
+        "recall": 0.666667,
+        "f1": 0.533333,
+        "support": 6
+      },
+      "Academic": {
+        "precision": 1.0,
+        "recall": 0.833333,
+        "f1": 0.909091,
+        "support": 6
+      },
+      "Other": {
+        "precision": 0.833333,
+        "recall": 0.833333,
+        "f1": 0.833333,
+        "support": 6
+      }
+    },
+    "confusion_matrix": [
+      [
+        4,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        1,
+        1,
+        0,
+        0,
+        3,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        5,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        4,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        1,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        5
+      ]
+    ],
+    "confusion_matrix_labels": [
+      "Infrastructure",
+      "Electrical",
+      "Plumbing",
+      "Cleanliness",
+      "Safety",
+      "Network / IT",
+      "Academic",
+      "Other"
+    ],
+    "support": 48
+  },
+  "errors": [
+    {
+      "row_number": 7,
+      "actual": "Infrastructure",
+      "predicted": "Cleanliness",
+      "confidence": 0.152486,
+      "decision": "abstain",
+      "description": "The flooring tiles in the main lobby are lifting and need replacement."
+    },
+    {
+      "row_number": 15,
+      "actual": "Infrastructure",
+      "predicted": "Safety",
+      "confidence": 0.204595,
+      "decision": "predict",
+      "description": "A window in the administrative office is stuck and cannot be closed."
+    },
+    {
+      "row_number": 28,
+      "actual": "Electrical",
+      "predicted": "Network / IT",
+      "confidence": 0.158637,
+      "decision": "abstain",
+      "description": "The ceiling fan in the library reading room makes a loud buzzing noise."
+    },
+    {
+      "row_number": 33,
+      "actual": "Electrical",
+      "predicted": "Network / IT",
+      "confidence": 0.250955,
+      "decision": "predict",
+      "description": "The air conditioner in the server room trips the circuit breaker repeatedly."
+    },
+    {
+      "row_number": 42,
+      "actual": "Electrical",
+      "predicted": "Infrastructure",
+      "confidence": 0.167577,
+      "decision": "abstain",
+      "description": "The switchboard in the corridor has a broken cover and exposed wires."
+    },
+    {
+      "row_number": 44,
+      "actual": "Electrical",
+      "predicted": "Plumbing",
+      "confidence": 0.231885,
+      "decision": "predict",
+      "description": "The circuit breaker in the hostel wing trips when the water heater is used."
+    },
+    {
+      "row_number": 47,
+      "actual": "Electrical",
+      "predicted": "Network / IT",
+      "confidence": 0.160479,
+      "decision": "abstain",
+      "description": "The wire from the projector is frayed and needs replacement."
+    },
+    {
+      "row_number": 64,
+      "actual": "Plumbing",
+      "predicted": "Network / IT",
+      "confidence": 0.164482,
+      "decision": "abstain",
+      "description": "The toilet flush in the staff washroom does not work."
+    },
+    {
+      "row_number": 92,
+      "actual": "Cleanliness",
+      "predicted": "Network / IT",
+      "confidence": 0.159644,
+      "decision": "abstain",
+      "description": "The windows and desks in the classroom are covered in dust."
+    },
+    {
+      "row_number": 95,
+      "actual": "Cleanliness",
+      "predicted": "Infrastructure",
+      "confidence": 0.191662,
+      "decision": "abstain",
+      "description": "The sports ground has litter and broken bottles near the stands."
+    },
+    {
+      "row_number": 104,
+      "actual": "Safety",
+      "predicted": "Infrastructure",
+      "confidence": 0.18751,
+      "decision": "abstain",
+      "description": "The playground swing has a broken chain and sharp metal edges."
+    },
+    {
+      "row_number": 117,
+      "actual": "Safety",
+      "predicted": "Infrastructure",
+      "confidence": 0.14809,
+      "decision": "abstain",
+      "description": "The playground equipment has a sharp metal edge."
+    },
+    {
+      "row_number": 126,
+      "actual": "Network / IT",
+      "predicted": "Infrastructure",
+      "confidence": 0.167233,
+      "decision": "abstain",
+      "description": "The printer in the administration office is offline and jobs are stuck."
+    },
+    {
+      "row_number": 129,
+      "actual": "Network / IT",
+      "predicted": "Electrical",
+      "confidence": 0.1436,
+      "decision": "abstain",
+      "description": "The attendance terminal near the main gate cannot reach the server."
+    },
+    {
+      "row_number": 167,
+      "actual": "Academic",
+      "predicted": "Other",
+      "confidence": 0.160108,
+      "decision": "abstain",
+      "description": "The faculty feedback portal is closed before the deadline."
+    },
+    {
+      "row_number": 185,
+      "actual": "Other",
+      "predicted": "Safety",
+      "confidence": 0.163075,
+      "decision": "abstain",
+      "description": "The parking area is full and there is no space for visitors."
+    }
+  ],
+  "focus_errors": [
+    {
+      "row_number": 28,
+      "actual": "Electrical",
+      "predicted": "Network / IT",
+      "confidence": 0.158637,
+      "decision": "abstain",
+      "description": "The ceiling fan in the library reading room makes a loud buzzing noise."
+    },
+    {
+      "row_number": 33,
+      "actual": "Electrical",
+      "predicted": "Network / IT",
+      "confidence": 0.250955,
+      "decision": "predict",
+      "description": "The air conditioner in the server room trips the circuit breaker repeatedly."
+    },
+    {
+      "row_number": 47,
+      "actual": "Electrical",
+      "predicted": "Network / IT",
+      "confidence": 0.160479,
+      "decision": "abstain",
+      "description": "The wire from the projector is frayed and needs replacement."
+    },
+    {
+      "row_number": 129,
+      "actual": "Network / IT",
+      "predicted": "Electrical",
+      "confidence": 0.1436,
+      "decision": "abstain",
+      "description": "The attendance terminal near the main gate cannot reach the server."
+    }
+  ],
+  "focus_pairs": [
+    [
+      "Electrical",
+      "Network / IT"
+    ],
+    [
+      "Network / IT",
+      "Electrical"
+    ]
+  ]
+}

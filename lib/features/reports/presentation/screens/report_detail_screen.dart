@@ -7,6 +7,7 @@ import '../../data/models/report_model.dart';
 import '../../domain/report_enums.dart';
 import '../report_format.dart';
 import '../report_style.dart';
+import '../widgets/duplicate_suggestions_card.dart';
 import '../widgets/report_history.dart';
 import '../widgets/report_image.dart';
 import '../widgets/report_status_chip.dart';
@@ -46,13 +47,13 @@ class ReportDetailScreen extends ConsumerWidget {
   }
 }
 
-class _ReportBody extends StatelessWidget {
+class _ReportBody extends ConsumerWidget {
   final ReportModel report;
 
   const _ReportBody({required this.report});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
@@ -148,6 +149,15 @@ class _ReportBody extends StatelessWidget {
                 ),
             ],
           ),
+        ),
+        const SizedBox(height: 12),
+        DuplicateSuggestionsCard(
+          description:
+              'Optional ML check against your other reports. This is only a '
+              'suggestion and never changes or merges a report.',
+          checkLabel: 'Check possible duplicates',
+          load: () =>
+              ref.read(reportsRepositoryProvider).suggestDuplicates(report.id),
         ),
         const SizedBox(height: 12),
         ReportHistory(events: report.events),

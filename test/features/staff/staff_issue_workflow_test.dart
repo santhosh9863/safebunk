@@ -7,6 +7,7 @@ import 'package:safebunk_v2/core/cache/cache_manager.dart';
 import 'package:safebunk_v2/core/session/session_manager.dart';
 import 'package:safebunk_v2/core/storage/secure_storage_service.dart';
 import 'package:safebunk_v2/features/notifications/application/notification_providers.dart';
+import 'package:safebunk_v2/features/reports/data/models/ml_suggestion.dart';
 import 'package:safebunk_v2/features/reports/data/models/report_event.dart';
 import 'package:safebunk_v2/features/reports/data/models/report_model.dart';
 import 'package:safebunk_v2/features/staff/presentation/staff_report_detail_screen.dart';
@@ -31,6 +32,39 @@ class _FakeAuthRepository extends AuthRepository {
   }
 }
 
+const _duplicateCandidate = DuplicateCandidate(
+  reportId: 'rep_2',
+  reportCode: 'PULSE-1043',
+  title: 'Library lighting problem',
+  status: 'ASSIGNED',
+  category: 'Electrical',
+  location: 'Main Library',
+  similarityScore: 0.47,
+  rankingScore: 0.51,
+  categoryMatch: true,
+  locationMatch: true,
+  reasons: ['similar description text', 'same category: Electrical'],
+);
+
+DuplicateSuggestion _duplicateResult({bool available = true}) {
+  return DuplicateSuggestion(
+    available: available,
+    reason: available ? null : 'ml_unavailable',
+    message: available ? 'Possible duplicates found.' : 'ML unavailable.',
+    reportId: 'rep_1',
+    decision: available ? DuplicateSuggestionDecision.match : null,
+    candidates: available ? const [_duplicateCandidate] : const [],
+    duplicateThreshold: available ? 0.5 : null,
+    uncertainThreshold: available ? 0.4 : null,
+    similarityMetric: available ? 'tfidf_cosine_similarity' : null,
+    rankingMetric: available ? 'cosine_similarity_with_metadata_support' : null,
+    modelVersion: available ? '0.2.0' : null,
+    scoreNote: 'Ranking score, not a probability.',
+    manualReviewRecommended: true,
+    existingComplaintsEvaluated: available ? 3 : null,
+  );
+}
+
 class _WorkflowBackend extends PulseBackendService {
   _WorkflowBackend({
     required this.loginSession,
@@ -39,6 +73,7 @@ class _WorkflowBackend extends PulseBackendService {
     this.progressResult,
     this.resolveResult,
     this.assignResult,
+    this.duplicateResult,
     this.accounts = const [],
   }) : super(baseUrl: 'http://localhost:3000');
 
@@ -48,12 +83,16 @@ class _WorkflowBackend extends PulseBackendService {
   ReportModel? progressResult;
   ReportModel? resolveResult;
   ReportModel? assignResult;
+  DuplicateSuggestion? duplicateResult;
   final List<StaffAccount> accounts;
 
   int acceptCalls = 0;
   int progressCalls = 0;
   int resolveCalls = 0;
   int assignCalls = 0;
+  int duplicateCalls = 0;
+  String? lastDuplicateToken;
+  String? lastDuplicateReportId;
   String? lastNote;
   String? lastResolution;
   String? lastAssignedStaffId;
@@ -144,6 +183,18 @@ class _WorkflowBackend extends PulseBackendService {
   ) async {
     return detail;
   }
+
+  @override
+  Future<DuplicateSuggestion> suggestStaffDuplicates(
+    String token,
+    String reportId, {
+    int maxCandidates = 5,
+  }) async {
+    duplicateCalls++;
+    lastDuplicateToken = token;
+    lastDuplicateReportId = reportId;
+    return duplicateResult ?? _duplicateResult();
+  }
 }
 
 class _Harness {
@@ -161,6 +212,7 @@ Future<_Harness> _pumpDetail(
   ReportModel? progressResult,
   ReportModel? resolveResult,
   ReportModel? assignResult,
+  DuplicateSuggestion? duplicateResult,
   List<StaffAccount> accounts = const [],
 }) async {
   FlutterSecureStorage.setMockInitialValues({});
@@ -172,6 +224,7 @@ Future<_Harness> _pumpDetail(
     progressResult: progressResult,
     resolveResult: resolveResult,
     assignResult: assignResult,
+    duplicateResult: duplicateResult,
     accounts: accounts,
   );
   final container = ProviderContainer(
@@ -271,6 +324,18 @@ ReportModel _report({
     updatedAt: DateTime.utc(2026, 10, 20, 11),
     resolvedAt: status == 'RESOLVED' ? DateTime.utc(2026, 10, 20, 11) : null,
   );
+}
+
+Future<void> _scrollToDuplicateButton(WidgetTester tester) async {
+  final button = find.text('Check possible duplicates');
+  for (var i = 0; i < 12 && button.evaluate().isEmpty; i++) {
+    await tester.drag(find.byType(ListView), const Offset(0, -300));
+    await tester.pumpAndSettle();
+  }
+  await tester.ensureVisible(button);
+  await tester.pumpAndSettle();
+  await tester.tap(button);
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -420,5 +485,63 @@ void main() {
     expect(find.text('Campus Staff'), findsOneWidget);
     expect(find.text('Reassign issue'), findsOneWidget);
     expect(harness.container.read(authProvider).isAdmin, isTrue);
+  });
+
+  testWidgets(
+    'assigned staff can request duplicate suggestions without mutation',
+    (tester) async {
+      final assigned = _report(
+        status: 'ASSIGNED',
+        assignedStaff: _staffAccount,
+        events: [
+          _event('e1', 'SUBMITTED', 'STUDENT', null),
+          _event('e2', 'ASSIGNED', 'ADMIN', 'Maintenance'),
+        ],
+      );
+      final harness = await _pumpDetail(
+        tester,
+        session: _staffSession,
+        report: assigned,
+        duplicateResult: _duplicateResult(),
+      );
+      expect(find.text('ASSIGNMENT'), findsOneWidget);
+
+      await _scrollToDuplicateButton(tester);
+
+      expect(harness.backend.duplicateCalls, 1);
+      expect(harness.backend.lastDuplicateToken, 'staff-token');
+      expect(harness.backend.lastDuplicateReportId, 'rep_1');
+      expect(find.text('PULSE-1043'), findsOneWidget);
+      expect(find.textContaining('Similarity 0.47'), findsOneWidget);
+      expect(harness.backend.acceptCalls, 0);
+      expect(harness.backend.progressCalls, 0);
+      expect(harness.backend.resolveCalls, 0);
+    },
+  );
+
+  testWidgets('admin duplicate check uses the authenticated admin session', (
+    tester,
+  ) async {
+    final assigned = _report(
+      status: 'ASSIGNED',
+      assignedStaff: _staffAccount,
+      events: [
+        _event('e1', 'SUBMITTED', 'STUDENT', null),
+        _event('e2', 'ASSIGNED', 'ADMIN', 'Maintenance'),
+      ],
+    );
+    final harness = await _pumpDetail(
+      tester,
+      session: _adminSession,
+      report: assigned,
+      duplicateResult: _duplicateResult(available: false),
+    );
+
+    await _scrollToDuplicateButton(tester);
+
+    expect(harness.backend.duplicateCalls, 1);
+    expect(harness.backend.lastDuplicateToken, 'admin-token');
+    expect(find.text('ML suggestions unavailable'), findsOneWidget);
+    expect(find.text('PULSE-1042'), findsWidgets);
   });
 }

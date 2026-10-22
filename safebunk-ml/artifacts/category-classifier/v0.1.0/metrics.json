@@ -1,0 +1,149 @@
+{
+  "accuracy": 0.666667,
+  "macro_f1": 0.660795,
+  "macro_precision": 0.690278,
+  "macro_recall": 0.666667,
+  "per_class": {
+    "Infrastructure": {
+      "precision": 0.444444,
+      "recall": 0.666667,
+      "f1": 0.533333,
+      "support": 6
+    },
+    "Electrical": {
+      "precision": 0.5,
+      "recall": 0.166667,
+      "f1": 0.25,
+      "support": 6
+    },
+    "Plumbing": {
+      "precision": 0.833333,
+      "recall": 0.833333,
+      "f1": 0.833333,
+      "support": 6
+    },
+    "Cleanliness": {
+      "precision": 0.8,
+      "recall": 0.666667,
+      "f1": 0.727273,
+      "support": 6
+    },
+    "Safety": {
+      "precision": 0.666667,
+      "recall": 0.666667,
+      "f1": 0.666667,
+      "support": 6
+    },
+    "Network / IT": {
+      "precision": 0.444444,
+      "recall": 0.666667,
+      "f1": 0.533333,
+      "support": 6
+    },
+    "Academic": {
+      "precision": 1.0,
+      "recall": 0.833333,
+      "f1": 0.909091,
+      "support": 6
+    },
+    "Other": {
+      "precision": 0.833333,
+      "recall": 0.833333,
+      "f1": 0.833333,
+      "support": 6
+    }
+  },
+  "confusion_matrix": [
+    [
+      4,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      1,
+      0,
+      0,
+      3,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      5,
+      0,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      0,
+      4,
+      0,
+      1,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      0,
+      0,
+      4,
+      0,
+      0,
+      0
+    ],
+    [
+      1,
+      1,
+      0,
+      0,
+      0,
+      4,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
+      1
+    ],
+    [
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      5
+    ]
+  ],
+  "confusion_matrix_labels": [
+    "Infrastructure",
+    "Electrical",
+    "Plumbing",
+    "Cleanliness",
+    "Safety",
+    "Network / IT",
+    "Academic",
+    "Other"
+  ],
+  "support": 48
+}

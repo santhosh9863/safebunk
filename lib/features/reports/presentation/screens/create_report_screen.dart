@@ -6,8 +6,10 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/errors/app_exceptions.dart';
 import '../../application/reports_providers.dart';
+import '../../data/models/ml_suggestion.dart';
 import '../../domain/report_enums.dart';
 import '../../domain/report_image.dart';
+import '../widgets/duplicate_suggestions_card.dart';
 
 /// Campus categories offered to students. Free-form values are also accepted by
 /// the backend, but a guided list keeps the first version consistent.
@@ -40,6 +42,11 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   ReportPriority _priority = ReportPriority.medium;
   bool _submitting = false;
 
+  // Optional ML category suggestion. It is never applied automatically.
+  CategorySuggestion? _categorySuggestion;
+  String? _categorySuggestionError;
+  bool _suggestingCategory = false;
+
   // Photo state.
   Uint8List? _imageBytes;
   String? _imageName;
@@ -50,11 +57,76 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
   String? _uploadedAttachmentId;
 
   @override
+  void initState() {
+    super.initState();
+    _descriptionController.addListener(_clearStaleCategorySuggestion);
+  }
+
+  @override
   void dispose() {
+    _descriptionController.removeListener(_clearStaleCategorySuggestion);
     _titleController.dispose();
     _descriptionController.dispose();
     _locationController.dispose();
     super.dispose();
+  }
+
+  /// A suggestion belongs to the text it was requested for. Editing the
+  /// description clears it rather than silently applying a stale prediction.
+  void _clearStaleCategorySuggestion() {
+    if (_categorySuggestion == null && _categorySuggestionError == null) {
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _categorySuggestion = null;
+      _categorySuggestionError = null;
+    });
+  }
+
+  Future<void> _suggestCategory() async {
+    final description = _descriptionController.text.trim();
+    if (description.length < 10) {
+      _snack('Add a little more description before requesting a suggestion.');
+      return;
+    }
+
+    setState(() {
+      _suggestingCategory = true;
+      _categorySuggestionError = null;
+    });
+
+    try {
+      final suggestion = await ref
+          .read(reportsRepositoryProvider)
+          .suggestCategory(description);
+      if (!mounted) return;
+      setState(() {
+        _categorySuggestion = suggestion;
+        _suggestingCategory = false;
+      });
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _categorySuggestion = null;
+        _categorySuggestionError = error.message;
+        _suggestingCategory = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _categorySuggestion = null;
+        _categorySuggestionError =
+            'Could not get a category suggestion. Please try again.';
+        _suggestingCategory = false;
+      });
+    }
+  }
+
+  void _applyCategorySuggestion(CategorySuggestion suggestion) {
+    final category = suggestion.category;
+    if (category == null || !_categories.contains(category)) return;
+    setState(() => _category = category);
   }
 
   Future<void> _pickImage() async {
@@ -103,7 +175,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
     });
 
     try {
-      final attachment = await ref.read(reportsRepositoryProvider).uploadImage(
+      final attachment = await ref
+          .read(reportsRepositoryProvider)
+          .uploadImage(
             bytes: bytes,
             fileName: name,
             contentType: contentType,
@@ -165,13 +239,17 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
       return;
     }
     if (_imageBytes != null && _uploadedAttachmentId == null) {
-      _snack('The photo did not upload. Retry it, or remove it to submit without a photo.');
+      _snack(
+        'The photo did not upload. Retry it, or remove it to submit without a photo.',
+      );
       return;
     }
 
     setState(() => _submitting = true);
     try {
-      final report = await ref.read(reportsRepositoryProvider).createReport(
+      final report = await ref
+          .read(reportsRepositoryProvider)
+          .createReport(
             title: _titleController.text.trim(),
             description: _descriptionController.text.trim(),
             category: _category,
@@ -186,7 +264,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
       if (!mounted) return;
       setState(() => _submitting = false);
       _snack(
-        e is ApiException ? e.message : 'Could not submit the report. Please try again.',
+        e is ApiException
+            ? e.message
+            : 'Could not submit the report. Please try again.',
       );
     }
   }
@@ -223,7 +303,9 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                 validator: (v) {
                   final value = (v ?? '').trim();
                   if (value.isEmpty) return 'Please add a short title';
-                  if (value.length < 3) return 'Title must be at least 3 characters';
+                  if (value.length < 3) {
+                    return 'Title must be at least 3 characters';
+                  }
                   return null;
                 },
               ),
@@ -279,6 +361,42 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                 ],
                 onChanged: (value) => setState(() => _category = value),
               ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _suggestingCategory ? null : _suggestCategory,
+                  icon: _suggestingCategory
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.auto_awesome_outlined, size: 18),
+                  label: Text(
+                    _suggestingCategory
+                        ? 'Suggesting…'
+                        : _categorySuggestion == null
+                        ? 'Suggest category'
+                        : 'Suggest again',
+                  ),
+                ),
+              ),
+              if (_categorySuggestionError != null) ...[
+                const SizedBox(height: 8),
+                _CategorySuggestionNotice(
+                  message: _categorySuggestionError!,
+                  isError: true,
+                ),
+              ],
+              if (_categorySuggestion != null) ...[
+                const SizedBox(height: 8),
+                _CategorySuggestionPanel(
+                  suggestion: _categorySuggestion!,
+                  selectedCategory: _category,
+                  onApply: () => _applyCategorySuggestion(_categorySuggestion!),
+                ),
+              ],
               const SizedBox(height: 20),
               _SectionLabel('Priority'),
               const SizedBox(height: 8),
@@ -298,6 +416,30 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                 onRemove: _removeImage,
                 onRetry: _uploadImage,
               ),
+              const SizedBox(height: 20),
+              DuplicateSuggestionsCard(
+                description:
+                    'Optional check against your earlier reports before '
+                    'submitting. It never blocks submission, merges, or changes '
+                    'a report.',
+                checkLabel: 'Check possible duplicates',
+                load: () {
+                  final description = _descriptionController.text.trim();
+                  if (description.length < 10) {
+                    throw const InvalidDataException(
+                      'Add a little more description before checking for '
+                      'duplicates.',
+                    );
+                  }
+                  return ref
+                      .read(reportsRepositoryProvider)
+                      .suggestDraftDuplicates(
+                        description: description,
+                        category: _category,
+                        location: _locationController.text.trim(),
+                      );
+                },
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -307,13 +449,20 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, size: 18, color: cs.onSurfaceVariant),
+                    Icon(
+                      Icons.info_outline,
+                      size: 18,
+                      color: cs.onSurfaceVariant,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Your report will be submitted as “Submitted”. '
                         'Campus staff will update its status as it is handled.',
-                        style: TextStyle(fontSize: 12.5, color: cs.onSurfaceVariant),
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ),
                   ],
@@ -340,6 +489,211 @@ class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CategorySuggestionPanel extends StatelessWidget {
+  final CategorySuggestion suggestion;
+  final String? selectedCategory;
+  final VoidCallback onApply;
+
+  const _CategorySuggestionPanel({
+    required this.suggestion,
+    required this.selectedCategory,
+    required this.onApply,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    if (!suggestion.available) {
+      return _CategorySuggestionNotice(
+        message:
+            '${categorySuggestionFailureMessage(suggestion.reason)} '
+            'You can still submit without a suggestion.',
+      );
+    }
+
+    final category = suggestion.category;
+    final supported = category != null && _categories.contains(category);
+    final applied = supported && selectedCategory == category;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: cs.primaryContainer.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.primary.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome, size: 17, color: cs.primary),
+              const SizedBox(width: 7),
+              Text(
+                'Suggested category',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: cs.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 7),
+          Text(
+            category ?? 'No category',
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 5,
+            children: [
+              if (suggestion.confidence != null)
+                _SuggestionMeta(
+                  label:
+                      'Score ${formatMlScore(suggestion.confidence!)} · not a '
+                      'calibrated probability',
+                ),
+              if (suggestion.modelVersion != null)
+                _SuggestionMeta(label: 'Model ${suggestion.modelVersion}'),
+            ],
+          ),
+          if (suggestion.needsManualReview) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.rate_review_outlined,
+                  size: 17,
+                  color: Color(0xFF8A5300),
+                ),
+                const SizedBox(width: 7),
+                Expanded(
+                  child: Text(
+                    suggestion.decision == CategorySuggestionDecision.abstain
+                        ? 'Low confidence — please review the category manually.'
+                        : 'The model recommends a manual review of this '
+                              'suggestion.',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      height: 1.35,
+                      color: Color(0xFF6B4100),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          if (!supported) ...[
+            const SizedBox(height: 8),
+            Text(
+              'This suggestion is not available in the app’s category list. '
+              'Choose a category manually.',
+              style: TextStyle(fontSize: 11.5, color: cs.onSurfaceVariant),
+            ),
+          ],
+          if (supported) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.tonalIcon(
+                onPressed: applied ? null : onApply,
+                icon: Icon(
+                  applied ? Icons.check : Icons.check_circle_outline,
+                  size: 17,
+                ),
+                label: Text(
+                  applied
+                      ? 'Suggested category selected'
+                      : 'Use suggested category',
+                ),
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              'Choosing this only changes the category field. You remain in '
+              'control and can pick another category.',
+              style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _CategorySuggestionNotice extends StatelessWidget {
+  final String message;
+  final bool isError;
+
+  const _CategorySuggestionNotice({
+    required this.message,
+    this.isError = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final color = isError ? cs.onErrorContainer : cs.onSurfaceVariant;
+    final background = isError
+        ? cs.errorContainer
+        : cs.surfaceContainerHighest.withValues(alpha: 0.6);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            isError ? Icons.error_outline : Icons.info_outline,
+            size: 17,
+            color: color,
+          ),
+          const SizedBox(width: 7),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(fontSize: 11.5, height: 1.35, color: color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SuggestionMeta extends StatelessWidget {
+  final String label;
+
+  const _SuggestionMeta({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: cs.surface.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(7),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontSize: 10.5, color: cs.onSurfaceVariant),
       ),
     );
   }
@@ -373,7 +727,9 @@ class _PhotoField extends StatelessWidget {
         onPressed: onAddOrReplace,
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
         icon: const Icon(Icons.add_a_photo_outlined, size: 18),
         label: const Text('Add a photo'),
@@ -417,7 +773,10 @@ class _PhotoField extends StatelessWidget {
                         const SizedBox(height: 10),
                         Text(
                           'Uploading $pct%',
-                          style: const TextStyle(color: Colors.white, fontSize: 12.5),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12.5,
+                          ),
                         ),
                       ],
                     ),
@@ -441,7 +800,10 @@ class _PhotoField extends StatelessWidget {
                 Expanded(
                   child: Text(
                     error!,
-                    style: TextStyle(fontSize: 12.5, color: cs.onErrorContainer),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: cs.onErrorContainer,
+                    ),
                   ),
                 ),
               ],

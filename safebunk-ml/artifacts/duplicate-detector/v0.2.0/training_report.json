@@ -1,0 +1,382 @@
+{
+  "artifact_version": "duplicate-detector-v0.2.0",
+  "candidates": [
+    {
+      "feature_config": {
+        "char_analyzer": "char_wb",
+        "char_ngram_range": [
+          3,
+          5
+        ],
+        "lowercase": true,
+        "name": "word12_char35_stopwords",
+        "strip_accents": "unicode",
+        "sublinear_tf": true,
+        "text_normalization": "nfkc_whitespace",
+        "word_analyzer": "word",
+        "word_ngram_range": [
+          1,
+          2
+        ],
+        "word_stop_words": "english"
+      },
+      "validation": {
+        "actual_negative": 2484,
+        "actual_positive": 72,
+        "confusion_matrix": {
+          "false_negative": 33,
+          "false_positive": 49,
+          "true_negative": 2435,
+          "true_positive": 39
+        },
+        "f1": 0.4875,
+        "false_negative": 33,
+        "false_positive": 49,
+        "false_positive_rate": 0.0197,
+        "precision": 0.4432,
+        "predicted_positive": 88,
+        "recall": 0.5417,
+        "threshold": 0.5,
+        "true_negative": 2435,
+        "true_positive": 39,
+        "uncertain_threshold": 0.4
+      }
+    },
+    {
+      "feature_config": {
+        "char_analyzer": "char_wb",
+        "char_ngram_range": [
+          3,
+          5
+        ],
+        "lowercase": true,
+        "name": "word12_char35_all_words",
+        "strip_accents": "unicode",
+        "sublinear_tf": true,
+        "text_normalization": "nfkc_whitespace",
+        "word_analyzer": "word",
+        "word_ngram_range": [
+          1,
+          2
+        ],
+        "word_stop_words": null
+      },
+      "validation": {
+        "actual_negative": 2484,
+        "actual_positive": 72,
+        "confusion_matrix": {
+          "false_negative": 39,
+          "false_positive": 31,
+          "true_negative": 2453,
+          "true_positive": 33
+        },
+        "f1": 0.4853,
+        "false_negative": 39,
+        "false_positive": 31,
+        "false_positive_rate": 0.0125,
+        "precision": 0.5156,
+        "predicted_positive": 64,
+        "recall": 0.4583,
+        "threshold": 0.45,
+        "true_negative": 2453,
+        "true_positive": 33,
+        "uncertain_threshold": 0.35
+      }
+    },
+    {
+      "feature_config": {
+        "char_analyzer": "char_wb",
+        "char_ngram_range": [
+          2,
+          4
+        ],
+        "lowercase": true,
+        "name": "word11_char24_stopwords",
+        "strip_accents": "unicode",
+        "sublinear_tf": true,
+        "text_normalization": "nfkc_whitespace",
+        "word_analyzer": "word",
+        "word_ngram_range": [
+          1,
+          1
+        ],
+        "word_stop_words": "english"
+      },
+      "validation": {
+        "actual_negative": 2484,
+        "actual_positive": 72,
+        "confusion_matrix": {
+          "false_negative": 31,
+          "false_positive": 36,
+          "true_negative": 2448,
+          "true_positive": 41
+        },
+        "f1": 0.5503,
+        "false_negative": 31,
+        "false_positive": 36,
+        "false_positive_rate": 0.0145,
+        "precision": 0.5325,
+        "predicted_positive": 77,
+        "recall": 0.5694,
+        "threshold": 0.5,
+        "true_negative": 2448,
+        "true_positive": 41,
+        "uncertain_threshold": 0.4
+      }
+    },
+    {
+      "feature_config": {
+        "char_analyzer": "char_wb",
+        "char_ngram_range": [
+          2,
+          5
+        ],
+        "lowercase": true,
+        "name": "word11_char25_stopwords",
+        "strip_accents": "unicode",
+        "sublinear_tf": true,
+        "text_normalization": "nfkc_whitespace",
+        "word_analyzer": "word",
+        "word_ngram_range": [
+          1,
+          1
+        ],
+        "word_stop_words": "english"
+      },
+      "validation": {
+        "actual_negative": 2484,
+        "actual_positive": 72,
+        "confusion_matrix": {
+          "false_negative": 31,
+          "false_positive": 38,
+          "true_negative": 2446,
+          "true_positive": 41
+        },
+        "f1": 0.543,
+        "false_negative": 31,
+        "false_positive": 38,
+        "false_positive_rate": 0.0153,
+        "precision": 0.519,
+        "predicted_positive": 79,
+        "recall": 0.5694,
+        "threshold": 0.5,
+        "true_negative": 2446,
+        "true_positive": 41,
+        "uncertain_threshold": 0.4
+      }
+    },
+    {
+      "feature_config": {
+        "char_analyzer": "char_wb",
+        "char_ngram_range": [
+          2,
+          4
+        ],
+        "lowercase": true,
+        "name": "word12_char24_stopwords",
+        "strip_accents": "unicode",
+        "sublinear_tf": true,
+        "text_normalization": "nfkc_whitespace",
+        "word_analyzer": "word",
+        "word_ngram_range": [
+          1,
+          2
+        ],
+        "word_stop_words": "english"
+      },
+      "validation": {
+        "actual_negative": 2484,
+        "actual_positive": 72,
+        "confusion_matrix": {
+          "false_negative": 28,
+          "false_positive": 48,
+          "true_negative": 2436,
+          "true_positive": 44
+        },
+        "f1": 0.5366,
+        "false_negative": 28,
+        "false_positive": 48,
+        "false_positive_rate": 0.0193,
+        "precision": 0.4783,
+        "predicted_positive": 92,
+        "recall": 0.6111,
+        "threshold": 0.5,
+        "true_negative": 2436,
+        "true_positive": 44,
+        "uncertain_threshold": 0.4
+      }
+    },
+    {
+      "feature_config": {
+        "char_analyzer": "char_wb",
+        "char_ngram_range": [
+          2,
+          5
+        ],
+        "lowercase": true,
+        "name": "word12_char25_stopwords",
+        "strip_accents": "unicode",
+        "sublinear_tf": true,
+        "text_normalization": "nfkc_whitespace",
+        "word_analyzer": "word",
+        "word_ngram_range": [
+          1,
+          2
+        ],
+        "word_stop_words": "english"
+      },
+      "validation": {
+        "actual_negative": 2484,
+        "actual_positive": 72,
+        "confusion_matrix": {
+          "false_negative": 29,
+          "false_positive": 51,
+          "true_negative": 2433,
+          "true_positive": 43
+        },
+        "f1": 0.5181,
+        "false_negative": 29,
+        "false_positive": 51,
+        "false_positive_rate": 0.0205,
+        "precision": 0.4574,
+        "predicted_positive": 94,
+        "recall": 0.5972,
+        "threshold": 0.5,
+        "true_negative": 2433,
+        "true_positive": 43,
+        "uncertain_threshold": 0.4
+      }
+    }
+  ],
+  "dataset_sha256": "f7a5d88317f4799e7641991802696ddf5a4d9546ef1bb5064202e43c6c429e86",
+  "dataset_version": "duplicate-detection-v0.2.0",
+  "frozen_test": {
+    "complaints_sha256": "1b3acc6d815d1ce288f269d4aa4fa42ddbd17110c65c305bb02d44fc287e3db6",
+    "frozen_before_tuning": true,
+    "group_ids": [
+      "G04",
+      "G08",
+      "G12",
+      "G16",
+      "G20",
+      "G24",
+      "G28",
+      "G32",
+      "G36",
+      "G37",
+      "G41",
+      "G42",
+      "G46",
+      "G47",
+      "G51",
+      "G52",
+      "G56",
+      "G57",
+      "G61",
+      "G62",
+      "G66",
+      "G67",
+      "G71",
+      "G72"
+    ],
+    "pairs_sha256": "954cc5b44336cd4f81fbc4345801649ebe1f7b6745f92f4f1e9dca99926bacdc",
+    "path": "data/duplicate_detection_v2_test_freeze.json"
+  },
+  "model_version": "0.2.0",
+  "pairs_sha256": "8becaeada4f1731747d3213396fade40c6081814a74c9eb00660b09f5f795449",
+  "selected_duplicate_threshold": 0.5,
+  "selected_feature_config": {
+    "char_analyzer": "char_wb",
+    "char_ngram_range": [
+      2,
+      4
+    ],
+    "lowercase": true,
+    "name": "word11_char24_stopwords",
+    "strip_accents": "unicode",
+    "sublinear_tf": true,
+    "text_normalization": "nfkc_whitespace",
+    "word_analyzer": "word",
+    "word_ngram_range": [
+      1,
+      1
+    ],
+    "word_stop_words": "english"
+  },
+  "selected_uncertain_threshold": 0.4,
+  "selection_rule": "Select feature configuration and duplicate threshold on validation only: maximum F1 subject to FPR <= 0.10.",
+  "support_signals": {
+    "category_support": 0.02,
+    "location_support": 0.02,
+    "min_text_evidence": 0.05
+  },
+  "test_scored": false,
+  "threshold_grid": [
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8
+  ],
+  "train": {
+    "actual_negative": 2484,
+    "actual_positive": 72,
+    "confusion_matrix": {
+      "false_negative": 55,
+      "false_positive": 0,
+      "true_negative": 2484,
+      "true_positive": 17
+    },
+    "f1": 0.382,
+    "false_negative": 55,
+    "false_positive": 0,
+    "false_positive_rate": 0.0,
+    "hard_negatives": {
+      "false_positive_rate": 0.0,
+      "false_positives": 0,
+      "pairs": 396
+    },
+    "precision": 1.0,
+    "predicted_positive": 17,
+    "recall": 0.2361,
+    "threshold": 0.5,
+    "true_negative": 2484,
+    "true_positive": 17
+  },
+  "validation": {
+    "actual_negative": 2484,
+    "actual_positive": 72,
+    "confusion_matrix": {
+      "false_negative": 31,
+      "false_positive": 36,
+      "true_negative": 2448,
+      "true_positive": 41
+    },
+    "f1": 0.5503,
+    "false_negative": 31,
+    "false_positive": 36,
+    "false_positive_rate": 0.0145,
+    "hard_negatives": {
+      "false_positive_rate": 0.0606,
+      "false_positives": 36,
+      "pairs": 594
+    },
+    "precision": 0.5325,
+    "predicted_positive": 77,
+    "recall": 0.5694,
+    "threshold": 0.5,
+    "true_negative": 2448,
+    "true_positive": 41
+  }
+}

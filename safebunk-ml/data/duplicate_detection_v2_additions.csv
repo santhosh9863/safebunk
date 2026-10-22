@@ -1,0 +1,121 @@
+group_id,description,category,location,split
+G33,A ceiling panel in the sports hall is loose and hanging down.,Infrastructure,Sports Hall,train
+G33,One of the sports hall ceiling tiles has come away from the frame.,Infrastructure,Sports Hall,train
+G33,The ceiling above the sports hall court has a panel that looks ready to fall.,Infrastructure,Sports Hall,train
+G34,The automatic door at the cafeteria entrance opens and closes on its own.,Infrastructure,Cafeteria,validation
+G34,The cafeteria entrance door keeps moving without anyone triggering the sensor.,Infrastructure,Cafeteria,validation
+G34,The motion sensor on the cafeteria automatic door is malfunctioning.,Infrastructure,Cafeteria,validation
+G35,A step on the main library staircase has a broken edge.,Infrastructure,Main Library,validation
+G35,The edge of one stair in the main library is chipped and unsafe.,Infrastructure,Main Library,validation
+G35,A damaged step on the main library stairs could trip people.,Infrastructure,Main Library,validation
+G36,The roof above the Hostel A laundry room is leaking rainwater.,Infrastructure,Hostel A,test
+G36,Water is coming through the ceiling in the Hostel A laundry area.,Infrastructure,Hostel A,test
+G36,A roof leak is dripping into the Hostel A laundry room.,Infrastructure,Hostel A,test
+G37,A bench in the student center courtyard has a broken support.,Infrastructure,Student Center,test
+G37,The wooden bench outside the student center is sagging on one side.,Infrastructure,Student Center,test
+G37,One of the courtyard benches at the student center is unstable.,Infrastructure,Student Center,test
+G38,The lights in the sports hall changing room are burned out.,Electrical,Sports Hall,train
+G38,None of the ceiling lights work in the sports hall changing area.,Electrical,Sports Hall,train
+G38,The sports hall changing room is dark because the bulbs have failed.,Electrical,Sports Hall,train
+G39,The power in the Hostel A laundry room cuts out when the dryers run.,Electrical,Hostel A,validation
+G39,Using the dryers in Hostel A trips the power in the laundry room.,Electrical,Hostel A,validation
+G39,The Hostel A laundry loses electricity whenever several machines are on.,Electrical,Hostel A,validation
+G40,A wall light in the cafeteria serving area is hanging loose.,Electrical,Cafeteria,validation
+G40,The light fixture above the cafeteria counter is not attached properly.,Electrical,Cafeteria,validation
+G40,One of the cafeteria serving lights is dangling from the wall.,Electrical,Cafeteria,validation
+G41,The emergency light above the main library exit does not turn on.,Electrical,Main Library,test
+G41,The exit light at the main library is dark during a power check.,Electrical,Main Library,test
+G41,The main library emergency exit lamp has failed.,Electrical,Main Library,test
+G42,The electrical socket at the student center information desk is overheating.,Electrical,Student Center,test
+G42,The plug point near the student center help desk feels hot when used.,Electrical,Student Center,test
+G42,A power outlet at the student center desk is getting dangerously warm.,Electrical,Student Center,test
+G43,The water fountain in the sports hall is blocked and overflows.,Plumbing,Sports Hall,train
+G43,Water spills onto the floor because the sports hall fountain will not drain.,Plumbing,Sports Hall,train
+G43,The sports hall drinking fountain is clogged and keeps overflowing.,Plumbing,Sports Hall,train
+G44,The hand-wash tap in the cafeteria washroom will not turn off.,Plumbing,Cafeteria,validation
+G44,Water keeps running from a tap in the cafeteria restroom.,Plumbing,Cafeteria,validation
+G44,The cafeteria washroom sink tap is stuck in the open position.,Plumbing,Cafeteria,validation
+G45,A pipe under the sink in the Hostel A kitchen is leaking.,Plumbing,Hostel A,validation
+G45,Water is dripping from the plumbing beneath the Hostel A kitchen sink.,Plumbing,Hostel A,validation
+G45,The Hostel A shared kitchen has a leak under the counter.,Plumbing,Hostel A,validation
+G46,The main library drinking fountain has very low water pressure.,Plumbing,Main Library,test
+G46,Only a trickle comes out of the water fountain in the main library.,Plumbing,Main Library,test
+G46,The main library water fountain cannot fill a bottle because the flow is weak.,Plumbing,Main Library,test
+G47,The floor drain in the student center washroom smells of sewage.,Plumbing,Student Center,test
+G47,A bad smell is rising from the drain in the student center restroom.,Plumbing,Student Center,test
+G47,The student center washroom drain is giving off a sewage odor.,Plumbing,Student Center,test
+G48,The shared kitchen in Hostel A has dirty counters and old food.,Cleanliness,Hostel A,train
+G48,Counters in the Hostel A kitchen are covered with crumbs and leftovers.,Cleanliness,Hostel A,train
+G48,The Hostel A communal kitchen needs cleaning; food has been left out.,Cleanliness,Hostel A,train
+G49,The floor under the Computer Lab 1 desks is covered in dust and wrappers.,Cleanliness,Computer Lab 1,validation
+G49,There is litter and dust beneath the desks in Computer Lab 1.,Cleanliness,Computer Lab 1,validation
+G49,Computer Lab 1 has not been swept and the floor is dirty.,Cleanliness,Computer Lab 1,validation
+G50,The cafeteria tray return area is covered in food waste.,Cleanliness,Cafeteria,validation
+G50,Leftover food is piling up around the cafeteria tray collection point.,Cleanliness,Cafeteria,validation
+G50,The cafeteria tray station is messy and needs to be cleaned.,Cleanliness,Cafeteria,validation
+G51,The sports hall changing room has not been cleaned and smells bad.,Cleanliness,Sports Hall,test
+G51,The sports hall changing area is dirty and has a strong odor.,Cleanliness,Sports Hall,test
+G51,Cleaning has been missed in the sports hall changing room.,Cleanliness,Sports Hall,test
+G52,The main library study desks have not been wiped and are sticky.,Cleanliness,Main Library,test
+G52,There are sticky marks and crumbs on the main library study tables.,Cleanliness,Main Library,test
+G52,The main library desks need cleaning before students can use them.,Cleanliness,Main Library,test
+G53,A bookshelf in the main library is leaning and could fall.,Safety,Main Library,train
+G53,One of the main library shelves is unstable and tilting away from the wall.,Safety,Main Library,train
+G53,The tall bookshelf in the main library is not secured and looks dangerous.,Safety,Main Library,train
+G54,A gas smell is coming from the cafeteria kitchen.,Safety,Cafeteria,validation
+G54,There is a strong smell of gas near the cafeteria cooking area.,Safety,Cafeteria,validation
+G54,The cafeteria kitchen has a gas leak smell that needs checking.,Safety,Cafeteria,validation
+G55,The fire extinguisher in the Hostel A corridor is expired.,Safety,Hostel A,validation
+G55,The Hostel A hallway fire extinguisher has passed its inspection date.,Safety,Hostel A,validation
+G55,An expired fire extinguisher is mounted in the Hostel A corridor.,Safety,Hostel A,validation
+G56,A loose cable runs across the Computer Lab 1 walkway.,Safety,Computer Lab 1,test
+G56,A power cable is lying over the floor in Computer Lab 1 where people walk.,Safety,Computer Lab 1,test
+G56,The Computer Lab 1 aisle has a trailing cable that could trip someone.,Safety,Computer Lab 1,test
+G57,The emergency exit sign in the sports hall is broken and unlit.,Safety,Sports Hall,test
+G57,The sports hall fire exit sign does not light up.,Safety,Sports Hall,test
+G57,A damaged exit sign in the sports hall is not working.,Safety,Sports Hall,test
+G58,The desktop computers in Computer Lab 1 cannot log in to the campus network.,Network / IT,Computer Lab 1,train
+G58,Computer Lab 1 machines reject every network login.,Network / IT,Computer Lab 1,train
+G58,Students cannot sign in to the desktop computers in Computer Lab 1.,Network / IT,Computer Lab 1,train
+G59,The student portal password reset email never arrives.,Network / IT,Online Portal,validation
+G59,No reset message is sent when I request a new student portal password.,Network / IT,Online Portal,validation
+G59,The student portal does not deliver password recovery emails.,Network / IT,Online Portal,validation
+G60,The projector in the main library meeting room will not connect.,Network / IT,Main Library,validation
+G60,The main library meeting room projector cannot connect to a laptop.,Network / IT,Main Library,validation
+G60,The main library projector shows no signal when plugged in.,Network / IT,Main Library,validation
+G61,The Wi-Fi in the sports hall drops every few minutes.,Network / IT,Sports Hall,test
+G61,The sports hall wireless network keeps disconnecting.,Network / IT,Sports Hall,test
+G61,Students lose the campus Wi-Fi signal repeatedly in the sports hall.,Network / IT,Sports Hall,test
+G62,The cafeteria card payment terminal cannot reach the network.,Network / IT,Cafeteria,test
+G62,Card payments fail in the cafeteria because the terminal is offline.,Network / IT,Cafeteria,test
+G62,The cafeteria payment machine shows a network error at checkout.,Network / IT,Cafeteria,test
+G63,The course reserve book for a class is not available at the main library desk.,Academic,Main Library,train
+G63,A reserved textbook is missing from the main library course reserve shelf.,Academic,Main Library,train
+G63,The main library does not have the course reserve title listed for my class.,Academic,Main Library,train
+G64,The exam timetable in the student portal was changed without notice.,Academic,Online Portal,validation
+G64,My exam time in the student portal moved and no announcement was posted.,Academic,Online Portal,validation
+G64,The student portal shows a different exam schedule than the one published.,Academic,Online Portal,validation
+G65,A course appears as full in the portal even though seats are open.,Academic,Online Portal,validation
+G65,The student portal blocks enrollment in a course that still has space.,Academic,Online Portal,validation
+G65,Registration shows a class as full although the department says it is open.,Academic,Online Portal,validation
+G66,The library catalog shows a book as available but it is missing from the shelf.,Academic,Main Library,test
+G66,A book listed as on-shelf in the catalog cannot be found in the main library.,Academic,Main Library,test
+G66,"The main library catalog says a copy is available, but the shelf is empty.",Academic,Main Library,test
+G67,The student portal does not show a submitted assignment.,Academic,Online Portal,test
+G67,An uploaded assignment is missing from the student portal submission list.,Academic,Online Portal,test
+G67,The portal says no work was submitted even though the file was uploaded.,Academic,Online Portal,test
+G68,The parking lot gate pass machine rejects valid cards.,Other,Parking Lot,train
+G68,The card reader at the parking lot gate will not accept a current pass.,Other,Parking Lot,train
+G68,Valid parking passes are being declined by the lot entry machine.,Other,Parking Lot,train
+G69,The main library has no quiet study space available in the evening.,Other,Main Library,validation
+G69,All quiet study seats in the main library are taken after dinner.,Other,Main Library,validation
+G69,There is nowhere quiet to study in the main library at night.,Other,Main Library,validation
+G70,The student center lounge has no seating left during lunch.,Other,Student Center,validation
+G70,Every seat in the student center lounge is occupied at midday.,Other,Student Center,validation
+G70,The student center lounge is too full to find a place to sit at lunch.,Other,Student Center,validation
+G71,The cafeteria closes before the posted closing time.,Other,Cafeteria,test
+G71,The cafeteria doors are locked earlier than the schedule says.,Other,Cafeteria,test
+G71,The cafeteria stops serving before its advertised closing hour.,Other,Cafeteria,test
+G72,The sports hall booking system double-books the same court.,Other,Sports Hall,test
+G72,Two groups were assigned the same sports hall court at the same time.,Other,Sports Hall,test
+G72,The sports hall reservation system allows overlapping court bookings.,Other,Sports Hall,test

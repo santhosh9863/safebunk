@@ -1,0 +1,136 @@
+"""Reproduce a model's errors on its recorded holdout, with focused analysis."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+from pulse_ml.dataset import (
+    DatasetValidationError,
+    InsufficientDataError,
+    load_and_validate_dataset,
+    split_from_metadata,
+)
+from pulse_ml.model import CategoryPredictor, ModelError
+from pulse_ml.training import calculate_metrics, format_confusion_matrix
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_MODEL_DIR = PROJECT_ROOT / "artifacts" / "category-classifier" / "v0.1.0"
+FOCUS_PAIRS = {
+    ("Electrical", "Network / IT"),
+    ("Network / IT", "Electrical"),
+}
+
+
+def _resolve_dataset_path(metadata: dict[str, Any]) -> Path:
+    dataset_metadata = metadata.get("dataset")
+    if not isinstance(dataset_metadata, dict):
+        raise ValueError("model metadata has no dataset block")
+    relative = dataset_metadata.get("path")
+    if not isinstance(relative, str) or not relative:
+        raise ValueError("model metadata has no dataset path")
+
+    candidates = [
+        Path(relative),
+        PROJECT_ROOT / relative,
+        PROJECT_ROOT.parent / relative,
+        PROJECT_ROOT / "data" / Path(relative).name,
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError(f"dataset from metadata was not found: {relative}")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--model-dir", type=Path, default=DEFAULT_MODEL_DIR)
+    parser.add_argument("--dataset", type=Path, default=None)
+    parser.add_argument("--output", type=Path, default=None)
+    args = parser.parse_args()
+
+    try:
+        predictor = CategoryPredictor.from_directory(args.model_dir)
+        metadata = predictor.metadata
+        dataset_path = args.dataset or _resolve_dataset_path(metadata)
+        dataset = load_and_validate_dataset(dataset_path)
+        expected_hash = metadata["dataset"]["sha256"]
+        if dataset.sha256 != expected_hash:
+            raise ValueError(
+                "dataset SHA-256 does not match the artifact metadata; "
+                "retrain or use the original dataset"
+            )
+        split = split_from_metadata(dataset, metadata)
+    except (
+        ModelError,
+        DatasetValidationError,
+        InsufficientDataError,
+        KeyError,
+        OSError,
+        ValueError,
+    ) as exc:
+        print(f"Error analysis failed: {exc}", file=sys.stderr)
+        return 1
+
+    rows = [dataset.rows[index] for index in split.test_indices]
+    predictions = [predictor.predict(row.description) for row in rows]
+    y_true = [row.category for row in rows]
+    y_pred = [prediction.category for prediction in predictions]
+    metrics = calculate_metrics(y_true, y_pred)
+
+    errors = [
+        {
+            "row_number": row.row_number,
+            "actual": row.category,
+            "predicted": prediction.category,
+            "confidence": round(prediction.confidence, 6),
+            "decision": prediction.decision,
+            "description": row.description,
+        }
+        for row, prediction in zip(rows, predictions, strict=True)
+        if prediction.category != row.category
+    ]
+    focus_errors = [
+        error for error in errors if (error["actual"], error["predicted"]) in FOCUS_PAIRS
+    ]
+
+    print(f"Model version: {predictor.model_version}")
+    print(f"Dataset: {dataset_path} ({dataset.size} rows, SHA-256 verified)")
+    print(f"Holdout: {len(rows)} rows; method: {split.method}")
+    print(f"Accuracy: {metrics['accuracy']:.4f}")
+    print(f"Macro-F1: {metrics['macro_f1']:.4f}")
+    print(format_confusion_matrix(metrics))
+    print(f"Focus errors (Electrical <-> Network / IT): {len(focus_errors)}")
+    for error in focus_errors:
+        print(
+            f"  actual={error['actual']} predicted={error['predicted']} "
+            f"confidence={error['confidence']:.3f} :: {error['description']}"
+        )
+    print(f"All errors: {len(errors)}")
+
+    if args.output is not None:
+        payload = {
+            "model_version": predictor.model_version,
+            "dataset": {
+                "path": dataset_path.as_posix(),
+                "sha256": dataset.sha256,
+            },
+            "split_method": split.method,
+            "holdout_rows": len(rows),
+            "metrics": metrics,
+            "errors": errors,
+            "focus_errors": focus_errors,
+            "focus_pairs": [list(pair) for pair in sorted(FOCUS_PAIRS)],
+        }
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+        print(f"Report written to {args.output}")
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

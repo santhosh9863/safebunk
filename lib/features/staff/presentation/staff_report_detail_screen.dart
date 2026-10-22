@@ -11,6 +11,7 @@ import '../../notifications/application/notification_providers.dart'
 import '../../reports/data/models/report_model.dart';
 import '../../reports/domain/report_enums.dart';
 import '../../reports/presentation/report_format.dart';
+import '../../reports/presentation/widgets/duplicate_suggestions_card.dart';
 import '../../reports/presentation/widgets/report_history.dart';
 import '../../reports/presentation/widgets/report_image.dart';
 import '../../reports/presentation/widgets/report_status_chip.dart';
@@ -236,7 +237,7 @@ class _StaffReportDetailScreenState
   }
 }
 
-class _DetailBody extends StatelessWidget {
+class _DetailBody extends ConsumerWidget {
   final ReportModel report;
   final bool isAdmin;
   final bool busy;
@@ -260,7 +261,7 @@ class _DetailBody extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final status = report.statusEnum;
 
     return ListView(
@@ -336,6 +337,26 @@ class _DetailBody extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         _DetailsCard(report: report),
+        const SizedBox(height: 12),
+        DuplicateSuggestionsCard(
+          description:
+              'Optional ML check against reports you are allowed to see. '
+              'This is only a suggestion; status and assignment are unchanged.',
+          checkLabel: 'Check possible duplicates',
+          load: () {
+            final token = ref.read(authProvider).staffSession?.accessToken;
+            if (token == null || token.trim().isEmpty) {
+              throw const UnauthorizedException(
+                'Your staff session is missing. Sign in again.',
+              );
+            }
+            return ref
+                .read(pulseBackendServiceProvider)
+                .suggestStaffDuplicates(token, report.id);
+          },
+          onSessionExpired: () =>
+              unawaited(ref.read(authProvider.notifier).handleSessionExpired()),
+        ),
         if (report.resolutionNotes != null) ...[
           const SizedBox(height: 12),
           _SectionCard(

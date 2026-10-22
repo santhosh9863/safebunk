@@ -1,0 +1,21 @@
+{
+  "dataset_id": "pulse-synthetic-complaints-v1",
+  "synthetic": true,
+  "provenance": "Hand-written synthetic examples created for PULSE Phase 1 ML foundation. These are not real campus complaints.",
+  "label_source": "Synthetic category templates aligned with the eight categories in the existing Flutter report form.",
+  "human_verified": false,
+  "pii_review": "No names, student IDs, contact details, credentials, addresses, or other personal information are present.",
+  "intended_use": "Training and smoke-testing a baseline complaint-category classifier only.",
+  "collection_method": "Authored from common campus facility and academic support scenarios; no campus records were used.",
+  "categories": [
+    "Infrastructure",
+    "Electrical",
+    "Plumbing",
+    "Cleanliness",
+    "Safety",
+    "Network / IT",
+    "Academic",
+    "Other"
+  ],
+  "notes": "Do not describe this dataset or its metrics as production evidence. Future authorized real complaints require anonymization and human-verified labels."
+}

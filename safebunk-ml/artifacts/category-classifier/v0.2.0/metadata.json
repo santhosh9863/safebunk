@@ -1,0 +1,325 @@
+{
+  "schema_version": 1,
+  "model_version": "0.2.0",
+  "created_at": "2026-10-21T04:35:15.210191Z",
+  "environment": {
+    "python": "3.13.7",
+    "scikit_learn": "1.9.1",
+    "numpy": "2.5.4",
+    "joblib": "1.6.0"
+  },
+  "task": "complaint_category_classification",
+  "categories": [
+    "Infrastructure",
+    "Electrical",
+    "Plumbing",
+    "Cleanliness",
+    "Safety",
+    "Network / IT",
+    "Academic",
+    "Other"
+  ],
+  "confidence_threshold": 0.2,
+  "confidence_note": "Confidence is the maximum predict_proba score. It is not a calibrated probability; consumers must treat scores below the threshold as abstain. The default 0.20 threshold is an operational routing choice for eight classes, not a measure of certainty.",
+  "dataset": {
+    "path": "data/synthetic_complaints_v2.csv",
+    "sha256": "61c1b361f2bdb4713c04178268ee1d760678f23f22373dbe7398b032c620fbe8",
+    "rows": 224,
+    "category_counts": {
+      "Infrastructure": 24,
+      "Electrical": 40,
+      "Plumbing": 24,
+      "Cleanliness": 24,
+      "Safety": 24,
+      "Network / IT": 40,
+      "Academic": 24,
+      "Other": 24
+    },
+    "metadata": {
+      "dataset_id": "pulse-synthetic-complaints-v2",
+      "synthetic": true,
+      "provenance": "Phase 1 hand-written synthetic starter examples plus Phase 1.1 focused synthetic examples for ambiguous Electrical and Network / IT complaints. These are not real campus complaints.",
+      "parent_dataset": {
+        "dataset_id": "pulse-synthetic-complaints-v1",
+        "path": "data/synthetic_complaints.csv",
+        "sha256": "ae78cd491da998b60cf66d27cf2b309bcd6706619ff1a6dedf6d4df869b580d4",
+        "rows": 192,
+        "unchanged": true
+      },
+      "phase1_1_additions": {
+        "source_value": "phase1_1_synthetic",
+        "path": "data/phase1_1_additions.csv",
+        "rows": 32,
+        "categories": {
+          "Electrical": 16,
+          "Network / IT": 16
+        },
+        "focus": "Ambiguous electrical versus internet, network, and IT device failures.",
+        "synthetic": true,
+        "human_verified": false,
+        "derived_from_test_rows": false
+      },
+      "row_sources": {
+        "phase1_synthetic": 192,
+        "phase1_1_synthetic": 32
+      },
+      "synthetic_marking": "Every row has a source column. Both source values are synthetic; no real campus complaint text is present.",
+      "label_source": "Synthetic category labels aligned with the eight categories in the existing Flutter report form.",
+      "human_verified": false,
+      "pii_review": "No names, student IDs, contact details, credentials, addresses, or other personal information are present.",
+      "intended_use": "Focused synthetic error analysis and baseline regression testing only.",
+      "collection_method": "Hand-written from common campus facility, network, and IT support scenarios; no campus records or test examples were copied.",
+      "evaluation_protocol": "Train on all non-holdout v2 rows and evaluate on the untouched 48-row Phase 1 baseline holdout. Near-duplicate groups are checked for holdout leakage.",
+      "categories": [
+        "Infrastructure",
+        "Electrical",
+        "Plumbing",
+        "Cleanliness",
+        "Safety",
+        "Network / IT",
+        "Academic",
+        "Other"
+      ],
+      "notes": "Do not describe this dataset or its metrics as production evidence. The additions deliberately over-sample the two confused categories and make the dataset intentionally non-uniform."
+    }
+  },
+  "training": {
+    "pipeline": "tfidf_word_1_2 + logistic_regression",
+    "vectorizer": {
+      "analyzer": "word",
+      "ngram_range": [
+        1,
+        2
+      ],
+      "max_df": 0.95,
+      "sublinear_tf": true
+    },
+    "classifier": {
+      "class_weight": "balanced",
+      "max_iter": 2000,
+      "solver": "lbfgs"
+    },
+    "random_state": 42
+  },
+  "split": {
+    "method": "fixed holdout",
+    "test_fraction": 0.214286,
+    "requested_test_fraction": 0.25,
+    "random_state": 42,
+    "n_groups": 224,
+    "train_rows": 176,
+    "test_rows": 48,
+    "leakage_guard": "Exact duplicates are rejected; near-identical rows are grouped by TF-IDF cosine similarity before the split.",
+    "holdout_row_numbers": [
+      7,
+      12,
+      15,
+      17,
+      20,
+      25,
+      28,
+      33,
+      42,
+      44,
+      45,
+      47,
+      56,
+      60,
+      61,
+      64,
+      68,
+      71,
+      77,
+      79,
+      80,
+      92,
+      94,
+      95,
+      101,
+      104,
+      106,
+      109,
+      111,
+      117,
+      125,
+      126,
+      127,
+      129,
+      138,
+      145,
+      146,
+      151,
+      157,
+      161,
+      164,
+      167,
+      175,
+      179,
+      184,
+      185,
+      189,
+      191
+    ],
+    "holdout_description": "Untouched 48-row Phase 1 baseline test set reconstructed with fraction=0.25, random_state=42. All Phase 1.1 additions are in training."
+  },
+  "evaluation_protocol": "fixed_holdout",
+  "evaluation": {
+    "accuracy": 0.75,
+    "macro_f1": 0.753584,
+    "macro_precision": 0.789484,
+    "macro_recall": 0.75,
+    "per_class": {
+      "Infrastructure": {
+        "precision": 0.444444,
+        "recall": 0.666667,
+        "f1": 0.533333,
+        "support": 6
+      },
+      "Electrical": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.666667,
+        "support": 6
+      },
+      "Plumbing": {
+        "precision": 0.857143,
+        "recall": 1.0,
+        "f1": 0.923077,
+        "support": 6
+      },
+      "Cleanliness": {
+        "precision": 0.8,
+        "recall": 0.666667,
+        "f1": 0.727273,
+        "support": 6
+      },
+      "Safety": {
+        "precision": 0.666667,
+        "recall": 0.666667,
+        "f1": 0.666667,
+        "support": 6
+      },
+      "Network / IT": {
+        "precision": 0.714286,
+        "recall": 0.833333,
+        "f1": 0.769231,
+        "support": 6
+      },
+      "Academic": {
+        "precision": 1.0,
+        "recall": 0.833333,
+        "f1": 0.909091,
+        "support": 6
+      },
+      "Other": {
+        "precision": 0.833333,
+        "recall": 0.833333,
+        "f1": 0.833333,
+        "support": 6
+      }
+    },
+    "confusion_matrix": [
+      [
+        4,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        3,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        4,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        0,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        5,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        5
+      ]
+    ],
+    "confusion_matrix_labels": [
+      "Infrastructure",
+      "Electrical",
+      "Plumbing",
+      "Cleanliness",
+      "Safety",
+      "Network / IT",
+      "Academic",
+      "Other"
+    ],
+    "support": 48
+  },
+  "limitations": [
+    "This artifact is trained on a small, hand-written synthetic dataset.",
+    "The examples are not real campus complaints and the labels are not human-verified.",
+    "Phase 1.1 additions, where present, were guided by error review; the fixed holdout is a targeted synthetic regression benchmark, not a clean generalization test.",
+    "Metrics describe this synthetic holdout split only and are not production evidence.",
+    "The model accepts only the description text and does not use identity or role data.",
+    "Confidence scores are uncalibrated and must not be shown as certainty.",
+    "Low-confidence results require manual review or retention of the existing category.",
+    "No priority prediction, duplicate detection, chatbot, or automatic report mutation is included."
+  ]
+}

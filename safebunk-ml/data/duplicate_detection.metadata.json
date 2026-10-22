@@ -1,0 +1,98 @@
+{
+  "dataset_version": "duplicate-detection-v0.1.0",
+  "human_verified": false,
+  "label_source": "Synthetic issue-group labels authored for this benchmark; not human-verified.",
+  "pairs": {
+    "construction": "Every unordered pair of complaints within the same split is included. No negative sampling or model-score-based selection is used.",
+    "difficulty_definition": "Positives are 'duplicate'. Negatives are 'hard_negative' when they share category or location, or have token Jaccard >= 0.30; 'medium_negative' when they share neither but Jaccard >= 0.15; otherwise 'easy_negative'.",
+    "label_definition": "label=1 when both complaints belong to the same underlying issue group; label=0 otherwise.",
+    "path": "data/duplicate_detection_pairs.csv",
+    "rows": 2256,
+    "sha256": "eddeb6a1562f557e8e5deab8ab6a97607e4931adc87f007dfb92e6b6a95fe15a"
+  },
+  "pii_review": "No real complaints, personal names, student IDs, contact details, or addresses.",
+  "purpose": "Read-only evaluation of TF-IDF cosine duplicate suggestions. Not a production-readiness claim.",
+  "reproduction": {
+    "command": "python scripts/build_duplicate_dataset.py",
+    "deterministic": true
+  },
+  "source": {
+    "categories": [
+      "Academic",
+      "Cleanliness",
+      "Electrical",
+      "Infrastructure",
+      "Network / IT",
+      "Other",
+      "Plumbing",
+      "Safety"
+    ],
+    "groups": 32,
+    "path": "data/duplicate_detection_complaints.csv",
+    "rows": 96,
+    "sha256": "10450a547d3e1d491eacd02e5a01a2774f666e46b830b05809a5e2f9791114bc",
+    "variants_per_group": [
+      3
+    ]
+  },
+  "split": {
+    "group_overlap": [],
+    "group_purity": true,
+    "pair_summary": {
+      "test": {
+        "difficulty": {
+          "duplicate": 48,
+          "easy_negative": 647,
+          "hard_negative": 432,
+          "medium_negative": 1
+        },
+        "negative": 1080,
+        "pairs": 1128,
+        "positive": 48
+      },
+      "train": {
+        "difficulty": {
+          "duplicate": 48,
+          "easy_negative": 935,
+          "hard_negative": 144,
+          "medium_negative": 1
+        },
+        "negative": 1080,
+        "pairs": 1128,
+        "positive": 48
+      }
+    },
+    "strategy": "By issue group; a group's variants appear in exactly one split.",
+    "summary": {
+      "test": {
+        "categories": [
+          "Academic",
+          "Cleanliness",
+          "Electrical",
+          "Infrastructure",
+          "Network / IT",
+          "Other",
+          "Plumbing",
+          "Safety"
+        ],
+        "complaints": 48,
+        "groups": 16
+      },
+      "train": {
+        "categories": [
+          "Academic",
+          "Cleanliness",
+          "Electrical",
+          "Infrastructure",
+          "Network / IT",
+          "Other",
+          "Plumbing",
+          "Safety"
+        ],
+        "complaints": 48,
+        "groups": 16
+      }
+    }
+  },
+  "synthetic": true
+}

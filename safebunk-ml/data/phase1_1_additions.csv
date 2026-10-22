@@ -1,0 +1,33 @@
+description,category,source
+The ceiling fan in the computer lab sparks and stops spinning while the desktop computers stay online.,Electrical,phase1_1_synthetic
+The wall outlet that powers the projector is loose and the plug falls out.,Electrical,phase1_1_synthetic
+The power strip behind the server rack is hot to the touch and smells burnt.,Electrical,phase1_1_synthetic
+The distribution board that controls the library lights is buzzing loudly.,Electrical,phase1_1_synthetic
+The breaker for the computer lab shuts off whenever the laser printer starts.,Electrical,phase1_1_synthetic
+The battery backup for the network room light is not charging.,Electrical,phase1_1_synthetic
+The ceiling fan in the examination hall slows down and makes a grinding noise.,Electrical,phase1_1_synthetic
+The wall socket beside the office printer sparks when a plug is inserted.,Electrical,phase1_1_synthetic
+The battery backup in the server room beeps continuously and does not hold a charge.,Electrical,phase1_1_synthetic
+The extension cord supplying the classroom projector overheats and the casing is melting.,Electrical,phase1_1_synthetic
+The lights in the computer lab flicker whenever the air conditioner starts.,Electrical,phase1_1_synthetic
+The backup generator for the server room fails to start during an outage.,Electrical,phase1_1_synthetic
+The electrical panel near the IT office is warm and buzzing.,Electrical,phase1_1_synthetic
+The wall switch in the library is broken and the reading room lights stay off.,Electrical,phase1_1_synthetic
+The power outlet behind the water cooler is cracked and loose.,Electrical,phase1_1_synthetic
+The ceiling light above the office printer flickers and then goes out.,Electrical,phase1_1_synthetic
+The projector in the classroom has power but cannot connect to the campus network.,Network / IT,phase1_1_synthetic
+The library printer appears online but every print job fails with a network timeout.,Network / IT,phase1_1_synthetic
+The biometric attendance device at the hostel entrance is powered but cannot sync records.,Network / IT,phase1_1_synthetic
+Students can reach the campus Wi-Fi but the authentication page times out.,Network / IT,phase1_1_synthetic
+The Wi-Fi access point in the library is powered but clients cannot connect.,Network / IT,phase1_1_synthetic
+The network switch in the computer lab is powered but all connected desktops have lost connectivity.,Network / IT,phase1_1_synthetic
+The internet is down in the hostel but the lights and sockets are working normally.,Network / IT,phase1_1_synthetic
+The office desktop is powered on but has no network connection.,Network / IT,phase1_1_synthetic
+The network cable in the classroom is damaged and the projector cannot reach the internet.,Network / IT,phase1_1_synthetic
+The printer is plugged into a working socket but cannot connect to the print server.,Network / IT,phase1_1_synthetic
+The campus email service rejects every login with a server error.,Network / IT,phase1_1_synthetic
+The firewall is blocking access to the campus email service.,Network / IT,phase1_1_synthetic
+The attendance scanner has power but cannot upload records to the server.,Network / IT,phase1_1_synthetic
+The smart classroom display turns on but cannot load the network lesson portal.,Network / IT,phase1_1_synthetic
+The LAN port in the library is active but the network login fails.,Network / IT,phase1_1_synthetic
+The conference room camera is powered but the video call cannot connect to the meeting server.,Network / IT,phase1_1_synthetic

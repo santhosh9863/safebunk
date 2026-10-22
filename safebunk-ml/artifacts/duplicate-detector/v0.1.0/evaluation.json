@@ -1,0 +1,348 @@
+{
+  "artifacts": {
+    "complaints": {
+      "path": "data/duplicate_detection_complaints.csv",
+      "sha256": "10450a547d3e1d491eacd02e5a01a2774f666e46b830b05809a5e2f9791114bc"
+    },
+    "pairs": {
+      "path": "data/duplicate_detection_pairs.csv",
+      "sha256": "eddeb6a1562f557e8e5deab8ab6a97607e4931adc87f007dfb92e6b6a95fe15a"
+    }
+  },
+  "dataset": {
+    "categories": [
+      "Academic",
+      "Cleanliness",
+      "Electrical",
+      "Infrastructure",
+      "Network / IT",
+      "Other",
+      "Plumbing",
+      "Safety"
+    ],
+    "complaints": 96,
+    "groups": 32,
+    "splits": {
+      "test": {
+        "complaints": 48,
+        "groups": 16,
+        "negative_pairs": 1080,
+        "pairs": 1128,
+        "positive_pairs": 48
+      },
+      "train": {
+        "complaints": 48,
+        "groups": 16,
+        "negative_pairs": 1080,
+        "pairs": 1128,
+        "positive_pairs": 48
+      }
+    }
+  },
+  "dataset_version": "duplicate-detection-v0.1.0",
+  "difficulty_counts": {
+    "test": {
+      "duplicate": 48,
+      "easy_negative": 647,
+      "hard_negative": 432,
+      "medium_negative": 1
+    },
+    "train": {
+      "duplicate": 48,
+      "easy_negative": 935,
+      "hard_negative": 144,
+      "medium_negative": 1
+    }
+  },
+  "limitations": [
+    "All 96 complaints and their pair labels are synthetic.",
+    "The test set has 48 positive and 1,080 negative pairs from 16 issue groups.",
+    "The primary test vectorizer sees test complaint text without labels. It is not a strict unseen-corpus estimate; the train-vocabulary stress test is reported separately.",
+    "The detector is a lexical TF-IDF baseline and does not understand synonyms or context beyond character and word overlap.",
+    "The API fits TF-IDF on each request's supplied complaint corpus, so live scores may differ from both offline protocols.",
+    "Similarity scores are not probabilities and are not calibrated.",
+    "No production-readiness claim is supported by these synthetic results."
+  ],
+  "production_ready": false,
+  "protocol": {
+    "pair_unit": "One unordered pair of complaint descriptions.",
+    "score_semantics": "Similarity score, not a probability.",
+    "similarity": "TF-IDF word 1-2 grams + character 3-5 grams, combined with FeatureUnion, then cosine similarity.",
+    "split": "Issue groups are assigned wholly to train or test. Every variant of a group appears in exactly one split.",
+    "test_usage": "The test split is not used to select the threshold. Test complaint text is used unsupervised in the primary corpus-fitted vectorizer; the group split prevents issue variants from crossing train and test. The audit grid is reported for sensitivity only.",
+    "threshold_selection": "Train split only: maximize F1 subject to false-positive rate <= 0.10 over the fixed grid [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8].",
+    "uncertain_band": "Uncertain threshold = duplicate threshold - 0.10; it is an operating band, not a calibrated probability.",
+    "vectorizer_fit": "Threshold selection fits TF-IDF on train complaints only. Primary test scoring fits a separate vectorizer on the test complaint corpus to mirror the request-local API; no labels are used. The train-only vocabulary is also applied to test text as an unseen-vocabulary stress test."
+  },
+  "score_distributions": {
+    "test_negative": {
+      "count": 1080,
+      "max": 0.393,
+      "mean": 0.0476,
+      "median": 0.0245,
+      "min": 0.0025
+    },
+    "test_positive": {
+      "count": 48,
+      "max": 0.5322,
+      "mean": 0.2848,
+      "median": 0.2743,
+      "min": 0.0658
+    },
+    "train_negative": {
+      "count": 1080,
+      "max": 0.3,
+      "mean": 0.0358,
+      "median": 0.0171,
+      "min": 0.0
+    },
+    "train_positive": {
+      "count": 48,
+      "max": 0.5249,
+      "mean": 0.2824,
+      "median": 0.2676,
+      "min": 0.0656
+    }
+  },
+  "synthetic": true,
+  "test_results_at_selected_threshold": {
+    "actual_negative": 1080,
+    "actual_positive": 48,
+    "confusion_matrix": {
+      "false_negative": 13,
+      "false_positive": 33,
+      "true_negative": 1047,
+      "true_positive": 35
+    },
+    "evaluation_mode": "test_corpus_fitted",
+    "f1": 0.6034,
+    "false_negative": 13,
+    "false_positive": 33,
+    "false_positive_rate": 0.0306,
+    "hard_negatives": {
+      "false_positive_rate": 0.0764,
+      "false_positives": 33,
+      "pairs": 432
+    },
+    "precision": 0.5147,
+    "predicted_positive": 68,
+    "recall": 0.7292,
+    "threshold": 0.2,
+    "true_negative": 1047,
+    "true_positive": 35,
+    "uncertain_band": {
+      "negative_uncertain_rate": 0.0602,
+      "positive_uncertain_rate": 0.2083
+    },
+    "uncertain_threshold": 0.1
+  },
+  "test_sensitivity_audit": [
+    {
+      "actual_negative": 1080,
+      "actual_positive": 48,
+      "confusion_matrix": {
+        "false_negative": 13,
+        "false_positive": 33,
+        "true_negative": 1047,
+        "true_positive": 35
+      },
+      "f1": 0.6034,
+      "false_negative": 13,
+      "false_positive": 33,
+      "false_positive_rate": 0.0306,
+      "precision": 0.5147,
+      "predicted_positive": 68,
+      "recall": 0.7292,
+      "threshold": 0.2,
+      "true_negative": 1047,
+      "true_positive": 35
+    },
+    {
+      "actual_negative": 1080,
+      "actual_positive": 48,
+      "confusion_matrix": {
+        "false_negative": 20,
+        "false_positive": 9,
+        "true_negative": 1071,
+        "true_positive": 28
+      },
+      "f1": 0.6588,
+      "false_negative": 20,
+      "false_positive": 9,
+      "false_positive_rate": 0.0083,
+      "precision": 0.7568,
+      "predicted_positive": 37,
+      "recall": 0.5833,
+      "threshold": 0.25,
+      "true_negative": 1071,
+      "true_positive": 28
+    },
+    {
+      "actual_negative": 1080,
+      "actual_positive": 48,
+      "confusion_matrix": {
+        "false_negative": 36,
+        "false_positive": 3,
+        "true_negative": 1077,
+        "true_positive": 12
+      },
+      "f1": 0.381,
+      "false_negative": 36,
+      "false_positive": 3,
+      "false_positive_rate": 0.0028,
+      "precision": 0.8,
+      "predicted_positive": 15,
+      "recall": 0.25,
+      "threshold": 0.35,
+      "true_negative": 1077,
+      "true_positive": 12
+    },
+    {
+      "actual_negative": 1080,
+      "actual_positive": 48,
+      "confusion_matrix": {
+        "false_negative": 42,
+        "false_positive": 0,
+        "true_negative": 1080,
+        "true_positive": 6
+      },
+      "f1": 0.2222,
+      "false_negative": 42,
+      "false_positive": 0,
+      "false_positive_rate": 0.0,
+      "precision": 1.0,
+      "predicted_positive": 6,
+      "recall": 0.125,
+      "threshold": 0.45,
+      "true_negative": 1080,
+      "true_positive": 6
+    },
+    {
+      "actual_negative": 1080,
+      "actual_positive": 48,
+      "confusion_matrix": {
+        "false_negative": 48,
+        "false_positive": 0,
+        "true_negative": 1080,
+        "true_positive": 0
+      },
+      "f1": 0.0,
+      "false_negative": 48,
+      "false_positive": 0,
+      "false_positive_rate": 0.0,
+      "precision": 0.0,
+      "predicted_positive": 0,
+      "recall": 0.0,
+      "threshold": 0.55,
+      "true_negative": 1080,
+      "true_positive": 0
+    },
+    {
+      "actual_negative": 1080,
+      "actual_positive": 48,
+      "confusion_matrix": {
+        "false_negative": 48,
+        "false_positive": 0,
+        "true_negative": 1080,
+        "true_positive": 0
+      },
+      "f1": 0.0,
+      "false_negative": 48,
+      "false_positive": 0,
+      "false_positive_rate": 0.0,
+      "precision": 0.0,
+      "predicted_positive": 0,
+      "recall": 0.0,
+      "threshold": 0.65,
+      "true_negative": 1080,
+      "true_positive": 0
+    },
+    {
+      "actual_negative": 1080,
+      "actual_positive": 48,
+      "confusion_matrix": {
+        "false_negative": 48,
+        "false_positive": 0,
+        "true_negative": 1080,
+        "true_positive": 0
+      },
+      "f1": 0.0,
+      "false_negative": 48,
+      "false_positive": 0,
+      "false_positive_rate": 0.0,
+      "precision": 0.0,
+      "predicted_positive": 0,
+      "recall": 0.0,
+      "threshold": 0.75,
+      "true_negative": 1080,
+      "true_positive": 0
+    }
+  ],
+  "test_stress_unseen_vocabulary": {
+    "actual_negative": 1080,
+    "actual_positive": 48,
+    "confusion_matrix": {
+      "false_negative": 4,
+      "false_positive": 242,
+      "true_negative": 838,
+      "true_positive": 44
+    },
+    "evaluation_mode": "train_vocabulary_only",
+    "f1": 0.2635,
+    "false_negative": 4,
+    "false_positive": 242,
+    "false_positive_rate": 0.2241,
+    "hard_negatives": {
+      "false_positive_rate": 0.5278,
+      "false_positives": 228,
+      "pairs": 432
+    },
+    "note": "This deliberately reuses the train vocabulary on unseen test text. It is a vocabulary-shift stress test, not the request-local operating mode.",
+    "precision": 0.1538,
+    "predicted_positive": 286,
+    "recall": 0.9167,
+    "threshold": 0.2,
+    "true_negative": 838,
+    "true_positive": 44
+  },
+  "threshold_selection": {
+    "grid": [
+      0.2,
+      0.25,
+      0.3,
+      0.35,
+      0.4,
+      0.45,
+      0.5,
+      0.55,
+      0.6,
+      0.65,
+      0.7,
+      0.75,
+      0.8
+    ],
+    "max_false_positive_rate": 0.1,
+    "selected": {
+      "actual_negative": 1080,
+      "actual_positive": 48,
+      "confusion_matrix": {
+        "false_negative": 11,
+        "false_positive": 12,
+        "true_negative": 1068,
+        "true_positive": 37
+      },
+      "f1": 0.7629,
+      "false_negative": 11,
+      "false_positive": 12,
+      "false_positive_rate": 0.0111,
+      "precision": 0.7551,
+      "predicted_positive": 49,
+      "recall": 0.7708,
+      "threshold": 0.2,
+      "true_negative": 1068,
+      "true_positive": 37
+    },
+    "split": "train",
+    "uncertain_threshold": 0.1
+  }
+}

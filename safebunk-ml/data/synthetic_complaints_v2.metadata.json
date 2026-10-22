@@ -1,0 +1,47 @@
+{
+  "dataset_id": "pulse-synthetic-complaints-v2",
+  "synthetic": true,
+  "provenance": "Phase 1 hand-written synthetic starter examples plus Phase 1.1 focused synthetic examples for ambiguous Electrical and Network / IT complaints. These are not real campus complaints.",
+  "parent_dataset": {
+    "dataset_id": "pulse-synthetic-complaints-v1",
+    "path": "data/synthetic_complaints.csv",
+    "sha256": "ae78cd491da998b60cf66d27cf2b309bcd6706619ff1a6dedf6d4df869b580d4",
+    "rows": 192,
+    "unchanged": true
+  },
+  "phase1_1_additions": {
+    "source_value": "phase1_1_synthetic",
+    "path": "data/phase1_1_additions.csv",
+    "rows": 32,
+    "categories": {
+      "Electrical": 16,
+      "Network / IT": 16
+    },
+    "focus": "Ambiguous electrical versus internet, network, and IT device failures.",
+    "synthetic": true,
+    "human_verified": false,
+    "derived_from_test_rows": false
+  },
+  "row_sources": {
+    "phase1_synthetic": 192,
+    "phase1_1_synthetic": 32
+  },
+  "synthetic_marking": "Every row has a source column. Both source values are synthetic; no real campus complaint text is present.",
+  "label_source": "Synthetic category labels aligned with the eight categories in the existing Flutter report form.",
+  "human_verified": false,
+  "pii_review": "No names, student IDs, contact details, credentials, addresses, or other personal information are present.",
+  "intended_use": "Focused synthetic error analysis and baseline regression testing only.",
+  "collection_method": "Hand-written from common campus facility, network, and IT support scenarios; no campus records or test examples were copied.",
+  "evaluation_protocol": "Train on all non-holdout v2 rows and evaluate on the untouched 48-row Phase 1 baseline holdout. Near-duplicate groups are checked for holdout leakage.",
+  "categories": [
+    "Infrastructure",
+    "Electrical",
+    "Plumbing",
+    "Cleanliness",
+    "Safety",
+    "Network / IT",
+    "Academic",
+    "Other"
+  ],
+  "notes": "Do not describe this dataset or its metrics as production evidence. The additions deliberately over-sample the two confused categories and make the dataset intentionally non-uniform."
+}

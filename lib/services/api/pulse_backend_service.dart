@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/errors/app_exceptions.dart';
+import '../../features/reports/data/models/ml_suggestion.dart';
 import '../../features/reports/data/models/report_attachment.dart';
 import '../../features/reports/data/models/report_model.dart';
 import '../../models/auth/staff_account.dart';
@@ -231,10 +232,7 @@ class PulseBackendService {
     return _staffAuthed<ReportModel>(token, (staffToken) async {
       final response = await _dio.post<dynamic>(
         '/api/staff/reports/$reportId/assign',
-        data: {
-          'staffId': staffId,
-          'department': ?department,
-        },
+        data: {'staffId': staffId, 'department': ?department},
         options: _authOptions(staffToken),
       );
       return _parseStaffReport(response.data);
@@ -531,6 +529,118 @@ class PulseBackendService {
       }
       return ReportModel.fromJson(Map<String, dynamic>.from(data));
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // ML suggestions (optional, suggestion-only)
+  //
+  // These calls use the same authenticated backend session. The internal ML
+  // service URL/token live in NestJS environment variables and are never sent
+  // to Flutter. A configured-but-unavailable ML service returns a normal 200
+  // response with `available: false`.
+  // ---------------------------------------------------------------------------
+
+  /// `POST /api/ml/category-suggestion` — suggestion only.
+  Future<CategorySuggestion> suggestCategory(String description) {
+    return _authed<CategorySuggestion>((token) async {
+      final response = await _dio.post<dynamic>(
+        '/api/ml/category-suggestion',
+        data: {'description': description.trim()},
+        options: _authOptions(token),
+      );
+      return _parseCategorySuggestion(response.data);
+    });
+  }
+
+  /// `POST /api/ml/duplicate-suggestions/preview` — checks an unsaved draft
+  /// against the student's earlier reports. It never creates or changes one.
+  Future<DuplicateSuggestion> suggestDraftDuplicates({
+    required String description,
+    String? category,
+    String? location,
+    int maxCandidates = 5,
+  }) {
+    return _authed<DuplicateSuggestion>((token) async {
+      final response = await _dio.post<dynamic>(
+        '/api/ml/duplicate-suggestions/preview',
+        data: {
+          'description': description.trim(),
+          if (category != null && category.trim().isNotEmpty)
+            'category': category.trim(),
+          if (location != null && location.trim().isNotEmpty)
+            'location': location.trim(),
+          'maxCandidates': maxCandidates,
+        },
+        options: _authOptions(token),
+      );
+      return _parseDuplicateSuggestion(response.data);
+    });
+  }
+
+  /// `POST /api/ml/duplicate-suggestions/:reportId` — student-owned report.
+  Future<DuplicateSuggestion> suggestDuplicates(
+    String reportId, {
+    int maxCandidates = 5,
+  }) {
+    return _authed<DuplicateSuggestion>((token) async {
+      final response = await _dio.post<dynamic>(
+        '/api/ml/duplicate-suggestions/$reportId',
+        data: {'maxCandidates': maxCandidates},
+        options: _authOptions(token),
+      );
+      return _parseDuplicateSuggestion(response.data);
+    });
+  }
+
+  /// `POST /api/staff/ml/duplicate-suggestions/:reportId`.
+  ///
+  /// Authorization remains server-side. STAFF can only ask about assigned
+  /// reports; ADMIN can ask about any report.
+  Future<DuplicateSuggestion> suggestStaffDuplicates(
+    String token,
+    String reportId, {
+    int maxCandidates = 5,
+  }) {
+    return _staffAuthed<DuplicateSuggestion>(token, (staffToken) async {
+      final response = await _dio.post<dynamic>(
+        '/api/staff/ml/duplicate-suggestions/$reportId',
+        data: {'maxCandidates': maxCandidates},
+        options: _authOptions(staffToken),
+      );
+      return _parseDuplicateSuggestion(response.data);
+    });
+  }
+
+  CategorySuggestion _parseCategorySuggestion(dynamic body) {
+    final data = _unwrap(body);
+    if (data is! Map) {
+      throw const BadResponseException(
+        'Unexpected ML category suggestion response',
+      );
+    }
+    try {
+      return CategorySuggestion.fromJson(Map<String, dynamic>.from(data));
+    } on FormatException {
+      throw const BadResponseException(
+        'Unexpected ML category suggestion response',
+      );
+    }
+  }
+
+  DuplicateSuggestion _parseDuplicateSuggestion(dynamic body) {
+    final data = _unwrap(body);
+    if (data is! Map) {
+      throw const BadResponseException(
+        'Unexpected duplicate suggestion response',
+      );
+    }
+    try {
+      return DuplicateSuggestion.fromJson(Map<String, dynamic>.from(data));
+    } on FormatException {
+      throw const BadResponseException(
+        'Unexpected duplicate suggestion response',
+      );
+    }
   }
 
   /// `POST /api/reports/attachments` — upload a photo (multipart) for the
