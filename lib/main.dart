@@ -14,6 +14,7 @@ import 'core/storage/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/settings/providers/settings_providers.dart';
 import 'features/notifications/application/fcm_setup.dart';
+import 'features/reports/application/reports_realtime_providers.dart';
 import 'providers/auth_provider.dart';
 import 'providers/update_provider.dart';
 import 'services/analytics_service.dart';
@@ -114,6 +115,11 @@ class _SafeBunkAppState extends ConsumerState<SafeBunkApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Keep one real-time connection alive for the authenticated identity.
+    // The coordinator disconnects on logout/account changes and resyncs REST
+    // data after every connect or reconnect.
+    ref.watch(reportsRealtimeCoordinatorProvider);
+
     ref.listen(updateProvider, (previous, next) {
       if (next.status == UpdateStatus.updateAvailable &&
           next.info != null &&

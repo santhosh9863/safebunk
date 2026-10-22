@@ -53,6 +53,9 @@ class PulseBackendService {
 
   bool get isEnabled => _config.isEnabled;
 
+  /// Normalized backend origin, or null when the build is not configured.
+  String? get baseUrl => _config.baseUrl;
+
   /// Actionable configuration problem, or null when the URL is valid.
   String? get configurationError => _config.error;
 
@@ -60,6 +63,17 @@ class PulseBackendService {
     if (!isEnabled) return false;
     final token = await _storage.read(key: _tokenKey);
     return token != null && token.isNotEmpty;
+  }
+
+  /// The persisted student Bearer token, if one exists.
+  ///
+  /// Staff/admin sessions deliberately keep their token in the app's persisted
+  /// staff session instead, so callers choose the token that matches the
+  /// authenticated identity.
+  Future<String?> readAccessToken() async {
+    if (!isEnabled) return null;
+    final token = await _storage.read(key: _tokenKey);
+    return token == null || token.isEmpty ? null : token;
   }
 
   /// Authenticate against the backend so it has a live Linways session for
@@ -700,9 +714,8 @@ class PulseBackendService {
 
   /// Bearer headers needed to fetch an authenticated attachment image.
   Future<Map<String, String>?> imageAuthHeaders() async {
-    if (!isEnabled) return null;
-    final token = await _storage.read(key: _tokenKey);
-    if (token == null || token.isEmpty) return null;
+    final token = await readAccessToken();
+    if (token == null) return null;
     return {'Authorization': 'Bearer $token'};
   }
 

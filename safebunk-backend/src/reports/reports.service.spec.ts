@@ -91,13 +91,19 @@ const baseDto = (over: Partial<CreateReportDto> = {}): CreateReportDto => ({
 
 describe('ReportsService', () => {
   let prisma: FakePrisma;
+  let realtime: { publishReportChanged: jest.Mock };
   let service: ReportsService;
 
   beforeEach(() => {
     prisma = new FakePrisma();
-    service = new ReportsService(prisma as any, {
-      claimForReport: jest.fn(async () => true),
-    } as any);
+    realtime = { publishReportChanged: jest.fn() };
+    service = new ReportsService(
+      prisma as any,
+      {
+        claimForReport: jest.fn(async () => true),
+      } as any,
+      realtime as any,
+    );
   });
 
   describe('createReport', () => {
@@ -112,6 +118,13 @@ describe('ReportsService', () => {
       expect(report.priority).toBe('MEDIUM');
       expect(report.resolvedAt).toBeNull();
       expect(report.assignedDepartment).toBeNull();
+      expect(realtime.publishReportChanged).toHaveBeenCalledWith({
+        reportId: report.id,
+        code: report.code,
+        status: 'SUBMITTED',
+        change: 'created',
+        studentId: '4301',
+      });
     });
 
     it('leaves every AI field null (no ML in Phase 1)', async () => {

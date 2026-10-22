@@ -224,6 +224,7 @@ const baseDto = (over: Partial<CreateReportDto> = {}): CreateReportDto => ({
 describe('ReportsService issue handling workflow', () => {
   let prisma: FakePrisma;
   let attachments: { claimForReport: jest.Mock; downloadForReport: jest.Mock };
+  let realtime: { publishReportChanged: jest.Mock };
   let service: ReportsService;
 
   beforeEach(() => {
@@ -235,7 +236,12 @@ describe('ReportsService issue handling workflow', () => {
         contentType: 'image/png',
       })),
     };
-    service = new ReportsService(prisma as any, attachments as any);
+    realtime = { publishReportChanged: jest.fn() };
+    service = new ReportsService(
+      prisma as any,
+      attachments as any,
+      realtime as any,
+    );
   });
 
   const createReport = async (studentId = '4301') =>
@@ -260,10 +266,20 @@ describe('ReportsService issue handling workflow', () => {
       actorRole: 'ADMIN',
       remark: 'Maintenance',
     });
+    expect(realtime.publishReportChanged).toHaveBeenCalledWith({
+      reportId: id,
+      code: detail.code,
+      status: 'ASSIGNED',
+      change: 'assigned',
+      studentId: '4301',
+      assignedStaffId: STAFF_A.staffId,
+      previousAssignedStaffId: null,
+    });
   });
 
   it('refuses inactive, admin, or unknown assignees', async () => {
     const id = await createReport();
+    realtime.publishReportChanged.mockClear();
 
     await expect(
       service.assignReport(ADMIN, id, { staffId: 'staff_inactive' }),
@@ -274,6 +290,7 @@ describe('ReportsService issue handling workflow', () => {
     await expect(
       service.assignReport(ADMIN, id, { staffId: 'missing' }),
     ).rejects.toThrow(BadRequestException);
+    expect(realtime.publishReportChanged).not.toHaveBeenCalled();
   });
 
   it('reassigns an in-progress report without regressing its status', async () => {
@@ -293,6 +310,15 @@ describe('ReportsService issue handling workflow', () => {
       'IN_PROGRESS',
       'REASSIGNED',
     ]);
+    expect(realtime.publishReportChanged).toHaveBeenLastCalledWith({
+      reportId: id,
+      code: detail.code,
+      status: 'IN_PROGRESS',
+      change: 'reassigned',
+      studentId: '4301',
+      assignedStaffId: STAFF_B.staffId,
+      previousAssignedStaffId: STAFF_A.staffId,
+    });
   });
 
   it('rejects assignment from a non-admin actor', async () => {
@@ -320,6 +346,14 @@ describe('ReportsService issue handling workflow', () => {
       'ASSIGNED',
       'IN_PROGRESS',
     ]);
+    expect(realtime.publishReportChanged).toHaveBeenLastCalledWith({
+      reportId: id,
+      code: accepted.code,
+      status: 'IN_PROGRESS',
+      change: 'accepted',
+      studentId: '4301',
+      assignedStaffId: STAFF_A.staffId,
+    });
 
     await expect(
       service.acceptReport(STAFF_A as any, id),
@@ -341,6 +375,15 @@ describe('ReportsService issue handling workflow', () => {
       type: 'PROGRESS_NOTE',
       actorRole: 'STAFF',
       remark: 'Parts ordered; repair scheduled.',
+    });
+    expect(realtime.publishReportChanged).toHaveBeenLastCalledWith({
+      reportId: id,
+      code: noted.code,
+      status: 'ASSIGNED',
+      change: 'progress',
+      studentId: '4301',
+      assignedStaffId: STAFF_A.staffId,
+      notifyStudent: false,
     });
 
     await expect(
@@ -378,6 +421,14 @@ describe('ReportsService issue handling workflow', () => {
       actorRole: 'STAFF',
       remark: 'Replaced the faulty valve and verified no leakage.',
     });
+    expect(realtime.publishReportChanged).toHaveBeenLastCalledWith({
+      reportId: id,
+      code: resolved.code,
+      status: 'RESOLVED',
+      change: 'resolved',
+      studentId: '4301',
+      assignedStaffId: STAFF_A.staffId,
+    });
   });
 
   it('allows only an admin to reject with a recorded reason', async () => {
@@ -400,6 +451,14 @@ describe('ReportsService issue handling workflow', () => {
     expect(rejected.events.at(-1)).toMatchObject({
       type: 'REJECTED',
       actorRole: 'ADMIN',
+    });
+    expect(realtime.publishReportChanged).toHaveBeenLastCalledWith({
+      reportId: id,
+      code: rejected.code,
+      status: 'REJECTED',
+      change: 'rejected',
+      studentId: '4301',
+      assignedStaffId: null,
     });
 
     await expect(

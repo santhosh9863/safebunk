@@ -23,6 +23,10 @@ import {
   ReportStatus,
 } from './report-status';
 import { AttachmentsService } from './attachments/attachments.service';
+import {
+  ReportChangeType,
+  ReportsRealtimeGateway,
+} from './reports-realtime.gateway';
 
 type StaffAssignee = Pick<
   StaffUser,
@@ -93,6 +97,7 @@ export class ReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly attachments: AttachmentsService,
+    private readonly realtime: ReportsRealtimeGateway,
   ) {}
 
   /**
@@ -190,6 +195,7 @@ export class ReportsService {
       }
     }
 
+    this.publishReportChanged(report, 'created');
     return report;
   }
 
@@ -329,6 +335,7 @@ export class ReportsService {
       where: { id },
       select: {
         id: true,
+        studentId: true,
         status: true,
         assignedStaffId: true,
         assignedDepartment: true,
@@ -382,7 +389,17 @@ export class ReportsService {
       });
     });
 
-    return this.getReportForStaff(actor, id);
+    const detail = await this.getReportForStaff(actor, id);
+    this.realtime.publishReportChanged({
+      reportId: detail.id,
+      code: detail.code,
+      status: detail.status,
+      change: isReassignment ? 'reassigned' : 'assigned',
+      studentId: report.studentId,
+      assignedStaffId: target.id,
+      previousAssignedStaffId: report.assignedStaffId,
+    });
+    return detail;
   }
 
   /**
@@ -422,7 +439,16 @@ export class ReportsService {
       });
     });
 
-    return this.getReportForStaff(actor, id);
+    const detail = await this.getReportForStaff(actor, id);
+    this.realtime.publishReportChanged({
+      reportId: detail.id,
+      code: detail.code,
+      status: detail.status,
+      change: 'accepted',
+      studentId: report.studentId,
+      assignedStaffId: actor.staffId,
+    });
+    return detail;
   }
 
   /**
@@ -457,7 +483,18 @@ export class ReportsService {
       },
     });
 
-    return this.getReportForStaff(actor, id);
+    const detail = await this.getReportForStaff(actor, id);
+    this.realtime.publishReportChanged({
+      reportId: detail.id,
+      code: detail.code,
+      status: detail.status,
+      change: 'progress',
+      studentId: report.studentId,
+      assignedStaffId: actor.staffId,
+      // Progress notes are internal and deliberately hidden from students.
+      notifyStudent: false,
+    });
+    return detail;
   }
 
   /**
@@ -508,7 +545,16 @@ export class ReportsService {
       });
     });
 
-    return this.getReportForStaff(actor, id);
+    const detail = await this.getReportForStaff(actor, id);
+    this.realtime.publishReportChanged({
+      reportId: detail.id,
+      code: detail.code,
+      status: detail.status,
+      change: 'resolved',
+      studentId: report.studentId,
+      assignedStaffId: actor.staffId,
+    });
+    return detail;
   }
 
   /**
@@ -528,7 +574,12 @@ export class ReportsService {
 
     const report = await this.prisma.report.findUnique({
       where: { id },
-      select: { id: true, status: true },
+      select: {
+        id: true,
+        studentId: true,
+        status: true,
+        assignedStaffId: true,
+      },
     });
     if (!report) {
       throw new NotFoundException('Report not found');
@@ -568,7 +619,16 @@ export class ReportsService {
       });
     });
 
-    return this.getReportForStaff(actor, id);
+    const detail = await this.getReportForStaff(actor, id);
+    this.realtime.publishReportChanged({
+      reportId: detail.id,
+      code: detail.code,
+      status: detail.status,
+      change: 'rejected',
+      studentId: report.studentId,
+      assignedStaffId: report.assignedStaffId,
+    });
+    return detail;
   }
 
   /**
@@ -591,6 +651,25 @@ export class ReportsService {
       assignedStaffId: report.assignedStaffId,
     });
     return this.attachments.downloadForReport(report.id);
+  }
+
+  private publishReportChanged(
+    report: Pick<Report, 'id' | 'code' | 'status' | 'studentId'>,
+    change: ReportChangeType,
+    extra: {
+      assignedStaffId?: string | null;
+      previousAssignedStaffId?: string | null;
+      notifyStudent?: boolean;
+    } = {},
+  ): void {
+    this.realtime.publishReportChanged({
+      reportId: report.id,
+      code: report.code,
+      status: report.status,
+      change,
+      studentId: report.studentId,
+      ...extra,
+    });
   }
 
   private assertAdminActor(actor: AuthenticatedStaff): void {

@@ -59,12 +59,18 @@ const dto = (over: Partial<CreateReportDto> = {}): CreateReportDto => ({
 describe('ReportsService — attachment association', () => {
   let prisma: FakePrisma;
   let claimForReport: jest.Mock;
+  let realtime: { publishReportChanged: jest.Mock };
   let service: ReportsService;
 
   beforeEach(() => {
     prisma = new FakePrisma();
     claimForReport = jest.fn(async () => true);
-    service = new ReportsService(prisma as any, { claimForReport } as any);
+    realtime = { publishReportChanged: jest.fn() };
+    service = new ReportsService(
+      prisma as any,
+      { claimForReport } as any,
+      realtime as any,
+    );
   });
 
   it('leaves imageUrl null and does not claim anything without an attachmentId', async () => {
@@ -113,6 +119,7 @@ describe('ReportsService — attachment association', () => {
     );
     expect(prisma.report.delete).toHaveBeenCalledTimes(1);
     expect(prisma.reports).toHaveLength(0);
+    expect(realtime.publishReportChanged).not.toHaveBeenCalled();
   });
 
   it('rolls back and releases the claim when the image URL update fails', async () => {
@@ -126,5 +133,6 @@ describe('ReportsService — attachment association', () => {
     expect(prisma.reports).toHaveLength(0);
     // Fake reproduces the FK's SetNull behaviour: photo is reusable/removable again.
     expect(prisma.attachments[0].reportId).toBeNull();
+    expect(realtime.publishReportChanged).not.toHaveBeenCalled();
   });
 });
